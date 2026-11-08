@@ -11,7 +11,7 @@
       "rsi_at_entry": 49.6,
       "timestamp": 1794138467.0718958,
       "filled_timestamp": 1794139332.8536632,
-      "highest_price_idr": 3251.0
+      "highest_price_idr": 3255.0
     },
     {
       "coin": "SUI",
@@ -29,22 +29,22 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 25000.0,
-      "entry_price_idr": 1278.0,
-      "tp_price_idr": 1301.0,
-      "sl_price_idr": 1252.0,
+      "entry_price_idr": 1285.0,
+      "tp_price_idr": 1308.0,
+      "sl_price_idr": 1259.0,
       "rsi_at_entry": 44.7,
-      "timestamp": 1794138467.0719244
+      "timestamp": 1794162570.013621
     },
     {
       "coin": "SOL",
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 25000.0,
-      "entry_price_idr": 1612427.0,
-      "tp_price_idr": 1641451.0,
-      "sl_price_idr": 1580178.0,
+      "entry_price_idr": 1612071.0,
+      "tp_price_idr": 1641088.0,
+      "sl_price_idr": 1579830.0,
       "rsi_at_entry": 57.2,
-      "timestamp": 1794138467.07193
+      "timestamp": 1794162570.013621
     }
   ],
   "realized_profit_today_idr": 0.0,
