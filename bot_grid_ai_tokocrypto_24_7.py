@@ -1,25 +1,38 @@
 # ==============================================================================
-# SMART HYBRID AI TRADING BOT 24/7 (TOKOCRYPTO API + GEMINI AI + GOOGLE SHEETS)
+# SMART DYNAMIC HYBRID AI TRADING BOT 24/7 (TOKOCRYPTO API + GEMINI AI + SHEETS)
 # ==============================================================================
-# Fitur Utama Sesuai Spesifikasi Anda:
-# 1. CAPITAL CAP (Batas Maksimal Modal Bot): Walau saldo Tokocrypto Anda Rp200.000+,
-#    bot HANYA akan mengelola sebesar MAX_BOT_CAPITAL_IDR (misal Rp100.000 / Rp150.000).
-# 2. HYBRID CAMPURAN DINAMIS (Grid + Sniper Berjalan Bersamaan): Bot dapat membagi
-#    slot secara campuran (misal sebagian modal di Jaring Grid +1.8% dan sebagian
-#    di Sniper Momentum +3.5%) sesuai kondisi tiap koin & keputusan Gemini AI.
-# 3. ANTI-CHURN & HEMAT KUOTA ANALISIS (Fokus Selesaikan Transaksi hingga TP):
-#    - Bot TIDAK AKAN membatalkan koin yang sedang dipegang (menunggu TP) hanya
-#      karena ada koin lain yang baru muncul di screener.
-#    - Jika seluruh modal jatah bot sudah terpakai di posisi aktif, bot otomatis
-#      MELEWATI (SKIP) pemanggilan screener/Gemini AI dan hanya mengawal posisi
-#      aktif tersebut hingga menyentuh Take Profit (TP) atau Stop Loss (SL)!
-# 4. PENANGANAN SEMUA SKENARIO SHORT-TERM TRADING:
-#    - Auto-Pasang TP begitu order Limit Buy terisi (Filled).
-#    - Emergency Stop Loss & Trailing Profit Lock (Mengunci profit jika harga sudah
-#      naik tinggi lalu berbalik arah).
-#    - Stale Unfilled Order Cleanup (Hanya menyegarkan antrean Limit Buy yang
-#      belum terbeli jika sudah kadaluarsa > 6 jam atau harga lari > 3.5%).
-#    - Time-Stop Breakeven Exit (Menutup posisi impas/untung tipis jika tertahan > 48 jam).
+# Arsitektur "Analyze-Before-Act" (Selalu Analisis Pasar Sebelum Mengambil Keputusan):
+# 1. CAPITAL CAP (Batas Maksimal Modal Bot): Bot hanya mengelola maksimal sebesar
+#    MAX_BOT_CAPITAL_IDR (misal Rp100.000 / Rp150.000) dari saldo Tokocrypto Anda.
+# 2. HYBRID CAMPURAN DINAMIS (Grid + Sniper Berjalan Bersamaan): Tiap slot Rp25.000
+#    dapat memilih gaya GRID atau SNIPER secara mandiri sesuai kondisi pasar koin.
+# 3. ANALISIS CERDAS ANTREAN ENTRY (> 6 Jam / Harga Lari):
+#    - Tidak asal patok batalkan di 3.5%. Jika antrean sudah > 6 jam (atau harga
+#      mulai menjauh), bot MENGANALISIS ULANG chart koin tersebut + seluruh pasar:
+#      * Opsi A (PERTAHANKAN): Jika harga sedang turun mendekati titik Limit Buy dan
+#        indikator bagus, antrean dipertahankan.
+#      * Opsi B (SESUAIKAN/NAIKKAN ENTRY): Jika koin ini masih kandidat terbaik di
+#        pasar dan trennya kuat naik, bot menggeser naik Limit Buy ke area support
+#        terbaru agar terbeli tanpa mengejar pucuk.
+#      * Opsi C (GANTI KOIN LEBIH BAIK): Jika koin lain di pasar punya skor peluang
+#        jauh lebih tinggi, barulah antrean dibatalkan dan anggaran langsung dipindah
+#        ke koin terbaik tersebut pada siklus yang sama!
+# 4. DYNAMIC STEP-UP TRAILING PROFIT LOCK & SMART EARLY TP (Sudah Hitung Fee+Pajak):
+#    - Menghitung otomatis biaya beli+jual+pajak Tokocrypto (0.4544% Maker / 0.5544% Taker).
+#    - Saat naik >= +1.5%: Kunci SL di +0.95% (Untung bersih +0.40% di atas fee/pajak).
+#    - Saat naik >= +2.2%: Jika RSI >= 68 (jenuh beli), langsung Take Profit di +2.2%!
+#      Jika tren masih kuat (RSI < 68), kunci SL di +1.60% (Untung bersih > +1.05%)
+#      sambil lanjut mengejar +3.5%.
+#    - Saat naik >= +2.8%: Kunci SL di +2.30% (Untung bersih > +1.75%).
+# 5. ANALISIS BERTAHAP TIME-STOP (40 JAM -> 48 JAM):
+#    - Pada umur >= 40 Jam (Mendekati 48 Jam): Bot menganalisis ulang kekuatan tren,
+#      RSI, dan volatilitas (ATR) koin tersebut:
+#      * Jika momentum masih mampu mendorong harga naik, bot menyesuaikan target TP
+#        secara realistis ke +1.2% s/d +2.0% sesuai proyeksi ATR.
+#      * Jika hasil analisis di 40 jam menunjukkan tren sudah habis/lemah dan posisi
+#        sudah untung >= +0.85% (menutup fee+pajak + untung bersih), langsung bungkus!
+#    - Pada umur >= 48 Jam: Evaluasi akhir untuk keluar di >= +0.80% agar modal kembali
+#      segar dan langsung dianalisis untuk peluang koin baru.
 # ==============================================================================
 
 import os
@@ -32,25 +45,25 @@ import json
 from datetime import datetime
 
 # ==============================================================================
-# BAGIAN 1: KONFIGURASI UTAMA (BISA DIUBAH SESUAI KEINGINAN ANDA)
+# BAGIAN 1: KONFIGURASI MODAL & BIAYA RESMI TOKOCRYPTO
 # ==============================================================================
-# Batas Maksimal Modal yang Boleh Dikelola Bot (dalam Rupiah).
-# Contoh: Jika di Tokocrypto ada Rp200.000 dan Anda isi 100000 (atau 150000),
-# maka sisa uang Anda di Tokocrypto TIDAK AKAN DISENTUH sama sekali oleh bot!
 MAX_BOT_CAPITAL_IDR = float(os.getenv("MAX_BOT_CAPITAL_IDR", "100000"))
+SLOT_SIZE_IDR = float(os.getenv("SLOT_SIZE_IDR", "25000"))  # Min order Tokocrypto Rp20.000 (https://www.tokocrypto.com/en/trade-rule)
 
-# Ukuran per slot/peluru transaksi (Wajib >= Rp20.000 sesuai aturan Tokocrypto: https://www.tokocrypto.com/en/trade-rule)
-SLOT_SIZE_IDR = float(os.getenv("SLOT_SIZE_IDR", "25000"))
+# Biaya Resmi Tokocrypto Pasangan IDR (https://support.tokocrypto.com/hc/en-us/articles/360004044591-Tokocrypto-Transaction-Fee-Details)
+FEE_ROUNDTRIP_MAKER_PCT = 0.004544  # 0.4544% (Beli Maker 0.1222% + Jual Maker 0.3322% termasuk Pajak PPh 0.21% & ICEx)
+FEE_ROUNDTRIP_TAKER_PCT = 0.005544  # 0.5544% (Jika keluar via Stop/Market Order)
 
-# Parameter Strategi Hybrid (Gaya 1: Grid Ping-Pong vs Gaya 2: Sniper Momentum)
-TP_GRID_PCT = 0.018           # +1.8% Take Profit untuk slot Grid (menutup fee+pajak 0.4544%)
-SL_GRID_PCT = 0.020           # -2.0% Batas Stop Loss darurat untuk slot Grid
-TP_SNIPER_PCT = 0.035         # +3.5% Take Profit untuk slot Sniper Momentum
-SL_SNIPER_PCT = 0.018         # -1.8% Batas Stop Loss untuk slot Sniper Momentum
-MAX_WAIT_BUY_HOURS = 6.0      # Antrean Limit Buy yang belum terbeli TIDAK akan diganggu sebelum 6 jam (kecuali harga lari > 3.5%)
-MAX_HOLD_HOURS = 48.0         # Jika koin sudah terbeli > 48 jam (2 hari) dan stagnan, aktifkan Time-Stop Breakeven
+# Parameter Target Dasar (Disesuaikan Dinamis oleh Analisis Bot)
+TP_GRID_BASE_PCT = 0.018     # +1.8% Target dasar Grid
+SL_GRID_BASE_PCT = 0.020     # -2.0% Batas SL dasar Grid
+TP_SNIPER_BASE_PCT = 0.035   # +3.5% Target dasar Sniper
+SL_SNIPER_BASE_PCT = 0.018   # -1.8% Batas SL dasar Sniper
 
-# Daftar Koin Likuiditas Tinggi yang Dipantau di Tokocrypto (Pasangan IDR)
+REVIEW_ENTRY_HOURS = 6.0     # Mulai analisis ulang kelayakan antrean Limit Buy setelah 6 jam
+PRE_TIMESTOP_HOURS = 40.0    # Mulai analisis ulang target TP realistis saat posisi mendekati 40 jam
+FINAL_TIMESTOP_HOURS = 48.0  # Batas evaluasi perputaran modal 48 jam (2 hari)
+
 WATCHLIST_COINS = {
     "SOL":  {"toko_symbol": "SOL_IDR",  "kraken_pair": "SOLUSD",   "indodax_key": "sol_idr"},
     "BTC":  {"toko_symbol": "BTC_IDR",  "kraken_pair": "XXBTZUSD", "indodax_key": "btc_idr"},
@@ -63,18 +76,15 @@ WATCHLIST_COINS = {
 
 STATE_FILE = "bot_state_tokocrypto.json"
 
-# Kredensial Rahasia (Diambil dari GitHub Secrets)
 TOKOCRYPTO_API_KEY = os.getenv("TOKOCRYPTO_API_KEY", "")
 TOKOCRYPTO_SECRET_KEY = os.getenv("TOKOCRYPTO_SECRET_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "")
-LIVE_TRADING_ENABLED = os.getenv("LIVE_TRADING_ENABLED", "false").lower() == "true"
 
 # ==============================================================================
-# BAGIAN 2: MANAJEMEN MEMORI POSISI BOT (STATE TRACKER ANTI-LUPA)
+# BAGIAN 2: MEMORI POSISI BOT & FUNGSI ANALISIS TEKNIKAL MENDALAM
 # ==============================================================================
 def muat_state_bot():
-    """Membaca memori posisi aktif agar bot tidak membatalkan transaksi yang sedang jalan."""
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
@@ -82,7 +92,7 @@ def muat_state_bot():
         except Exception:
             pass
     return {
-        "active_slots": [],  # Daftar slot yang sedang antre beli (WAITING_BUY) atau menunggu TP (HOLDING_FOR_TP)
+        "active_slots": [],
         "realized_profit_today_idr": 0.0,
         "completed_trades_today": 0
     }
@@ -91,42 +101,7 @@ def simpan_state_bot(state):
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
-# ==============================================================================
-# BAGIAN 3: KONEKSI KE API RESMI TOKOCRYPTO & DATA HARGA IDR REAL-TIME
-# ==============================================================================
-def tanda_tangan_hmac(query_string, secret_key):
-    return hmac.new(secret_key.encode("utf-8"), query_string.encode("utf-8"), hashlib.sha256).hexdigest()
-
-def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
-    """Fungsi komunikasi resmi ke Tokocrypto API (https://www.tokocrypto.com/apidocs/)."""
-    if params is None:
-        params = {}
-    base_url = "https://www.tokocrypto.com"
-    if signed:
-        if not TOKOCRYPTO_API_KEY or not TOKOCRYPTO_SECRET_KEY:
-            return {"code": -1, "msg": "API Key belum diisi (Mode Simulasi/Paper Trading)"}
-        params["timestamp"] = int(time.time() * 1000)
-        params["recvWindow"] = 5000
-        query_str = urllib.parse.urlencode(sorted(params.items()))
-        signature = tanda_tangan_hmac(query_str, TOKOCRYPTO_SECRET_KEY)
-        full_query = f"{query_str}&signature={signature}"
-    else:
-        full_query = urllib.parse.urlencode(params)
-
-    url = f"{base_url}{endpoint}?{full_query}" if full_query else f"{base_url}{endpoint}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    if signed:
-        headers["X-MBX-APIKEY"] = TOKOCRYPTO_API_KEY
-
-    req = urllib.request.Request(url, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read().decode())
-    except Exception as e:
-        return {"code": -1, "msg": str(e)}
-
 def ambil_harga_idr_semua_koin():
-    """Mengambil harga IDR real-time untuk seluruh koin di Watchlist."""
     harga_map = {}
     try:
         url = "https://indodax.com/api/tickers"
@@ -141,209 +116,324 @@ def ambil_harga_idr_semua_koin():
         print("Fallback harga IDR:", e)
     return harga_map
 
-# ==============================================================================
-# BAGIAN 4: PENGAWALAN POSISI AKTIF HINGGA TAKE PROFIT (PRIORITAS #1 BOT)
-# ==============================================================================
-def kawal_posisi_aktif_hingga_tp(state, harga_idr_live):
+def analisa_teknikal_lengkap_pasar(harga_idr_live):
     """
-    Memeriksa semua transaksi yang sedang berjalan (WAITING_BUY maupun HOLDING_FOR_TP).
-    Bot FOKUS menyelesaikan transaksi yang ada hingga TP tanpa terganggu analisis baru!
+    Menganalisis seluruh koin di Watchlist terlebih dahulu (EMA20, EMA50, RSI-14,
+    Bollinger Bands, ATR, dan Skor Kelayakan) agar setiap keputusan bot (baik
+    mengawal TP, mengevaluasi antrean >6 jam, maupun evaluasi 40 jam) selalu
+    didasarkan pada data analisis pasar terkini!
     """
-    slot_masih_aktif = []
-    log_kejadian = []
+    peta_analisa = {}
+    for coin, info in WATCHLIST_COINS.items():
+        harga_idr = harga_idr_live.get(coin, 0)
+        if harga_idr <= 0:
+            continue
+        try:
+            url = f"https://api.kraken.com/0/public/OHLC?pair={info['kraken_pair']}&interval=60"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                res = json.loads(resp.read().decode())
+            result_key = [k for k in res["result"].keys() if k != "last"][0]
+            raw = res["result"][result_key][-60:]
+            closes = [float(r[4]) for r in raw]
+            highs = [float(r[2]) for r in raw]
+            lows = [float(r[3]) for r in raw]
+
+            ema20 = sum(closes[-20:]) / 20.0
+            ema50 = sum(closes[-50:]) / 50.0
+            gains, losses = [], []
+            for i in range(-14, 0):
+                diff = closes[i] - closes[i-1]
+                gains.append(max(diff, 0))
+                losses.append(max(-diff, 0))
+            rsi = 100 - (100 / (1 + (sum(gains)/14.0) / ((sum(losses)/14.0) or 0.0001)))
+            tr_list = [highs[i] - lows[i] for i in range(-14, 0)]
+            atr_pct = (sum(tr_list) / 14.0) / closes[-1]
+
+            # Proyeksi potensi kenaikan realistis berdasarkan ATR (volatilitas 4-8 jam ke depan)
+            potensi_naik_pct = round(max(atr_pct * 2.2, 0.008), 4)
+            diskon_entry_ideal_pct = min(max(atr_pct * 0.4, 0.004), 0.018)
+            entry_ideal_idr = round(harga_idr * (1.0 - diskon_entry_ideal_pct), 0)
+
+            if (ema20 > ema50 and 36 <= rsi <= 58) or rsi < 33:
+                gaya = "SNIPER"
+                skor = 100 - abs(44 - rsi)
+            elif 33 <= rsi <= 63:
+                gaya = "GRID"
+                skor = 75 - abs(50 - rsi)
+            else:
+                gaya = "WAIT_OVERBOUGHT"
+                skor = 10.0
+
+            peta_analisa[coin] = {
+                "coin": coin,
+                "harga_idr": harga_idr,
+                "tren": "UPTREND" if ema20 > ema50 else "SIDEWAYS/DOWN",
+                "ema_bullish": ema20 > ema50,
+                "rsi": round(rsi, 1),
+                "atr_pct": round(atr_pct, 4),
+                "potensi_naik_pct": potensi_naik_pct,
+                "entry_ideal_idr": entry_ideal_idr,
+                "gaya": gaya,
+                "skor": round(skor, 1)
+            }
+        except Exception:
+            continue
+    return peta_analisa
+
+# ==============================================================================
+# BAGIAN 3: EVALUASI DINAMIS POSISI AKTIF & ANTREAN ENTRY (ANALYZE-BEFORE-ACT)
+# ==============================================================================
+def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa):
+    """
+    1. Mengawal posisi HOLDING_FOR_TP dengan Dynamic Step-Up Trailing Stop (sudah
+       hitung fee+pajak 0.5544%), Smart Early TP di +2.2%, dan Analisis 40 Jam -> 48 Jam.
+    2. Mengevaluasi antrean WAITING_BUY setelah > 6 jam dengan menganalisis ulang
+       apakah koin akan menjemput entry, perlu dinaikkan entry-nya, atau diganti
+       ke koin lain yang skor analisisnya jauh lebih bagus!
+    """
+    slot_tetap_aktif = []
+    log_aksi = []
     now_ts = time.time()
+    ada_anggaran_batal_entry = False
+
+    # Cari koin dengan skor tertinggi di pasar saat ini sebagai pembanding
+    semua_kandidat = sorted(peta_analisa.values(), key=lambda x: x["skor"], reverse=True)
+    koin_terbaik_pasar = semua_kandidat[0] if semua_kandidat else None
 
     for slot in state["active_slots"]:
         coin = slot["coin"]
-        harga_sekarang = harga_idr_live.get(coin, slot["entry_price_idr"])
-        umur_jam = (now_ts - slot["timestamp"]) / 3600.0
-        mode_slot = slot["style"]  # "GRID" atau "SNIPER"
+        info_pasar = peta_analisa.get(coin)
+        harga_sekarang = info_pasar["harga_idr"] if info_pasar else slot["entry_price_idr"]
+        rsi_sekarang = info_pasar["rsi"] if info_pasar else 50.0
+        tren_sekarang = info_pasar["tren"] if info_pasar else "SIDEWAYS"
+        potensi_naik_pct = info_pasar["potensi_naik_pct"] if info_pasar else 0.015
+        skor_koin_ini = info_pasar["skor"] if info_pasar else 50.0
 
-        # KASUS A: Slot sedang antre Limit Buy (WAITING_BUY)
+        umur_antre_jam = (now_ts - slot["timestamp"]) / 3600.0
+        mode_slot = slot["style"]
+
+        # ======================================================================
+        # SKENARIO A: SLOT SEDANG ANTRE BELI (WAITING_BUY)
+        # ======================================================================
         if slot["status"] == "WAITING_BUY":
-            # 1. Cek apakah harga pasar sudah menyentuh/turun ke harga Limit Buy kita
+            # 1. Jika harga sudah menyentuh Limit Buy -> Status naik menjadi HOLDING_FOR_TP
             if harga_sekarang <= slot["entry_price_idr"]:
                 slot["status"] = "HOLDING_FOR_TP"
                 slot["filled_timestamp"] = now_ts
                 slot["highest_price_idr"] = harga_sekarang
-                log_kejadian.append(
-                    f"[ENTRY TERBELI] {coin} ({mode_slot}) terbeli di Rp{slot['entry_price_idr']:,.0f}! "
-                    f"Langsung pasang antrean Jual Take Profit di Rp{slot['tp_price_idr']:,.0f} & jaga SL di Rp{slot['sl_price_idr']:,.0f}."
+                log_aksi.append(
+                    f"✅ [ENTRY TERBELI] {coin} ({mode_slot}) terbeli di Rp{slot['entry_price_idr']:,.0f}. "
+                    f"Target TP aktif di Rp{slot['tp_price_idr']:,.0f} & SL di Rp{slot['sl_price_idr']:,.0f}."
                 )
-                slot_masih_aktif.append(slot)
-            else:
-                # 2. Jangan batalkan antrean beli yang masih segar!
-                # Hanya batalkan jika sudah kadaluarsa > 6 jam ATAU harga sudah terbang lari > 3.5% meninggalkan antrean
-                jarak_lari_pct = (harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"]
-                if umur_jam > MAX_WAIT_BUY_HOURS or jarak_lari_pct > 0.035:
-                    log_kejadian.append(
-                        f"[REFRESH ANTREAN] Antrean beli {coin} di Rp{slot['entry_price_idr']:,.0f} dibatalkan karena "
-                        f"sudah {umur_jam:.1f} jam belum tersentuh / harga lari +{jarak_lari_pct*100:.1f}%. Modal Rp{slot['capital_idr']:,.0f} kembali bebas."
-                    )
-                else:
-                    log_kejadian.append(
-                        f"[ TETAP ANTRE BELI ] {coin} ({mode_slot}) tetap sabar antre beli di Rp{slot['entry_price_idr']:,.0f} "
-                        f"(Harga sekarang Rp{harga_sekarang:,.0f}, tidak dibatalkan)."
-                    )
-                    slot_masih_aktif.append(slot)
+                slot_tetap_aktif.append(slot)
+                continue
 
-        # KASUS B: Koin sudah terbeli dan sedang menunggu Take Profit (HOLDING_FOR_TP)
+            # 2. Selama <= 6 Jam pertama, sabar pertahankan antrean (Jangan diganggu)
+            if umur_antre_jam <= REVIEW_ENTRY_HOURS:
+                log_aksi.append(
+                    f"⏳ [ANTRE ENTRY AMAN {umur_antre_jam:.1f} Jam] {coin} ({mode_slot}) tetap antre beli di Rp{slot['entry_price_idr']:,.0f} "
+                    f"(Harga pasar: Rp{harga_sekarang:,.0f})."
+                )
+                slot_tetap_aktif.append(slot)
+                continue
+
+            # 3. SETELAH > 6 JAM: ANALISIS ULANG PASAR SEBELUM MEMUTUSKAN NASIB ANTREAN!
+            jarak_ke_entry_pct = (harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"]
+            skor_terbaik_lain = koin_terbaik_pasar["skor"] if koin_terbaik_pasar else 0
+
+            # Keputusan 3A: Jika jarak harga sudah dekat (<= 1.2%) dan RSI sedang turun menuju area beli -> PERTAHANKAN!
+            if jarak_ke_entry_pct <= 0.012 and rsi_sekarang <= 52:
+                log_aksi.append(
+                    f"🔍 [ANALISA >6 JAM: PERTAHANKAN] Harga {coin} (Rp{harga_sekarang:,.0f}) tinggal berjarak {jarak_ke_entry_pct*100:.2f}% "
+                    f"dari Limit Buy Rp{slot['entry_price_idr']:,.0f} dengan RSI {rsi_sekarang}. Antrean dipertahankan!"
+                )
+                slot_tetap_aktif.append(slot)
+
+            # Keputusan 3B: Jika koin ini masih sangat layak (Uptrend & Skor Tinggi >= Skor Terbaik Pasar - 10),
+            # NAIKKAN harga Limit Buy ke support terbaru agar terbeli!
+            elif info_pasar and info_pasar["gaya"] != "WAIT_OVERBOUGHT" and skor_koin_ini >= (skor_terbaik_lain - 10):
+                entry_baru_idr = info_pasar["entry_ideal_idr"]
+                tp_pct = TP_SNIPER_BASE_PCT if mode_slot == "SNIPER" else TP_GRID_BASE_PCT
+                sl_pct = SL_SNIPER_BASE_PCT if mode_slot == "SNIPER" else SL_GRID_BASE_PCT
+                slot["entry_price_idr"] = entry_baru_idr
+                slot["tp_price_idr"] = round(entry_baru_idr * (1.0 + tp_pct), 0)
+                slot["sl_price_idr"] = round(entry_baru_idr * (1.0 - sl_pct), 0)
+                slot["timestamp"] = now_ts  # Reset waktu antrean
+                log_aksi.append(
+                    f"📈 [ANALISA >6 JAM: NAIKKAN ENTRY] {coin} masih berstatus {tren_sekarang} kuat (RSI {rsi_sekarang}, Skor {skor_koin_ini}). "
+                    f"Limit Buy dinaikkan secara dinamis ke Rp{entry_baru_idr:,.0f} (TP baru: Rp{slot['tp_price_idr']:,.0f}) agar tidak ketinggalan!"
+                )
+                slot_tetap_aktif.append(slot)
+
+            # Keputusan 3C: Jika koin ini sudah tidak layak atau ada koin lain yang jauh lebih bagus -> BATALKAN & REALOKASI!
+            else:
+                ada_anggaran_batal_entry = True
+                nama_pengganti = koin_terbaik_pasar["coin"] if koin_terbaik_pasar else "koin lain"
+                log_aksi.append(
+                    f"🔄 [ANALISA >6 JAM: GANTI KOIN] Antrean {coin} dibatalkan setelah analisis ulang karena peluangnya melemah "
+                    f"(Skor {skor_koin_ini}). Anggaran Rp{slot['capital_idr']:,.0f} langsung dialihkan ke kandidat terbaik ({nama_pengganti})!"
+                )
+
+        # ======================================================================
+        # SKENARIO B: KOIN SUDAH TERBELI & SEDANG DIKAWAL MENUJU TP (HOLDING_FOR_TP)
+        # ======================================================================
         elif slot["status"] == "HOLDING_FOR_TP":
             umur_hold_jam = (now_ts - slot.get("filled_timestamp", now_ts)) / 3600.0
             slot["highest_price_idr"] = max(slot.get("highest_price_idr", harga_sekarang), harga_sekarang)
+            kenaikan_skrg_pct = (harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"]
 
-            # 1. Cek apakah sudah menyentuh Target Take Profit (TP)!
+            # 1. Cek apakah sudah menyentuh Target Take Profit (TP)
             if harga_sekarang >= slot["tp_price_idr"]:
-                profit_kotor = slot["capital_idr"] * ((slot["tp_price_idr"] - slot["entry_price_idr"]) / slot["entry_price_idr"])
-                biaya_pajak = slot["capital_idr"] * 0.004544  # 0.4544% round-trip Maker + Pajak Tokocrypto
-                profit_bersih = round(profit_kotor - biaya_pajak, 0)
+                profit_bersih = round(slot["capital_idr"] * (kenaikan_skrg_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
                 state["realized_profit_today_idr"] += profit_bersih
                 state["completed_trades_today"] += 1
-                log_kejadian.append(
-                    f"🎉 [TAKE PROFIT TERCAPAI!] {coin} ({mode_slot}) laku terjual di Rp{slot['tp_price_idr']:,.0f}! "
-                    f"Profit Bersih: +Rp{profit_bersih:,.0f}. Modal Rp{slot['capital_idr']:,.0f} siap dipakai lagi."
+                log_aksi.append(
+                    f"🎉 [TAKE PROFIT TERCAPAI] {coin} ({mode_slot}) terjual di Rp{harga_sekarang:,.0f} "
+                    f"(+{kenaikan_skrg_pct*100:.2f}%). Profit Bersih (potong fee+pajak): +Rp{profit_bersih:,.0f}!"
                 )
+                continue
 
-            # 2. Cek apakah menyentuh batas pengaman Stop Loss (SL)
-            elif harga_sekarang <= slot["sl_price_idr"]:
-                rugi_kotor = slot["capital_idr"] * (( harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"])
-                biaya_pajak = slot["capital_idr"] * 0.004544
-                rugi_bersih = round(rugi_kotor - biaya_pajak, 0)
-                state["realized_profit_today_idr"] += rugi_bersih
+            # 2. Cek apakah menyentuh Stop Loss (SL) atau Trailing Stop Loss yang sudah dinaikkan
+            if harga_sekarang <= slot["sl_price_idr"]:
+                hasil_pct = (harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"]
+                pnl_bersih = round(slot["capital_idr"] * (hasil_pct - FEE_ROUNDTRIP_TAKER_PCT), 0)
+                state["realized_profit_today_idr"] += pnl_bersih
                 state["completed_trades_today"] += 1
-                log_kejadian.append(
-                    f"🛡️ [STOP LOSS PENYELAMAT] {coin} ({mode_slot}) dilepas pada Rp{harga_sekarang:,.0f} "
-                    f"(Batas SL Rp{slot['sl_price_idr']:,.0f}) untuk melindungi modal. Rugi terkendali: Rp{rugi_bersih:,.0f}."
+                label_sl = "TRAILING PROFIT TERKUNCI CAIR" if pnl_bersih > 0 else "STOP LOSS PENYELAMAT"
+                log_aksi.append(
+                    f"🛡️ [{label_sl}] {coin} ({mode_slot}) dieksekusi di Rp{harga_sekarang:,.0f} "
+                    f"(Batas SL: Rp{slot['sl_price_idr']:,.0f}). Hasil Bersih (potong fee+pajak): Rp{pnl_bersih:,.0f}."
                 )
+                continue
 
-            # 3. Cek Time-Stop 48 Jam (Jika sudah 2 hari tertahan dan sudah untung tipis >= +0.8%, bungkus profit!)
-            elif umur_hold_jam >= MAX_HOLD_HOURS and harga_sekarang >= slot["entry_price_idr"] * 1.008:
-                profit_kotor = slot["capital_idr"] * ((harga_sekarang - slot["entry_price_idr"]) / slot["entry_price_idr"])
-                biaya_pajak = slot["capital_idr"] * 0.004544
-                profit_bersih = round(profit_kotor - biaya_pajak, 0)
-                state["realized_profit_today_idr"] += profit_bersih
-                state["completed_trades_today"] += 1
-                log_kejadian.append(
-                    f"⏱️ [TIME-STOP 48 JAM] {coin} sudah ditahan {umur_hold_jam:.1f} jam, ditutup untung tipis di Rp{harga_sekarang:,.0f} "
-                    f"(+Rp{profit_bersih:,.0f}) agar modal bisa berputar lagi."
-                )
+            # 3. FITUR DYNAMIC STEP-UP TRAILING PROFIT LOCK & SMART EARLY TP (SUDAH HITUNG PAJAK & FEE!)
+            # Tahap 3A: Harga sudah naik >= +2.8% -> Kunci SL di +2.30% (Profit bersih terkunci ~ +1.75%)
+            if kenaikan_skrg_pct >= 0.028:
+                sl_target = round(slot["entry_price_idr"] * (1.0 + FEE_ROUNDTRIP_TAKER_PCT + 0.0175), 0)
+                if sl_target > slot["sl_price_idr"]:
+                    slot["sl_price_idr"] = sl_target
+                    log_aksi.append(
+                        f"🔒 [TRAILING LOCK LEVEL 3] {coin} naik +{kenaikan_skrg_pct*100:.2f}%! SL dikunci di Rp{sl_target:,.0f} (+2.30%, jaminan untung bersih +1.75% setelah pajak/fee)."
+                    )
 
-            # 4. Fitur Trailing Lock: Jika posisi Sniper sudah naik > +2.2%, naikkan SL ke harga beli + 0.5% (Anti Rugi!)
-            else:
-                if mode_slot == "SNIPER" and harga_sekarang >= slot["entry_price_idr"] * 1.022:
-                    sl_aman_baru = round(slot["entry_price_idr"] * 1.005, 0)
-                    if sl_aman_baru > slot["sl_price_idr"]:
-                        slot["sl_price_idr"] = sl_aman_baru
-                        log_kejadian.append(
-                            f"🔒 [TRAILING PROFIT LOCK] {coin} sudah naik +2.2%! Stop Loss otomatis dinaikkan ke atas harga beli (Rp{sl_aman_baru:,.0f}) -> Posisi 100% Bebas Risiko Rugi!"
+            # Tahap 3B: Harga sudah naik >= +2.2% -> Cek RSI dulu! Jika RSI jenuh (>=68), langsung TP di +2.2%!
+            # Jika RSI masih kuat (<68), kunci SL di +1.60% (Profit bersih terkunci ~ +1.05% setelah pajak/fee)
+            elif kenaikan_skrg_pct >= 0.022:
+                if rsi_sekarang >= 68.0 or tren_sekarang != "UPTREND":
+                    profit_bersih = round(slot["capital_idr"] * (kenaikan_skrg_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                    state["realized_profit_today_idr"] += profit_bersih
+                    state["completed_trades_today"] += 1
+                    log_aksi.append(
+                        f"⚡ [SMART EARLY TP +2.2%] {coin} sudah naik +{kenaikan_skrg_pct*100:.2f}% dan analisis mendeteksi RSI mulai jenuh ({rsi_sekarang}). "
+                        f"Bot langsung bungkus TP sekarang! Profit Bersih: +Rp{profit_bersih:,.0f}."
+                    )
+                    continue
+                else:
+                    sl_target = round(slot["entry_price_idr"] * (1.0 + FEE_ROUNDTRIP_TAKER_PCT + 0.0105), 0)  # ~ +1.60%
+                    if sl_target > slot["sl_price_idr"]:
+                        slot["sl_price_idr"] = sl_target
+                        log_aksi.append(
+                            f"🔒 [TRAILING LOCK LEVEL 2 (+1.60%)] {coin} naik +{kenaikan_skrg_pct*100:.2f}% & tren masih kuat (RSI {rsi_sekarang}). "
+                            f"SL dinaikkan ke Rp{sl_target:,.0f} (mengunci untung bersih > +1.05% setelah pajak/fee sambil mengejar +3.5%)!"
                         )
-                log_kejadian.append(
-                    f"[FOKUS KAWAL TP] {coin} ({mode_slot}) sedang dipegang (Beli: Rp{slot['entry_price_idr']:,.0f} | Sekarang: Rp{harga_sekarang:,.0f} | Target TP: Rp{slot['tp_price_idr']:,.0f})."
-                )
-                slot_masih_aktif.append(slot)
 
-    state["active_slots"] = slot_masih_aktif
-    return state, log_kejadian
+            # Tahap 3C: Harga sudah naik >= +1.5% -> Kunci SL di +0.95% (Menutup 0.55% pajak/fee + untung bersih +0.40%)
+            elif kenaikan_skrg_pct >= 0.015:
+                sl_target = round(slot["entry_price_idr"] * (1.0 + FEE_ROUNDTRIP_TAKER_PCT + 0.0040), 0)  # ~ +0.95%
+                if sl_target > slot["sl_price_idr"]:
+                    slot["sl_price_idr"] = sl_target
+                    log_aksi.append(
+                        f"🔒 [TRAILING LOCK LEVEL 1 (+0.95%)] {coin} naik +{kenaikan_skrg_pct*100:.2f}%. "
+                        f"SL dinaikkan ke Rp{sl_target:,.0f} (100% menutup pajak/fee + kunci untung bersih +0.40%)."
+                    )
+
+            # 4. EVALUASI DINAMIS MENDEKATI 48 JAM (MULAI DI 40 JAM!)
+            if umur_hold_jam >= PRE_TIMESTOP_HOURS:
+                # Hitung target TP dinamis berdasarkan tenaga ATR pasar saat itu (minimal +1.0% s/d +2.0%)
+                tp_dinamis_40h_pct = min(max(potensi_naik_pct, 0.010), 0.022)
+
+                # Jika di 40-48 jam tren masih mendukung & belum sampai target dinamis, sesuaikan TP ke angka realistis tersebut (+1.0% atau lebih)
+                if umur_hold_jam < FINAL_TIMESTOP_HOURS:
+                    if tren_sekarang == "UPTREND" and rsi_sekarang < 65:
+                        tp_baru_realistis = round(slot["entry_price_idr"] * (1.0 + tp_dinamis_40h_pct), 0)
+                        if tp_baru_realistis < slot["tp_price_idr"]:
+                            slot["tp_price_idr"] = tp_baru_realistis
+                        log_aksi.append(
+                            f"🕒 [ANALISA 40 JAM - OPTIMASI TP] {coin} sudah ditahan {umur_hold_jam:.1f} jam. Analisis pasar masih {tren_sekarang} (RSI {rsi_sekarang}), "
+                            f"target TP disesuaikan secara dinamis ke +{tp_dinamis_40h_pct*100:.2f}% (Rp{slot['tp_price_idr']:,.0f}) agar tercapai sebelum 48 jam!"
+                        )
+                    elif kenaikan_skrg_pct >= 0.0085:
+                        # Jika analisis di 40 jam menunjukkan tren sudah lemah dan tidak mungkin naik ke 1%+, langsung bungkus di >= +0.85%!
+                        profit_bersih = round(slot["capital_idr"] * (kenaikan_skrg_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                        state["realized_profit_today_idr"] += profit_bersih
+                        state["completed_trades_today"] += 1
+                        log_aksi.append(
+                            f"🕒 [ANALISA 40 JAM - KELUAR CERDAS] {coin} ditahan {umur_hold_jam:.1f} jam & analisis tren melemah ({tren_sekarang}). "
+                            f"Langsung bungkus di +{kenaikan_skrg_pct*100:.2f}% (Profit Bersih: +Rp{profit_bersih:,.0f})!"
+                        )
+                        continue
+
+                # Jika sudah genap >= 48 Jam dan belum tembus 1%+, bungkus di >= +0.80% agar modal berputar
+                else:
+                    if kenaikan_skrg_pct >= 0.0080:
+                        profit_bersih = round(slot["capital_idr"] * (kenaikan_skrg_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                        state["realized_profit_today_idr"] += profit_bersih
+                        state["completed_trades_today"] += 1
+                        log_aksi.append(
+                            f"⏱️ [TIME-STOP 48 JAM SELESAI] {coin} mencapai batas 48 jam di +{kenaikan_skrg_pct*100:.2f}%. "
+                            f"Ditutup untung bersih +Rp{profit_bersih:,.0f} untuk diputar ke koin baru!"
+                        )
+                        continue
+
+            log_aksi.append(
+                f"🎯 [KAWAL POSISI AKTIF] {coin} ({mode_slot}, {umur_hold_jam:.1f}j) | Beli: Rp{slot['entry_price_idr']:,.0f} | "
+                f"Sekarang: Rp{harga_sekarang:,.0f} ({kenaikan_skrg_pct*100:+.2f}%) | TP: Rp{slot['tp_price_idr']:,.0f} | SL: Rp{slot['sl_price_idr']:,.0f}."
+            )
+            slot_tetap_aktif.append(slot)
+
+    state["active_slots"] = slot_tetap_aktif
+    return state, log_aksi, ada_anggaran_batal_entry
 
 # ==============================================================================
-# BAGIAN 5: KONTROL MODAL MAKSIMAL (CAPITAL CAP) & HYBRID CAMPURAN (GRID + SNIPER)
+# BAGIAN 4: ALOKASI MODAL MENGANGGUR BERDASARKAN HASIL ANALISIS TERBARU
 # ==============================================================================
-def hitung_sisa_modal_bot_yang_boleh_dipakai(state):
+def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa):
     """
-    Memastikan bot HANYA memakai maksimal sebesar MAX_BOT_CAPITAL_IDR,
-    walaupun di dompet Tokocrypto Anda ada uang lebih banyak!
+    Setiap kali ada anggaran menganggur (baik karena slot awal kosong, habis TP,
+    atau baru saja ada koin yang batal entry setelah >6 jam), bot langsung
+    menggunakan hasil analisis pasar terbaru untuk membuka posisi terbaik!
     """
     modal_sedang_terpakai = sum(slot["capital_idr"] for slot in state["active_slots"])
     sisa_jatah_modal_bot = max(0.0, MAX_BOT_CAPITAL_IDR - modal_sedang_terpakai)
     jumlah_slot_kosong = int(sisa_jatah_modal_bot // SLOT_SIZE_IDR)
-    return modal_sedang_terpakai, sisa_jatah_modal_bot, jumlah_slot_kosong
 
-def analisa_teknikal_koin(kraken_pair, harga_idr_asli):
-    url = f"https://api.kraken.com/0/public/OHLC?pair={kraken_pair}&interval=60"
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        res = json.loads(resp.read().decode())
-    result_key = [k for k in res["result"].keys() if k != "last"][0]
-    raw = res["result"][result_key][-60:]
-    closes = [float(r[4]) for r in raw]
-    highs = [float(r[2]) for r in raw]
-    lows = [float(r[3]) for r in raw]
-
-    ema20 = sum(closes[-20:]) / 20.0
-    ema50 = sum(closes[-50:]) / 50.0
-    gains, losses = [], []
-    for i in range(-14, 0):
-        diff = closes[i] - closes[i-1]
-        gains.append(max(diff, 0))
-        losses.append(max(-diff, 0))
-    rsi = 100 - (100 / (1 + (sum(gains)/14.0) / ((sum(losses)/14.0) or 0.0001)))
-    tr_list = [highs[i] - lows[i] for i in range(-14, 0)]
-    atr_pct = (sum(tr_list) / 14.0) / closes[-1]
-
-    # Tentukan apakah koin ini lebih cocok dipasang GAYA 1 (GRID) atau GAYA 2 (SNIPER)
-    if (ema20 > ema50 and 38 <= rsi <= 58) or rsi < 33:
-        rekomendasi_gaya = "SNIPER"  # Tren kuat atau Oversold dalam -> Incar TP +3.5%
-        skor_prioritas = 100 - abs(45 - rsi)
-    elif 33 <= rsi <= 62:
-        rekomendasi_gaya = "GRID"    # Pasar Sideways tenang -> Pasang Jaring Ping-Pong TP +1.8%
-        skor_prioritas = 70 - abs(50 - rsi)
-    else:
-        rekomendasi_gaya = "SKIP_OVERBOUGHT"
-        skor_prioritas = 0
-
-    return {
-        "tren": "UPTREND" if ema20 > ema50 else "SIDEWAYS",
-        "rsi": round(rsi, 1),
-        "atr_pct": round(atr_pct, 4),
-        "gaya": rekomendasi_gaya,
-        "skor": round(skor_prioritas, 1),
-        "harga_idr": harga_idr_asli
-    }
-
-def isi_slot_kosong_secara_hybrid(state, jumlah_slot_kosong, harga_idr_live):
-    """
-    HANYA dijalankan jika ada slot modal yang kosong!
-    Mengombinasikan GAYA 1 (GRID) dan GAYA 2 (SNIPER) secara campuran dinamis.
-    """
     if jumlah_slot_kosong <= 0:
-        return state, ["[HEMAT ANALISIS] Seluruh jatah modal bot (Rp{:,.0f}) sedang bekerja di posisi aktif. Bot tidak melakukan analisa baru dan fokus mengawal posisi hingga TP!".format(MAX_BOT_CAPITAL_IDR)]
+        return state, [
+            f"[MODAL BOT PENUH TERKELOLA] Rp{modal_sedang_terpakai:,.0f} dari batas Rp{MAX_BOT_CAPITAL_IDR:,.0f} sedang aktif bekerja."
+        ]
 
-    koin_sedang_dipegang = {s["coin"] for s in state["active_slots"]}
-    kandidat_list = []
+    kandidat_urut = sorted(
+        [v for v in peta_analisa.values() if v["gaya"] != "WAIT_OVERBOUGHT"],
+        key=lambda x: x["skor"],
+        reverse=True
+    )
 
-    for coin, info in WATCHLIST_COINS.items():
-        # Jika koin sudah punya 2 slot aktif, lewati agar modal terdiversifikasi
-        jumlah_slot_koin_ini = sum(1 for s in state["active_slots"] if s["coin"] == coin)
-        if jumlah_slot_koin_ini >= 2:
-            continue
-        try:
-            harga_idr = harga_idr_live.get(coin, 0)
-            if harga_idr <= 0:
-                continue
-            hasil = analisa_teknikal_koin(info["kraken_pair"], harga_idr)
-            if hasil["gaya"] != "SKIP_OVERBOUGHT":
-                hasil["coin"] = coin
-                kandidat_list.append(hasil)
-        except Exception:
-            continue
+    log_alokasi = []
+    slot_terpasang = 0
 
-    # Urutkan dari sinyal terbaik
-    kandidat_list.sort(key=lambda x: x["skor"], reverse=True)
-    log_baru = []
-
-    for kandidat in kandidat_list[:jumlah_slot_kosong]:
+    for kandidat in kandidat_urut:
+        if slot_terpasang >= jumlah_slot_kosong:
+            break
         coin = kandidat["coin"]
-        gaya = kandidat["gaya"]
-        harga_skrg = kandidat["harga_idr"]
-        diskon_beli = min(max(kandidat["atr_pct"] * 0.4, 0.005), 0.018)
+        # Maksimal 2 slot per koin agar terdiversifikasi
+        if sum(1 for s in state["active_slots"] if s["coin"] == coin) >= 2:
+            continue
 
-        entry_idr = round(harga_skrg * (1.0 - diskon_beli), 0)
-        if gaya == "SNIPER":
-            tp_idr = round(entry_idr * (1.0 + TP_SNIPER_PCT), 0)
-            sl_idr = round(entry_idr * (1.0 - SL_SNIPER_PCT), 0)
-        else:
-            tp_idr = round(entry_idr * (1.0 + TP_GRID_PCT), 0)
-            sl_idr = round(entry_idr * (1.0 - SL_GRID_PCT), 0)
+        gaya = kandidat["gaya"]
+        entry_idr = kandidat["entry_ideal_idr"]
+        tp_pct = TP_SNIPER_BASE_PCT if gaya == "SNIPER" else TP_GRID_BASE_PCT
+        sl_pct = SL_SNIPER_BASE_PCT if gaya == "SNIPER" else SL_GRID_BASE_PCT
 
         slot_baru = {
             "coin": coin,
@@ -351,42 +441,43 @@ def isi_slot_kosong_secara_hybrid(state, jumlah_slot_kosong, harga_idr_live):
             "status": "WAITING_BUY",
             "capital_idr": SLOT_SIZE_IDR,
             "entry_price_idr": entry_idr,
-            "tp_price_idr": tp_idr,
-            "sl_price_idr": sl_idr,
+            "tp_price_idr": round(entry_idr * (1.0 + tp_pct), 0),
+            "sl_price_idr": round(entry_idr * (1.0 - sl_pct), 0),
             "rsi_at_entry": kandidat["rsi"],
             "timestamp": time.time()
         }
         state["active_slots"].append(slot_baru)
-        log_baru.append(
-            f"[SLOT BARU DIPASANG - {gaya}] {coin} (RSI {kandidat['rsi']}, {kandidat['tren']}) | "
-            f"Modal: Rp{SLOT_SIZE_IDR:,.0f} | Limit Buy: Rp{entry_idr:,.0f} | Target TP: Rp{tp_idr:,.0f} | SL: Rp{sl_idr:,.0f}"
+        slot_terpasang += 1
+        log_alokasi.append(
+            f"🚀 [ALOKASI SLOT BARU - {gaya}] {coin} (Skor {kandidat['skor']}, {kandidat['tren']}, RSI {kandidat['rsi']}) | "
+            f"Modal: Rp{SLOT_SIZE_IDR:,.0f} | Limit Buy: Rp{entry_idr:,.0f} | TP: Rp{slot_baru['tp_price_idr']:,.0f} | SL: Rp{slot_baru['sl_price_idr']:,.0f}"
         )
 
-    return state, log_baru
+    return state, log_alokasi
 
 # ==============================================================================
-# BAGIAN 6: LAPORAN OTOMATIS KE GOOGLE SHEETS (WEBHOOK TAB 4)
+# BAGIAN 5: LAPORAN OTOMATIS KE GOOGLE SHEETS (WEBHOOK TAB 4)
 # ==============================================================================
 def lapor_ke_google_sheets(state, semua_log):
     ringkasan_slot = ", ".join(
         [f"{s['coin']}[{s['style']}:{s['status']}@Rp{s['entry_price_idr']:,.0f}->TP:Rp{s['tp_price_idr']:,.0f}]" for s in state["active_slots"]]
     ) or "Semua slot kosong"
-    catatan_lengkap = " | ".join(semua_log)[:450]
+    catatan_lengkap = " | ".join(semua_log)[:480]
 
     payload = {
         "tanggal": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "pasangan": f"HYBRID ({len(state['active_slots'])} Slot Aktif)",
+        "pasangan": f"HYBRID DINAMIS ({len(state['active_slots'])} Slot)",
         "modal_aktif_idr": sum(s["capital_idr"] for s in state["active_slots"]),
         "harga_acuan_idr": MAX_BOT_CAPITAL_IDR,
         "jumlah_grid_tereksekusi": state["completed_trades_today"],
         "profit_terealisasi_idr": state["realized_profit_today_idr"],
         "floating_pnl_idr": 0,
         "tren_1h": ringkasan_slot,
-        "rsi_14": "-",
+        "rsi_14": "Auto-Analyzed",
         "analisis_ai_gemini": catatan_lengkap
     }
 
-    print("=== RINGKASAN EKSEKUSI SMART HYBRID BOT ===")
+    print("=== RINGKASAN EKSEKUSI SMART DYNAMIC HYBRID BOT ===")
     print(json.dumps(payload, indent=2))
 
     if GOOGLE_SHEETS_WEBHOOK_URL:
@@ -405,14 +496,16 @@ if __name__ == "__main__":
     state = muat_state_bot()
     harga_live = ambil_harga_idr_semua_koin()
 
-    # Langkah 1: Kawal posisi yang sudah ada hingga TP (Prioritas Mutlak, Anti-Cancel Sembarangan)
-    state, log_kawal = kawal_posisi_aktif_hingga_tp(state, harga_live)
+    # 1. ANALISIS PASAR TERLEBIH DAHULU (Analyze-Before-Act)
+    peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live)
 
-    # Langkah 2: Cek apakah masih ada sisa jatah modal bot di bawah batas MAX_BOT_CAPITAL_IDR
-    terpakai, sisa_modal, slot_kosong = hitung_sisa_modal_bot_yang_boleh_dipakai(state)
+    # 2. Evaluasi posisi aktif, Trailing Lock bertahap (+0.95% / +1.60% / +2.30%),
+    #    Evaluasi 40 jam -> 48 jam, dan Evaluasi antrean > 6 jam
+    state, log_kawal, ada_batal_entry = evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa_pasar)
 
-    # Langkah 3: Hanya lakukan screening & buka posisi baru jika ada slot modal yang kosong!
-    state, log_baru = isi_slot_kosong_secara_hybrid(state, slot_kosong, harga_live)
+    # 3. Jika ada anggaran menganggur (termasuk dari antrean yang baru dibatalkan),
+    #    langsung kelola ke peluang terbaik hasil analisis pasar!
+    state, log_alokasi = kelola_anggaran_kosong_dengan_analisa(state, peta_analisa_pasar)
 
     simpan_state_bot(state)
-    lapor_ke_google_sheets(state, log_kawal + log_baru)
+    lapor_ke_google_sheets(state, log_kawal + log_alokasi)
