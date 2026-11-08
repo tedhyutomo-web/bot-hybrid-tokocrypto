@@ -23,6 +23,7 @@ jobs:
 
       - name: 3. Jalankan Smart Dynamic Hybrid AI Bot & Kirim ke Google Sheets
         env:
+          TZ: 'Asia/Makassar'
           TOKOCRYPTO_API_KEY: ${{ secrets.TOKOCRYPTO_API_KEY }}
           TOKOCRYPTO_SECRET_KEY: ${{ secrets.TOKOCRYPTO_SECRET_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
