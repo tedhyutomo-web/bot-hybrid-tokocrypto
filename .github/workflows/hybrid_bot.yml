@@ -30,7 +30,7 @@ jobs:
           GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
           MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
           SLOT_SIZE_IDR: ${{ secrets.SLOT_SIZE_IDR || '25000' }}
-          LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'true' }}
+          LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'false' }}
         run: |
           python bot_grid_ai_tokocrypto_24_7.py
 
