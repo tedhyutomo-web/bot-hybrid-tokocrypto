@@ -1,0 +1,50 @@
+{
+  "active_slots": [
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 3251.0,
+      "tp_price_idr": 3310.0,
+      "sl_price_idr": 3186.0,
+      "rsi_at_entry": 49.6,
+      "timestamp": 1794138467.0718958
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 15312.0,
+      "tp_price_idr": 15588.0,
+      "sl_price_idr": 15006.0,
+      "rsi_at_entry": 50.8,
+      "timestamp": 1794138467.0719182
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 1278.0,
+      "tp_price_idr": 1301.0,
+      "sl_price_idr": 1252.0,
+      "rsi_at_entry": 44.7,
+      "timestamp": 1794138467.0719244
+    },
+    {
+      "coin": "SOL",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 1612427.0,
+      "tp_price_idr": 1641451.0,
+      "sl_price_idr": 1580178.0,
+      "rsi_at_entry": 57.2,
+      "timestamp": 1794138467.07193
+    }
+  ],
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0
+}
