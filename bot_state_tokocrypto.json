@@ -1,45 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 25000.0,
-      "entry_price_idr": 15312.0,
-      "tp_price_idr": 15588.0,
-      "sl_price_idr": 15006.0,
-      "rsi_at_entry": 50.8,
-      "timestamp": 1794138467.0719182,
-      "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 15220.0
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 25000.0,
-      "entry_price_idr": 1285.0,
-      "tp_price_idr": 1308.0,
-      "sl_price_idr": 1259.0,
-      "rsi_at_entry": 44.7,
-      "timestamp": 1794162570.013621,
-      "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 1266.0
-    },
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 25000.0,
-      "entry_price_idr": 1612071.0,
-      "tp_price_idr": 1641088.0,
-      "sl_price_idr": 1579830.0,
-      "rsi_at_entry": 57.2,
-      "timestamp": 1794162570.013621,
-      "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 1588594.0
-    },
-    {
       "coin": "ADA",
       "style": "SNIPER",
       "status": "WAITING_BUY",
@@ -49,8 +10,41 @@
       "sl_price_idr": 3090.0,
       "rsi_at_entry": 31.0,
       "timestamp": 1794176871.5799592
+    },
+    {
+      "coin": "ETH",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 37903486.0,
+      "tp_price_idr": 39230108.0,
+      "sl_price_idr": 37221223.0,
+      "rsi_at_entry": 22.9,
+      "timestamp": 1794217242.912043
+    },
+    {
+      "coin": "XRP",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 19627.0,
+      "tp_price_idr": 20314.0,
+      "sl_price_idr": 19274.0,
+      "rsi_at_entry": 22.1,
+      "timestamp": 1794217242.9120512
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 3155.0,
+      "tp_price_idr": 3212.0,
+      "sl_price_idr": 3092.0,
+      "rsi_at_entry": 40.3,
+      "timestamp": 1794217242.9120572
     }
   ],
-  "realized_profit_today_idr": -838.0,
-  "completed_trades_today": 1
+  "realized_profit_today_idr": -3038.0,
+  "completed_trades_today": 4
 }
