@@ -32,49 +32,42 @@ WATCHLIST_COINS = {
         "kraken_pair": "SOLUSD",
         "indodax_key": "sol_idr",
         "step_decimals": 2,
-        "price_decimals": 0,
     },
     "BTC": {
         "toko_symbol": "BTC_IDR",
         "kraken_pair": "XXBTZUSD",
         "indodax_key": "btc_idr",
         "step_decimals": 5,
-        "price_decimals": 0,
     },
     "ETH": {
         "toko_symbol": "ETH_IDR",
         "kraken_pair": "XETHZUSD",
         "indodax_key": "eth_idr",
         "step_decimals": 4,
-        "price_decimals": 0,
     },
     "XRP": {
         "toko_symbol": "XRP_IDR",
         "kraken_pair": "XXRPZUSD",
         "indodax_key": "xrp_idr",
         "step_decimals": 0,
-        "price_decimals": 0,
     },
     "ADA": {
         "toko_symbol": "ADA_IDR",
         "kraken_pair": "ADAUSD",
         "indodax_key": "ada_idr",
         "step_decimals": 1,
-        "price_decimals": 0,
     },
     "SUI": {
         "toko_symbol": "SUI_IDR",
         "kraken_pair": "SUIUSD",
         "indodax_key": "sui_idr",
         "step_decimals": 1,
-        "price_decimals": 0,
     },
     "DOGE": {
         "toko_symbol": "DOGE_IDR",
         "kraken_pair": "XDGUSD",
         "indodax_key": "doge_idr",
         "step_decimals": 0,
-        "price_decimals": 0,
     },
 }
 
@@ -84,7 +77,6 @@ TOKOCRYPTO_API_KEY = os.getenv("TOKOCRYPTO_API_KEY", "").strip()
 TOKOCRYPTO_SECRET_KEY = os.getenv("TOKOCRYPTO_SECRET_KEY", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
-# Otomatis aktif selama API Key Tokocrypto sudah diisi di GitHub Secrets!
 LIVE_TRADING_ENABLED = bool(TOKOCRYPTO_API_KEY and TOKOCRYPTO_SECRET_KEY)
 
 
@@ -114,7 +106,6 @@ def tanda_tangan_hmac(query_string, secret_key):
 
 
 def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
-def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
   if params is None:
     params = {}
   base_url = "https://www.tokocrypto.com"
@@ -138,7 +129,7 @@ def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
   if signed:
     headers["X-MBX-APIKEY"] = TOKOCRYPTO_API_KEY
 
-  # Daftar jalur pengiriman: Jalur 1 (Langsung), Jalur 2 & 3 (Relay Server Eropa/Non-AS untuk tembus HTTP 451)
+  # Daftar jalur pengiriman: Jalur 1 (Langsung), Jalur 2 & 3 (Relay Server Non-AS untuk tembus HTTP 451)
   jalur_urls = [
       target_url,
       f"https://corsproxy.io/?{urllib.parse.quote(target_url, safe='')}",
@@ -160,12 +151,15 @@ def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
         return json.loads(raw_text)
     except urllib.error.HTTPError as he:
       err_body = he.read().decode("utf-8", errors="ignore")
-      last_err = {"code": he.code, "msg": f"HTTP {he.code}: {err_body[:120]}"}
-      if he.code == 451:
-        continue  # Otomatis pindah ke jalur Relay Non-AS berikutnya!
+      last_err = {
+          "code": he.code,
+          "msg": f"Jalur {idx+1} HTTP {he.code}: {err_body[:100]}",
+      }
+      if he.code in (451, 403):
+        continue
       return last_err
     except Exception as e:
-      last_err = {"code": -1, "msg": str(e)}
+      last_err = {"code": -1, "msg": f"Jalur {idx+1} Err: {str(e)}"}
       continue
   return last_err
 
@@ -182,7 +176,6 @@ def eksekusi_order_tokocrypto(
     coin, side_str, order_type_str, qty, price_idr=None
 ):
   if not LIVE_TRADING_ENABLED:
-    print(f"[MODE SIMULASI] API Key Tokocrypto belum terbaca.")
     return {"code": -1, "msg": "Simulasi (API Key kosong)"}
 
   symbol = WATCHLIST_COINS[coin]["toko_symbol"]
@@ -219,45 +212,19 @@ def batalkan_order_tokocrypto(coin, order_id):
   )
 
 
-def ambil_harga_idr_asli_tokocrypto(coin):
-  """Mengambil harga Bid/Ask langsung dari Order Book Tokocrypto agar 100% sama dengan layar Tokocrypto Anda!"""
-  symbol = WATCHLIST_COINS[coin]["toko_symbol"]
-  res = panggil_api_tokocrypto(
-      "/open/v1/market/depth",
-      method="GET",
-      params={"symbol": symbol, "limit": 5},
-      signed=False,
-  )
-  if res.get("code") == 0 and res.get("data"):
-    bids = res["data"].get("bids", [])
-    asks = res["data"].get("asks", [])
-    if bids and asks:
-      return (float(bids[0][0]) + float(asks[0][0])) / 2.0
-  return 0.0
-
-
 def ambil_harga_idr_semua_koin():
   harga_map = {}
-  # Prioritas 1: Ambil langsung dari Order Book Tokocrypto
-  for coin in WATCHLIST_COINS:
-    h_toko = ambil_harga_idr_asli_tokocrypto(coin)
-    if h_toko > 0:
-      harga_map[coin] = h_toko
-
-  # Fallback jika ada koin yang belum termuat
-  if len(harga_map) < len(WATCHLIST_COINS):
-    try:
-      url = "https://indodax.com/api/tickers"
-      req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-      with urllib.request.urlopen(req, timeout=10) as resp:
-        tickers = json.loads(resp.read().decode()).get("tickers", {})
-      for coin, info in WATCHLIST_COINS.items():
-        if coin not in harga_map:
-          t = tickers.get(info["indodax_key"], {})
-          if "last" in t:
-            harga_map[coin] = float(t["last"])
-    except Exception as e:
-      print("Fallback harga IDR:", e)
+  try:
+    url = "https://indodax.com/api/tickers"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+      tickers = json.loads(resp.read().decode()).get("tickers", {})
+    for coin, info in WATCHLIST_COINS.items():
+      t = tickers.get(info["indodax_key"], {})
+      if "last" in t:
+        harga_map[coin] = float(t["last"])
+  except Exception as e:
+    print("Fallback harga IDR:", e)
   return harga_map
 
 
@@ -330,14 +297,12 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa):
   koin_terbaik_pasar = semua_kandidat[0] if semua_kandidat else None
 
   for slot in state["active_slots"]:
-    # Otomatis bersihkan slot lama yang belum punya buy_order_id asli Tokocrypto
     if LIVE_TRADING_ENABLED and (
         not slot.get("buy_order_id")
         or str(slot.get("buy_order_id")).startswith("SIM")
     ):
       log_aksi.append(
-          f"[RESET SIMULASI] Menghapus slot simulasi lama {slot['coin']} agar"
-          " diganti Live Order Tokocrypto."
+          f"[RESET SIMULASI] Menghapus slot simulasi lama {slot['coin']}."
       )
       continue
 
@@ -367,8 +332,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa):
         slot["highest_price_idr"] = harga_sekarang
         log_aksi.append(
             f"✅ [ENTRY TERBELI] {coin} ({mode_slot}) di"
-            f" Rp{slot['entry_price_idr']:,.0f}. Kawal TP"
-            f" Rp{slot['tp_price_idr']:,.0f}."
+            f" Rp{slot['entry_price_idr']:,.0f}."
         )
         slot_tetap_aktif.append(slot)
         continue
@@ -376,9 +340,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa):
       if umur_antre_jam <= REVIEW_ENTRY_HOURS:
         log_aksi.append(
             f"⏳ [ANTRE BELI {umur_antre_jam:.1f}j] {coin}"
-            f" (OrderID:{slot.get('buy_order_id')}) di"
-            f" Rp{slot['entry_price_idr']:,.0f} (Pasar:"
-            f" Rp{harga_sekarang:,.0f})."
+            f" (ID:{slot.get('buy_order_id')}) di"
+            f" Rp{slot['entry_price_idr']:,.0f}."
         )
         slot_tetap_aktif.append(slot)
         continue
@@ -392,8 +355,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa):
 
       if jarak_ke_entry_pct <= 0.012 and rsi_sekarang <= 52:
         log_aksi.append(
-            f"🔍 [PERTAHANKAN >6J] {coin} dekat"
-            f" ({jarak_ke_entry_pct*100:.2f}%) ke Limit Buy"
+            f"🔍 [PERTAHANKAN >6J] {coin} dekat ke Limit Buy"
             f" Rp{slot['entry_price_idr']:,.0f}."
         )
         slot_tetap_aktif.append(slot)
@@ -591,12 +553,10 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa):
     sl_idr = int(round(entry_idr * (1.0 - sl_pct)))
     qty_koin = hitung_kuantitas_koin(coin, SLOT_SIZE_IDR, entry_idr)
 
-    # EKSEKUSI ORDER ASLI KE TOKOCRYPTO!
     respon_order = eksekusi_order_tokocrypto(
         coin, "BUY", "LIMIT", qty_koin, entry_idr
     )
 
-    # Hanya masukkan ke slot aktif jika Tokocrypto menerima order (code == 0)
     if respon_order.get("code") == 0:
       order_id = respon_order.get("data", {}).get("orderId")
       slot_baru = {
