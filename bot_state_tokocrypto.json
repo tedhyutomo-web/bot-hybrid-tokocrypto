@@ -11,7 +11,7 @@
       "rsi_at_entry": 50.8,
       "timestamp": 1794138467.0719182,
       "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 14882.0
+      "highest_price_idr": 15220.0
     },
     {
       "coin": "DOGE",
@@ -24,7 +24,7 @@
       "rsi_at_entry": 44.7,
       "timestamp": 1794162570.013621,
       "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 1250.0
+      "highest_price_idr": 1266.0
     },
     {
       "coin": "SOL",
@@ -37,7 +37,7 @@
       "rsi_at_entry": 57.2,
       "timestamp": 1794162570.013621,
       "filled_timestamp": 1794176871.5799026,
-      "highest_price_idr": 1563067.0
+      "highest_price_idr": 1588594.0
     },
     {
       "coin": "ADA",
