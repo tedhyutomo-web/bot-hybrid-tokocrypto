@@ -1,0 +1,50 @@
+{
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 37841022.0,
+      "tp_price_idr": 39165458.0,
+      "sl_price_idr": 37159884.0,
+      "rsi_at_entry": 23.0,
+      "timestamp": 1794217705.1253757
+    },
+    {
+      "coin": "XRP",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 19573.0,
+      "tp_price_idr": 20258.0,
+      "sl_price_idr": 19221.0,
+      "rsi_at_entry": 21.9,
+      "timestamp": 1794217705.1253974
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 14817.0,
+      "tp_price_idr": 15084.0,
+      "sl_price_idr": 14521.0,
+      "rsi_at_entry": 40.2,
+      "timestamp": 1794217705.125404
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000.0,
+      "entry_price_idr": 3155.0,
+      "tp_price_idr": 3212.0,
+      "sl_price_idr": 3092.0,
+      "rsi_at_entry": 40.0,
+      "timestamp": 1794217705.1254075
+    }
+  ],
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0
+}
