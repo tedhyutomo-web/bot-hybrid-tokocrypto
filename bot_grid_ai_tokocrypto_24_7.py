@@ -1,6 +1,7 @@
 # ==============================================================================
-# SMART DYNAMIC HYBRID AI TRADING BOT 24/7 (LIVE ORDER TOKOCRYPTO + SHEETS)
+# SMART DYNAMIC HYBRID AI TRADING BOT 24/7 (AUTO NON-US TUNNEL FOR TOKOCRYPTO)
 # ==============================================================================
+import concurrent.futures
 import datetime
 import hashlib
 import hmac
@@ -79,6 +80,83 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
 LIVE_TRADING_ENABLED = bool(TOKOCRYPTO_API_KEY and TOKOCRYPTO_SECRET_KEY)
 
+WORKING_PROXY_OPENER = None
+
+
+# ==============================================================================
+# PENCARI OTOMATIS JALUR NON-AS (ASIA/EROPA) YANG TEMBUS TOKOCRYPTO (CODE == 0)
+# ==============================================================================
+def uji_satu_proxy(proxy_addr):
+  try:
+    handler = urllib.request.ProxyHandler(
+        {"http": f"http://{proxy_addr}", "https": f"http://{proxy_addr}"}
+    )
+    opener = urllib.request.build_opener(handler)
+    req = urllib.request.Request(
+        "https://www.tokocrypto.com/open/v1/common/time",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    with opener.open(req, timeout=4) as resp:
+      raw = resp.read().decode("utf-8", errors="ignore")
+      data = json.loads(raw)
+      if data.get("code") == 0:
+        return proxy_addr, opener
+  except Exception:
+    pass
+  return None, None
+
+
+def siapkan_jalur_non_as_tokocrypto():
+  global WORKING_PROXY_OPENER
+  # 1. Cek dulu apakah koneksi langsung lolos (misal jika dijalankan di luar AS)
+  try:
+    req = urllib.request.Request(
+        "https://www.tokocrypto.com/open/v1/common/time",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    with urllib.request.urlopen(req, timeout=4) as resp:
+      if json.loads(resp.read().decode()).get("code") == 0:
+        WORKING_PROXY_OPENER = urllib.request.build_opener()
+        print("✅ Koneksi langsung ke Tokocrypto lolos tanpa proxy!")
+        return
+  except Exception:
+    pass
+
+  print(
+      "🔍 Mencari jalur Server Non-AS (Asia/Eropa) untuk menembus blokir HTTP"
+      " 451 GitHub US..."
+  )
+  kandidat_proxies = []
+  sumber_proxy_urls = [
+      "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=3000&country=SG,JP,ID,HK,DE,NL,GB,FR&ssl=yes&anonymity=all",
+      "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+  ]
+  for s_url in sumber_proxy_urls:
+    try:
+      req = urllib.request.Request(s_url, headers={"User-Agent": "Mozilla/5.0"})
+      with urllib.request.urlopen(req, timeout=6) as r:
+        lines = [
+            line.strip()
+            for line in r.read().decode("utf-8", errors="ignore").splitlines()
+            if ":" in line
+        ]
+        kandidat_proxies.extend(lines[:80])
+    except Exception:
+      continue
+
+  with concurrent.futures.ThreadPoolExecutor(max_workers=25) as executor:
+    futures = [executor.submit(uji_satu_proxy, p) for p in kandidat_proxies]
+    for fut in concurrent.futures.as_completed(futures):
+      p_addr, opener = fut.result()
+      if opener is not None:
+        WORKING_PROXY_OPENER = opener
+        print(
+            f"✅ BERHASIL! Jalur Non-AS ditemukan ({p_addr}) -> Tembus"
+            " Tokocrypto (code: 0)!"
+        )
+        return
+  print("⚠️ Belum menemukan proxy publik yang merespon dalam 4 detik.")
+
 
 def muat_state_bot():
   if os.path.exists(STATE_FILE):
@@ -129,39 +207,19 @@ def panggil_api_tokocrypto(endpoint, method="GET", params=None, signed=False):
   if signed:
     headers["X-MBX-APIKEY"] = TOKOCRYPTO_API_KEY
 
-  # Daftar jalur pengiriman: Jalur 1 (Langsung), Jalur 2 & 3 (Relay Server Non-AS untuk tembus HTTP 451)
-  jalur_urls = [
-      target_url,
-      f"https://corsproxy.io/?{urllib.parse.quote(target_url, safe='')}",
-      f"https://api.codetabs.com/v1/proxy?quest={urllib.parse.quote(target_url, safe='')}",
-  ]
-
-  last_err = {}
-  for idx, url_coba in enumerate(jalur_urls):
-    req = urllib.request.Request(url_coba, headers=headers, method=method)
-    try:
-      with urllib.request.urlopen(req, timeout=15) as resp:
-        raw_text = resp.read().decode("utf-8", errors="ignore")
-        if "/not-support" in raw_text:
-          last_err = {
-              "code": 451,
-              "msg": f"Jalur {idx+1} masih terblokir 451 AS",
-          }
-          continue
-        return json.loads(raw_text)
-    except urllib.error.HTTPError as he:
-      err_body = he.read().decode("utf-8", errors="ignore")
-      last_err = {
-          "code": he.code,
-          "msg": f"Jalur {idx+1} HTTP {he.code}: {err_body[:100]}",
-      }
-      if he.code in (451, 403):
-        continue
-      return last_err
-    except Exception as e:
-      last_err = {"code": -1, "msg": f"Jalur {idx+1} Err: {str(e)}"}
-      continue
-  return last_err
+  opener = WORKING_PROXY_OPENER or urllib.request.build_opener()
+  req = urllib.request.Request(target_url, headers=headers, method=method)
+  try:
+    with opener.open(req, timeout=12) as resp:
+      raw_text = resp.read().decode("utf-8", errors="ignore")
+      if "/not-support" in raw_text:
+        return {"code": 451, "msg": "Terblokir HTTP 451 Lokasi Server AS"}
+      return json.loads(raw_text)
+  except urllib.error.HTTPError as he:
+    err_body = he.read().decode("utf-8", errors="ignore")
+    return {"code": he.code, "msg": f"HTTP {he.code}: {err_body[:120]}"}
+  except Exception as e:
+    return {"code": -1, "msg": str(e)}
 
 
 def hitung_kuantitas_koin(coin, nominal_idr, harga_idr):
@@ -628,6 +686,7 @@ def lapor_ke_google_sheets(state, semua_log):
 
 
 if __name__ == "__main__":
+  siapkan_jalur_non_as_tokocrypto()
   state = muat_state_bot()
   harga_live = ambil_harga_idr_semua_koin()
   peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live)
