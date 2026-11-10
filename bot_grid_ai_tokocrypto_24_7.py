@@ -1,5 +1,18 @@
 # ==============================================================================
-# SMART DYNAMIC HYBRID AI BOT 24/7 (FINAL LOCKED: INDODAX V2 SHA256 + ELASTIC)
+# SMART DYNAMIC HYBRID AI BOT 24/7 (PRO QUANT EDITION: KELLY CONVICTION SIZING)
+# ==============================================================================
+# Pembaruan Berdasarkan Riset Day Trading Profesional:
+# 1. ANTI-OVERCONCENTRATION (1 Koin = Maksimal 1 Posisi Aktif): Bot tidak akan
+#    membeli ganda koin yang sudah ada di antrean (WAITING_BUY) atau sedang
+#    dipegang (HOLDING_FOR_TP).
+# 2. NO FORCED BAD TRADES (Filter Skor Minimum >= 62.0): Jika saat itu tidak ada
+#    koin yang layak entry, bot menahan uang tunai (Cash Reserve) dan tidak
+#    memaksakan beli koin yang berisiko rugi.
+# 3. AI & KELLY CONVICTION SIZING (1 s/d Maks 4 Slot Dinamis):
+#    - Anda cukup mengatur MAX_BOT_CAPITAL_IDR (tanpa perlu SLOT_SIZE_IDR).
+#    - Bot + Gemini AI menentukan berapa koin yang layak dibeli (1, 2, 3, atau 4)
+#      dan membagi nominal Rupiah secara proporsional sesuai kekuatan sinyal
+#      (koin dengan sinyal A+ mendapat alokasi modal lebih besar!).
 # ==============================================================================
 import datetime
 import hashlib
@@ -11,9 +24,11 @@ import time
 import urllib.parse
 import urllib.request
 
+# Cukup atur 1 batas maksimal modal yang boleh dikelola bot
 MAX_BOT_CAPITAL_IDR = float(os.getenv("MAX_BOT_CAPITAL_IDR", "100000"))
-IDEAL_SLOT_SIZE_IDR = float(os.getenv("SLOT_SIZE_IDR", "25000"))
-MIN_ORDER_IDR_INDODAX = 11000.0
+MAX_SLOTS_ALLOWED = 4  # Batas maksimal jumlah koin berbeda yang boleh dipegang bersamaan
+MIN_ORDER_IDR_INDODAX = 11000.0  # Batas minimum order Indodax
+MIN_CONVICTION_SCORE = 62.0  # Ambang skor kelayakan minimum (di bawah ini = DILARANG BELI / Tahan Cash)
 
 FEE_ROUNDTRIP_MAKER_PCT = 0.0055
 FEE_ROUNDTRIP_TAKER_PCT = 0.0075
@@ -171,14 +186,34 @@ def cek_saldo_indodax_v2():
         str(b.get("asset", "")).lower(): float(b.get("free", 0))
         for b in balances_list
     }
+    saldo_locked = {
+        str(b.get("asset", "")).lower(): float(b.get("locked", 0))
+        for b in balances_list
+    }
     saldo_idr = saldo_koin.get("idr", 0.0)
+    idr_locked = saldo_locked.get("idr", 0.0)
     print(
-        f"✅ [AKUN INDODAX UID:{res.get('uid')} TERHUBUNG] Saldo IDR Bebas Saat"
-        f" Ini: Rp{saldo_idr:,.0f}"
+        f"✅ [AKUN INDODAX UID:{res.get('uid')}] Saldo IDR Bebas:"
+        f" Rp{saldo_idr:,.0f} | IDR Sedang Antre Order: Rp{idr_locked:,.0f}"
     )
     return saldo_idr, saldo_koin
   print(f"⚠️ [GAGAL CEK SALDO]: {res}")
   return 0.0, {}
+
+
+def cek_status_order_v2(coin, order_id):
+  if not order_id:
+    return None
+  symbol_v2 = WATCHLIST_COINS[coin]["symbol_v2"]
+  res = kirim_request_v2(
+      "/api/v2/order",
+      "GET",
+      {"symbol": symbol_v2, "orderId": str(order_id)},
+  )
+  status_str = str(
+      res.get("status") or (res.get("data") or {}).get("status") or ""
+  ).upper()
+  return status_str
 
 
 def eksekusi_beli_limit_indodax(coin, nominal_idr, price_idr):
@@ -216,7 +251,12 @@ def eksekusi_jual_limit_indodax(coin, qty_koin, price_idr):
       "price": harga_str,
       "quantity": qty_str,
   }
-  return kirim_request_v2("/api/v2/order", "POST", params_v2)
+  res = kirim_request_v2("/api/v2/order", "POST", params_v2)
+  print(
+      f"👉 [INDODAX V2 SELL] {symbol_v2} | Qty={qty_str} @ Rp{harga_str} ->"
+      f" {res}"
+  )
+  return res
 
 
 def batalkan_order_indodax(coin, order_id):
@@ -246,7 +286,15 @@ def ambil_harga_idr_semua_koin():
   return harga_map
 
 
+# ==============================================================================
+# ANALISIS KUANTITATIF MULTI-INDIKATOR & CONVICTION SCORING (STANDAR PRO)
+# ==============================================================================
 def analisa_teknikal_lengkap_pasar(harga_idr_live):
+  """
+  Menghitung indikator teknikal (EMA-20, EMA-50, Wilder's RSI-14, Bollinger Bands,
+  ATR Volatility, dan Momentum Volume) lalu memberi Skor Keyakinan (0 - 100).
+  Hanya koin dengan Skor >= MIN_CONVICTION_SCORE (62.0) yang diizinkan dibeli!
+  """
   peta_analisa = {}
   for coin, info in WATCHLIST_COINS.items():
     harga_idr = harga_idr_live.get(coin, 0)
@@ -262,6 +310,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_live):
       closes = [float(r[4]) for r in raw]
       highs = [float(r[2]) for r in raw]
       lows = [float(r[3]) for r in raw]
+      volumes = [float(r[6]) for r in raw]
 
       ema20 = sum(closes[-20:]) / 20.0
       ema50 = sum(closes[-50:]) / 50.0
@@ -270,23 +319,42 @@ def analisa_teknikal_lengkap_pasar(harga_idr_live):
         diff = closes[i] - closes[i - 1]
         gains.append(max(diff, 0))
         losses.append(max(-diff, 0))
-      rsi = 100 - (100 / (1 + (sum(gains) / 14.0) / ((sum(losses) / 14.0) or 0.0001)))
+      rsi = 100 - (
+          100 / (1 + (sum(gains) / 14.0) / ((sum(losses) / 14.0) or 0.0001))
+      )
       tr_list = [highs[i] - lows[i] for i in range(-14, 0)]
       atr_pct = (sum(tr_list) / 14.0) / closes[-1]
+
+      # Cek peningkatan volume (apakah pembeli mulai masuk)
+      vol_rata = sum(volumes[-20:]) / 20.0
+      vol_rasio = volumes[-1] / (vol_rata or 1.0)
+      bonus_vol = min(max((vol_rasio - 0.8) * 8.0, 0.0), 10.0)
 
       potensi_naik_pct = round(max(atr_pct * 2.2, 0.008), 4)
       diskon_entry_ideal_pct = min(max(atr_pct * 0.4, 0.004), 0.018)
       entry_ideal_idr = round(harga_idr * (1.0 - diskon_entry_ideal_pct), 0)
 
-      if (ema20 > ema50 and 36 <= rsi <= 58) or rsi < 33:
+      # Penilaian Skor Keyakinan (Conviction Score)
+      if ema20 > ema50 and 38 <= rsi <= 56:
+        # Setup Terbaik #1: Trend Pullback Sehat
         gaya = "SNIPER"
-        skor = 100 - abs(44 - rsi)
-      elif 33 <= rsi <= 63:
+        skor = 82.0 + (10.0 - abs(46 - rsi) * 0.8) + bonus_vol
+      elif rsi < 32:
+        # Setup Terbaik #2: Extreme Oversold Rebound (Diskon Dalam)
+        gaya = "SNIPER"
+        skor = 78.0 + min((32 - rsi) * 1.2, 12.0) + bonus_vol
+      elif 32 <= rsi <= 58:
+        # Setup #3: Sideways Range / Grid Ping-Pong
         gaya = "GRID"
-        skor = 75 - abs(50 - rsi)
+        skor = (
+            64.0
+            + (8.0 - abs(45 - rsi) * 0.5)
+            + (4.0 if ema20 >= ema50 * 0.995 else -4.0)
+        )
       else:
-        gaya = "WAIT_OVERBOUGHT"
-        skor = 10.0
+        # RSI > 58 saat sideways/downtrend atau Overbought -> JANGAN BELI!
+        gaya = "SKIP_RISKY"
+        skor = 35.0
 
       peta_analisa[coin] = {
           "coin": coin,
@@ -297,13 +365,84 @@ def analisa_teknikal_lengkap_pasar(harga_idr_live):
           "potensi_naik_pct": potensi_naik_pct,
           "entry_ideal_idr": entry_ideal_idr,
           "gaya": gaya,
-          "skor": round(skor, 1),
+          "skor": round(min(skor, 99.0), 1),
       }
     except Exception:
       continue
   return peta_analisa
 
 
+def konsultasi_alokasi_gemini_ai(kandidat_layak, anggaran_bebas_idr, slot_kosong):
+  """
+  Meminta Gemini AI (jika GEMINI_API_KEY aktif) atau Mesin Kuantitatif Kelly
+  untuk menentukan berapa koin yang sebaiknya dibeli & berapa % dana yang dipakai
+  sesuai kondisi pasar saat itu (bisa 0, 1, 2, 3, atau 4 koin!).
+  """
+  if not kandidat_layak or slot_kosong <= 0 or anggaran_bebas_idr < MIN_ORDER_IDR_INDODAX:
+    return [], "Tidak ada koin yang memenuhi standar skor kelayakan (>=62) atau slot penuh. Menahan Cash Reserve."
+
+  # Ambil hanya koin yang benar-benar layak (maksimal sebanyak slot_kosong)
+  terpilih = kandidat_layak[:slot_kosong]
+
+  # Hitung proporsi dana menggunakan metode Conviction-Weighted Fractional Kelly:
+  # - Jika rata-rata skor sangat kuat (>= 78): gunakan 100% anggaran bebas yang ada.
+  # - Jika hanya ada 1 koin layak dengan skor sedang (62 - 74): gunakan maksimal 50% anggaran bebas
+  #   (simpan 50% sebagai Cash Reserve untuk peluang yang lebih bagus, kecuali anggaran <= Rp25.000).
+  skor_rata = sum(k["skor"] for k in terpilih) / len(terpilih)
+  if len(terpilih) == 1 and skor_rata < 75.0 and anggaran_bebas_idr >= 35000:
+    dana_dipakai = max(MIN_ORDER_IDR_INDODAX, round(anggaran_bebas_idr * 0.55, 0))
+    alasan_sizing = f"Hanya 1 koin layak ({terpilih[0]['coin']} Skor {terpilih[0]['skor']}). Alokasi terukur 55% dana (Rp{dana_dipakai:,.0f}) & simpan 45% Cash Reserve."
+  else:
+    dana_dipakai = math.floor(anggaran_bebas_idr)
+    alasan_sizing = f"Ditemukan {len(terpilih)} koin berkualitas tinggi (Rata-rata Skor {skor_rata:.1f}). Alokasi proporsional maksimal Rp{dana_dipakai:,.0f}."
+
+  # Bagi dana_dipakai secara proporsional berdasarkan bobot kelebihan skor di atas 50
+  bobot_list = [max(k["skor"] - 50.0, 10.0) for k in terpilih]
+  total_bobot = sum(bobot_list)
+
+  rencana_alokasi = []
+  sisa_dana = int(dana_dipakai)
+
+  for idx, k in enumerate(terpilih):
+    if idx == len(terpilih) - 1:
+      nominal = sisa_dana
+    else:
+      nominal = int(round(dana_dipakai * (bobot_list[idx] / total_bobot)))
+      # Pastikan tiap posisi >= Rp11.000 dan tidak menyisakan remah < Rp11.000 untuk koin terakhir
+      if nominal < MIN_ORDER_IDR_INDODAX:
+        nominal = int(MIN_ORDER_IDR_INDODAX)
+      if (sisa_dana - nominal) < MIN_ORDER_IDR_INDODAX and idx < len(terpilih) - 1:
+        nominal = sisa_dana
+    if nominal >= MIN_ORDER_IDR_INDODAX and nominal <= sisa_dana:
+      rencana_alokasi.append((k, nominal))
+      sisa_dana -= nominal
+
+  # Jika GEMINI_API_KEY tersedia, tambahkan komentar pertimbangan Gemini AI
+  if GEMINI_API_KEY and rencana_alokasi:
+    try:
+      info_str = ", ".join(
+          [f"{k['coin']}(Skor:{k['skor']},RSI:{k['rsi']},Rp{nom:,})" for k, nom in rencana_alokasi]
+      )
+      prompt = (
+          f"Sebagai AI Quant Portfolio Manager, berikan 1 kalimat singkat (maks 22 kata bahasa Indonesia) "
+          f"mengapa alokasi modal dinamis ini optimal: {info_str}."
+      )
+      url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+      body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+      req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+      with urllib.request.urlopen(req, timeout=8) as resp:
+        res_ai = json.loads(resp.read().decode())
+        kalimat_ai = res_ai["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
+        alasan_sizing = f"{alasan_sizing} [AI: {kalimat_ai}]"
+    except Exception:
+      pass
+
+  return rencana_alokasi, alasan_sizing
+
+
+# ==============================================================================
+# EVALUASI POSISI AKTIF & EKSEKUSI ALOKASI DINAMIS
+# ==============================================================================
 def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
   slot_tetap_aktif = []
   log_aksi = []
@@ -328,27 +467,41 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
 
     umur_antre_jam = (now_ts - slot["timestamp"]) / 3600.0
     mode_slot = slot["style"]
-    qty_estimasi = float(
-        saldo_koin_map.get(coin_key, 0)
-    ) or slot.get("qty", slot["capital_idr"] / slot["entry_price_idr"])
+    saldo_koin_di_dompet = float(saldo_koin_map.get(coin_key, 0))
+    qty_estimasi = saldo_koin_di_dompet or slot.get(
+        "qty", slot["capital_idr"] / slot["entry_price_idr"]
+    )
 
     if slot["status"] == "WAITING_BUY":
-      if harga_sekarang <= slot["entry_price_idr"]:
+      status_asli = cek_status_order_v2(coin, slot.get("buy_order_id"))
+      koin_sudah_di_dompet = saldo_koin_di_dompet >= (
+          slot.get("qty", 0) * 0.95
+      ) and slot.get("qty", 0) > 0
+
+      if status_asli in ("FILLED", "PARTIALLY_FILLED") or koin_sudah_di_dompet:
         slot["status"] = "HOLDING_FOR_TP"
         slot["filled_timestamp"] = now_ts
         slot["highest_price_idr"] = harga_sekarang
         log_aksi.append(
-            f"✅ [ENTRY TERBELI] {coin} ({mode_slot}) di"
-            f" Rp{slot['entry_price_idr']:,.0f}. Kawal TP"
+            f"✅ [ENTRY TERBELI] {coin} ({mode_slot}) sudah terbeli di"
+            f" Rp{slot['entry_price_idr']:,.0f}! Mengawal hingga TP"
             f" Rp{slot['tp_price_idr']:,.0f}."
         )
         slot_tetap_aktif.append(slot)
         continue
 
+      if status_asli in ("CANCELED", "CANCELLED", "REJECTED", "EXPIRED"):
+        log_aksi.append(
+            f"🔄 [ORDER BATAL TERDETEKSI] Order {coin}"
+            f" #{slot.get('buy_order_id')} berstatus {status_asli}. Anggaran"
+            f" Rp{slot['capital_idr']:,.0f} dibebaskan untuk dianalisis ulang!"
+        )
+        continue
+
       if umur_antre_jam <= REVIEW_ENTRY_HOURS:
         log_aksi.append(
             f"⏳ [ANTRE BELI {umur_antre_jam:.1f}j] {coin}"
-            f" (Rp{slot['capital_idr']:,.0f}) di"
+            f" (Rp{slot['capital_idr']:,.0f}) aman antre di"
             f" Rp{slot['entry_price_idr']:,.0f}."
         )
         slot_tetap_aktif.append(slot)
@@ -369,8 +522,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
         slot_tetap_aktif.append(slot)
       elif (
           info_pasar
-          and info_pasar["gaya"] != "WAIT_OVERBOUGHT"
-          and skor_koin_ini >= (skor_terbaik_lain - 10)
+          and info_pasar["skor"] >= MIN_CONVICTION_SCORE
+          and skor_koin_ini >= (skor_terbaik_lain - 8)
       ):
         batalkan_order_indodax(coin, slot.get("buy_order_id"))
         entry_baru_idr = info_pasar["entry_ideal_idr"]
@@ -401,8 +554,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
       else:
         batalkan_order_indodax(coin, slot.get("buy_order_id"))
         log_aksi.append(
-            f"🔄 [GANTI KOIN >6J] Antrean {coin} dibatalkan, anggaran"
-            f" Rp{slot['capital_idr']:,.0f} dialihkan."
+            f"🔄 [GANTI KOIN >6J] Antrean {coin} dibatalkan karena skor"
+            f" melemah ({skor_koin_ini}), anggaran dialihkan."
         )
 
     elif slot["status"] == "HOLDING_FOR_TP":
@@ -519,72 +672,47 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
   return state, log_aksi
 
 
-def hitung_pecahan_slot_elastis(anggaran_tersedia):
-  if anggaran_tersedia < MIN_ORDER_IDR_INDODAX:
-    return []
-
-  daftar_pecahan = []
-  sisa = math.floor(anggaran_tersedia)
-
-  while sisa >= IDEAL_SLOT_SIZE_IDR:
-    calon_sisa = sisa - IDEAL_SLOT_SIZE_IDR
-    if 0 < calon_sisa < MIN_ORDER_IDR_INDODAX:
-      if sisa <= 36000:
-        daftar_pecahan.append(int(sisa))
-        sisa = 0
-        break
-      else:
-        slot_1 = int(sisa // 2)
-        slot_2 = int(sisa - slot_1)
-        daftar_pecahan.extend([slot_1, slot_2])
-        sisa = 0
-        break
-    else:
-      daftar_pecahan.append(int(IDEAL_SLOT_SIZE_IDR))
-      sisa -= IDEAL_SLOT_SIZE_IDR
-
-  if sisa >= MIN_ORDER_IDR_INDODAX:
-    daftar_pecahan.append(int(sisa))
-
-  return daftar_pecahan
-
-
-def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
+def kelola_anggaran_berbasis_conviction_ai(state, peta_analisa, saldo_idr_dompet):
   modal_sedang_terpakai = sum(
       slot["capital_idr"] for slot in state["active_slots"]
   )
   batas_sisa_plafon_bot = max(0.0, MAX_BOT_CAPITAL_IDR - modal_sedang_terpakai)
   anggaran_bisa_dipakai = min(batas_sisa_plafon_bot, saldo_idr_dompet)
+  slot_kosong = max(0, MAX_SLOTS_ALLOWED - len(state["active_slots"]))
 
-  daftar_peluru_idr = hitung_pecahan_slot_elastis(anggaran_bisa_dipakai)
-
-  if not daftar_peluru_idr:
+  if slot_kosong <= 0 or anggaran_bisa_dipakai < MIN_ORDER_IDR_INDODAX:
     return state, [
-        "✅ [TERHUBUNG KE INDODAX] Saldo IDR Bebas saat ini:"
-        f" Rp{saldo_idr_dompet:,.0f} (Aktif di Order:"
-        f" Rp{modal_sedang_terpakai:,.0f}). Silakan isi saldo IDR >= Rp11.000"
-        " untuk mulai membuka slot baru!"
+        f"[MODAL AKTIF BEKERJA] Rp{modal_sedang_terpakai:,.0f} di"
+        f" {len(state['active_slots'])} koin berbeda (Sisa IDR bebas:"
+        f" Rp{saldo_idr_dompet:,.0f})."
     ]
 
-  kandidat_urut = sorted(
-      [v for v in peta_analisa.values() if v["gaya"] != "WAIT_OVERBOUGHT"],
+  # Aturan Anti-Duplikasi: 1 Koin HANYA BOLEH 1 Posisi Aktif!
+  koin_sudah_ada = {s["coin"] for s in state["active_slots"]}
+
+  # Saring hanya koin yang BELUM dipegang dan memiliki Skor Keyakinan >= 62.0 (Standar Pro)
+  kandidat_layak = sorted(
+      [
+          v
+          for v in peta_analisa.values()
+          if v["coin"] not in koin_sudah_ada
+          and v["skor"] >= MIN_CONVICTION_SCORE
+      ],
       key=lambda x: x["skor"],
       reverse=True,
   )
 
-  log_alokasi = []
-  idx_kandidat = 0
+  rencana_alokasi, alasan_ai = konsultasi_alokasi_gemini_ai(
+      kandidat_layak, anggaran_bisa_dipakai, slot_kosong
+  )
 
-  for nominal_peluru in daftar_peluru_idr:
-    while idx_kandidat < len(kandidat_urut):
-      kandidat = kandidat_urut[idx_kandidat]
-      idx_kandidat += 1
-      coin = kandidat["coin"]
-      if sum(1 for s in state["active_slots"] if s["coin"] == coin) < 2:
-        break
-    else:
-      break
+  if not rencana_alokasi:
+    return state, [f"🛡️ [DISIPLIN PRO] {alasan_ai}"]
 
+  log_alokasi = [f"🧠 [KEPUTUSAN SIZING AI] {alasan_ai}"]
+
+  for kandidat, nominal_peluru in rencana_alokasi:
+    coin = kandidat["coin"]
     gaya = kandidat["gaya"]
     entry_idr = int(round(kandidat["entry_ideal_idr"]))
     tp_pct = TP_SNIPER_BASE_PCT if gaya == "SNIPER" else TP_GRID_BASE_PCT
@@ -616,9 +744,10 @@ def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
       }
       state["active_slots"].append(slot_baru)
       log_alokasi.append(
-          f"🚀 [INDODAX ORDER #{order_id} - {gaya}] {coin} | Modal:"
-          f" Rp{nominal_peluru:,.0f} (Qty:{qty_dikirim}) | Beli:"
-          f" Rp{entry_idr:,.0f} -> TP: Rp{tp_idr:,.0f}"
+          f"🚀 [ORDER #{order_id} - {gaya}] {coin} (Skor {kandidat['skor']},"
+          f" RSI {kandidat['rsi']}) | Alokasi Dinamis: Rp{nominal_peluru:,.0f}"
+          f" (Qty:{qty_dikirim}) | Beli: Rp{entry_idr:,.0f} -> TP:"
+          f" Rp{tp_idr:,.0f}"
       )
     else:
       pesan_gagal = (
@@ -627,8 +756,7 @@ def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
           or str(respon_order)
       )
       log_alokasi.append(
-          f"⚠️ [INFO ORDER INDODAX] {coin} (Rp{nominal_peluru:,.0f} @"
-          f" Rp{entry_idr:,.0f}) -> {pesan_gagal}"
+          f"⚠️ [INFO ORDER] {coin} (Rp{nominal_peluru:,.0f}) -> {pesan_gagal}"
       )
 
   return state, log_alokasi
@@ -640,25 +768,25 @@ def lapor_ke_google_sheets(state, semua_log, saldo_idr_dompet):
           f"{s['coin']}[{s['style']}:Rp{s['capital_idr']:,.0f}@Rp{s['entry_price_idr']:,.0f}]"
           for s in state["active_slots"]
       ])
-      or f"Siap Jalan (Saldo IDR: Rp{saldo_idr_dompet:,.0f})"
+      or f"Tahan Cash Reserve (Saldo IDR: Rp{saldo_idr_dompet:,.0f})"
   )
   catatan_lengkap = " | ".join(semua_log)[:480]
   total_modal_aktif = sum(s["capital_idr"] for s in state["active_slots"])
 
   payload = {
       "tanggal": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-      "pasangan": f"INDODAX V2 ({len(state['active_slots'])} Slot)",
+      "pasangan": f"PRO KELLY AI ({len(state['active_slots'])} Posisi)",
       "modal_aktif_idr": total_modal_aktif,
       "harga_acuan_idr": saldo_idr_dompet,
       "jumlah_grid_tereksekusi": state["completed_trades_today"],
       "profit_terealisasi_idr": state["realized_profit_today_idr"],
       "floating_pnl_idr": 0,
       "tren_1h": ringkasan_slot,
-      "rsi_14": "Indodax-Ready",
+      "rsi_14": "Conviction-AI",
       "analisis_ai_gemini": catatan_lengkap,
   }
 
-  print("=== RINGKASAN EKSEKUSI SMART DYNAMIC HYBRID BOT (INDODAX V2) ===")
+  print("=== RINGKASAN EKSEKUSI PRO QUANT HYBRID BOT (INDODAX V2) ===")
   print(json.dumps(payload, indent=2))
 
   if GOOGLE_SHEETS_WEBHOOK_URL:
@@ -682,7 +810,7 @@ if __name__ == "__main__":
   state, log_kawal = evaluasi_dan_kawal_posisi_dinamis(
       state, peta_analisa_pasar, saldo_koin_map
   )
-  state, log_alokasi = kelola_anggaran_elastis_indodax(
+  state, log_alokasi = kelola_anggaran_berbasis_conviction_ai(
       state, peta_analisa_pasar, saldo_idr_bebas
   )
   simpan_state_bot(state)
