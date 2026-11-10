@@ -14,7 +14,7 @@
       "buy_order_id": 43484581,
       "timestamp": 1794297528.706525,
       "filled_timestamp": 1794304531.1563618,
-      "highest_price_idr": 15213.0,
+      "highest_price_idr": 15269.0,
       "tp_order_id": 43510584
     },
     {
@@ -50,8 +50,22 @@
       "filled_timestamp": 1794304531.1563618,
       "highest_price_idr": 1265.0,
       "tp_order_id": 135484196
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 25000.0,
+      "qty": 1.26,
+      "entry_price_idr": 19742.0,
+      "tp_price_idr": 20137.0,
+      "sl_price_idr": 19347.0,
+      "highest_price_idr": 19742.0,
+      "filled_timestamp": 1794323304.8320765,
+      "timestamp": 1794323304.832077,
+      "tp_order_id": "219987327"
     }
   ],
-  "realized_profit_today_idr": -811.0,
-  "completed_trades_today": 1
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0
 }
