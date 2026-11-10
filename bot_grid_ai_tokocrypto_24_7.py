@@ -1,5 +1,5 @@
 # ==============================================================================
-# SMART DYNAMIC HYBRID AI TRADING BOT 24/7 (INDODAX TRADE API V2 & V1 + ELASTIC)
+# SMART DYNAMIC HYBRID AI BOT 24/7 (INDODAX QUAD-ENGINE V2 SHA256/512 + V1)
 # ==============================================================================
 import datetime
 import hashlib
@@ -91,6 +91,9 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
 LIVE_TRADING_ENABLED = bool(INDODAX_API_KEY and INDODAX_SECRET_KEY)
 
+# Menyimpan mode mesin yang terbukti berhasil saat cek saldo
+ACTIVE_ENGINE = None  # tuple: (version, base_url, hash_algo)
+
 
 def muat_state_bot():
   if os.path.exists(STATE_FILE):
@@ -124,18 +127,16 @@ def hitung_qty_koin(coin, nominal_idr, price_idr):
 
 
 # ==============================================================================
-# KONEKSI RESMI INDODAX TRADE API V2 (X-APIKEY) DENGAN FALLBACK V1
+# QUAD-ENGINE INDODAX (OTOMATIS DETEKSI V2 SHA256, V2 SHA512, ATAU V1 TAPI)
 # ==============================================================================
-def panggil_indodax_v2(path, http_method="GET", params=None):
-  """Memanggil Indodax Trade API V2 (https://tapi.indodax.com / https://api.indodax.com) dengan header X-APIKEY dan Sign."""
-  if params is None:
-    params = {}
-  params["timestamp"] = int(time.time() * 1000)
-  params["recvWindow"] = 15000
-
-  encoded = urllib.parse.urlencode(params)
+def kirim_request_v2(base_url, path, http_method, params, hash_algo):
+  p = dict(params or {})
+  p["timestamp"] = int(time.time() * 1000)
+  p["recvWindow"] = 15000
+  encoded = urllib.parse.urlencode(p)
+  digest_mod = hashlib.sha256 if hash_algo == "SHA256" else hashlib.sha512
   sign = hmac.new(
-      INDODAX_SECRET_KEY.encode("utf-8"), encoded.encode("utf-8"), hashlib.sha512
+      INDODAX_SECRET_KEY.encode("utf-8"), encoded.encode("utf-8"), digest_mod
   ).hexdigest()
 
   headers = {
@@ -144,65 +145,138 @@ def panggil_indodax_v2(path, http_method="GET", params=None):
       "User-Agent": "Mozilla/5.0",
   }
 
-  hosts = ["https://tapi.indodax.com", "https://api.indodax.com"]
-  last_err = {}
+  if http_method in ("GET", "DELETE"):
+    url = f"{base_url}{path}?{encoded}"
+    body = None
+  else:
+    url = f"{base_url}{path}"
+    body = encoded.encode("utf-8")
+    headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-  for host in hosts:
-    if http_method in ("GET", "DELETE"):
-      url = f"{host}{path}?{encoded}"
-      body = None
-    else:
-      url = f"{host}{path}"
-      body = encoded.encode("utf-8")
-      headers["Content-Type"] = "application/x-www-form-urlencoded"
-
-    req = urllib.request.Request(
-        url, data=body, headers=headers, method=http_method
-    )
+  req = urllib.request.Request(
+      url, data=body, headers=headers, method=http_method
+  )
+  try:
+    with urllib.request.urlopen(req, timeout=12) as resp:
+      return json.loads(resp.read().decode("utf-8", errors="ignore"))
+  except urllib.error.HTTPError as he:
+    err_text = he.read().decode("utf-8", errors="ignore")
     try:
-      with urllib.request.urlopen(req, timeout=15) as resp:
-        return json.loads(resp.read().decode("utf-8", errors="ignore"))
-    except urllib.error.HTTPError as he:
-      err_text = he.read().decode("utf-8", errors="ignore")
-      try:
-        last_err = json.loads(err_text)
-      except Exception:
-        last_err = {"error": f"HTTP {he.code}: {err_text[:150]}"}
-      if he.code != 404:
-        return last_err
-    except Exception as e:
-      last_err = {"error": str(e)}
-  return last_err
+      return json.loads(err_text)
+    except Exception:
+      return {"code": he.code, "msg": f"HTTP {he.code}: {err_text[:120]}"}
+  except Exception as e:
+    return {"code": -1, "msg": str(e)}
 
 
-def cek_saldo_asli_indodax():
-  """Mengecek saldo IDR bebas dan saldo koin melalui Trade API V2 (/api/v2/account)."""
-  res = panggil_indodax_v2("/api/v2/account", http_method="GET")
-  saldo_koin = {}
-  # Format respons V2 bisa berupa {"balances": [...]} atau {"data": {"balances": [...]}}
-  balances_list = res.get("balances") or (res.get("data") or {}).get("balances")
-  if isinstance(balances_list, list):
-    for item in balances_list:
-      asset = str(item.get("asset", "")).lower()
-      free_val = float(item.get("free", 0))
-      saldo_koin[asset] = free_val
-    saldo_idr = saldo_koin.get("idr", 0.0)
-    print(
-        f"💰 [DOMPET INDODAX V2] Saldo IDR Tersedia: Rp{saldo_idr:,.0f}"
-    )
-    return saldo_idr, saldo_koin
+def kirim_request_v1(method_name, extra_params=None):
+  p = {
+      "method": method_name,
+      "timestamp": int(time.time() * 1000),
+      "recvWindow": 15000,
+  }
+  if extra_params:
+    p.update(extra_params)
+  encoded = urllib.parse.urlencode(p).encode("utf-8")
+  sign = hmac.new(
+      INDODAX_SECRET_KEY.encode("utf-8"), encoded, hashlib.sha512
+  ).hexdigest()
+  headers = {
+      "Key": INDODAX_API_KEY,
+      "Sign": sign,
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent": "Mozilla/5.0",
+  }
+  req = urllib.request.Request(
+      "https://indodax.com/tapi", data=encoded, headers=headers, method="POST"
+  )
+  try:
+    with urllib.request.urlopen(req, timeout=12) as resp:
+      return json.loads(resp.read().decode("utf-8", errors="ignore"))
+  except Exception as e:
+    return {"success": 0, "error": str(e)}
 
-  print(f"ℹ️ [RESPON CEK SALDO V2]: {res}")
+
+def deteksi_dan_cek_saldo_indodax():
+  global ACTIVE_ENGINE
+  prefix = INDODAX_API_KEY[:5] if INDODAX_API_KEY else "KOSONG"
+  print(
+      f"🔑 [DIAGNOSTIK KUNCI] API Key yang terbaca berawalan: '{prefix}...'"
+      f" (Panjang: {len(INDODAX_API_KEY)} karakter)"
+  )
+
+  # Daftar 5 Kombinasi Pintu Resmi Indodax (V2 api.indodax.com SHA256/512, V2 tapi.indodax.com SHA256/512, dan V1 /tapi)
+  kandidat_mesin = [
+      ("V2", "https://api.indodax.com", "SHA256"),
+      ("V2", "https://api.indodax.com", "SHA512"),
+      ("V2", "https://tapi.indodax.com", "SHA256"),
+      ("V2", "https://tapi.indodax.com", "SHA512"),
+      ("V1", "https://indodax.com/tapi", "SHA512"),
+  ]
+
+  for ver, host, algo in kandidat_mesin:
+    if ver == "V2":
+      res = kirim_request_v2(host, "/api/v2/account", "GET", {}, algo)
+      balances_list = res.get("balances") or (res.get("data") or {}).get(
+          "balances"
+      )
+      if isinstance(balances_list, list):
+        ACTIVE_ENGINE = (ver, host, algo)
+        saldo_koin = {
+            str(b.get("asset", "")).lower(): float(b.get("free", 0))
+            for b in balances_list
+        }
+        saldo_idr = saldo_koin.get("idr", 0.0)
+        print(
+            f"✅ [TEMBUS via {ver} {host} ({algo})] Saldo IDR Bebas:"
+            f" Rp{saldo_idr:,.0f}"
+        )
+        return saldo_idr, saldo_koin
+      else:
+        print(f"   -> Uji {ver} {host} ({algo}): {res}")
+    else:
+      res = kirim_request_v1("getInfo")
+      if res.get("success") == 1:
+        ACTIVE_ENGINE = ("V1", host, "SHA512")
+        bal = res.get("return", {}).get("balance", {})
+        saldo_koin = {k.lower(): float(v) for k, v in bal.items()}
+        saldo_idr = saldo_koin.get("idr", 0.0)
+        print(
+            f"✅ [TEMBUS via V1 /tapi (SHA512)] Saldo IDR Bebas:"
+            f" Rp{saldo_idr:,.0f}"
+        )
+        return saldo_idr, saldo_koin
+      else:
+        print(f"   -> Uji V1 /tapi: {res}")
+
   return None, {}
 
 
 def eksekusi_beli_limit_indodax(coin, nominal_idr, price_idr):
-  """Mengirim Limit Buy Order via Indodax Trade API V2 (POST /api/v2/order)."""
   symbol_v2 = WATCHLIST_COINS[coin]["symbol_v2"]
+  pair_v1 = WATCHLIST_COINS[coin]["pair"]
+  coin_key = WATCHLIST_COINS[coin]["coin_key"]
   qty_str = hitung_qty_koin(coin, nominal_idr, price_idr)
   harga_str = str(int(round(price_idr)))
 
-  # Coba format standar Trade API V2 (POST /api/v2/order)
+  ver, host, algo = ACTIVE_ENGINE or ("V2", "https://api.indodax.com", "SHA256")
+
+  if ver == "V1":
+    # Di Indodax V1, Limit Buy menggunakan jumlah koin (misal sol=0.0161) agar tidak ditolak aturan STP Limit
+    params_v1 = {
+        "pair": pair_v1,
+        "type": "buy",
+        "price": harga_str,
+        coin_key: qty_str,
+    }
+    res = kirim_request_v1("trade", params_v1)
+    print(
+        f"👉 [INDODAX V1 BUY] {pair_v1.upper()} | Qty={qty_str}"
+        f" (~Rp{nominal_idr:,.0f}) @ Rp{harga_str} -> {res}"
+    )
+    return res, float(qty_str)
+
+  # Mode V2: Coba dengan parameter quantity, dan fallback ke amount jika diperlukan
   params_v2 = {
       "symbol": symbol_v2,
       "side": "BUY",
@@ -211,12 +285,8 @@ def eksekusi_beli_limit_indodax(coin, nominal_idr, price_idr):
       "price": harga_str,
       "quantity": qty_str,
   }
-  res = panggil_indodax_v2("/api/v2/order", http_method="POST", params=params_v2)
-
-  # Jika server V2 meminta nama parameter 'amount' alih-alih 'quantity', otomatis coba 'amount'
-  if "error" in res and (
-      "amount" in str(res).lower() or "quantity" in str(res).lower()
-  ):
+  res = kirim_request_v2(host, "/api/v2/order", "POST", params_v2, algo)
+  if "code" in res and res.get("code") != 0 and "orderId" not in res:
     params_v2_alt = {
         "symbol": symbol_v2,
         "side": "BUY",
@@ -225,22 +295,38 @@ def eksekusi_beli_limit_indodax(coin, nominal_idr, price_idr):
         "price": harga_str,
         "amount": qty_str,
     }
-    res = panggil_indodax_v2(
-        "/api/v2/order", http_method="POST", params=params_v2_alt
+    res_alt = kirim_request_v2(
+        host, "/api/v2/order", "POST", params_v2_alt, algo
     )
+    if "orderId" in res_alt or (res_alt.get("data") or {}).get("orderId"):
+      res = res_alt
 
   print(
-      f"👉 [INDODAX V2 LIVE BUY] {symbol_v2} | Nominal=Rp{nominal_idr:,.0f}"
-      f" (Qty={qty_str}) @ Harga=Rp{harga_str} -> Respon: {res}"
+      f"👉 [INDODAX V2 BUY ({host}/{algo})] {symbol_v2} | Qty={qty_str}"
+      f" (~Rp{nominal_idr:,.0f}) @ Rp{harga_str} -> {res}"
   )
   return res, float(qty_str)
 
 
 def eksekusi_jual_limit_indodax(coin, qty_koin, price_idr):
   symbol_v2 = WATCHLIST_COINS[coin]["symbol_v2"]
+  pair_v1 = WATCHLIST_COINS[coin]["pair"]
+  coin_key = WATCHLIST_COINS[coin]["coin_key"]
   dec = WATCHLIST_COINS[coin]["decimals"]
   qty_str = str(int(qty_koin)) if dec == 0 else f"{qty_koin:.{dec}f}"
   harga_str = str(int(round(price_idr)))
+
+  ver, host, algo = ACTIVE_ENGINE or ("V2", "https://api.indodax.com", "SHA256")
+  if ver == "V1":
+    return kirim_request_v1(
+        "trade",
+        {
+            "pair": pair_v1,
+            "type": "sell",
+            "price": harga_str,
+            coin_key: qty_str,
+        },
+    )
 
   params_v2 = {
       "symbol": symbol_v2,
@@ -250,23 +336,27 @@ def eksekusi_jual_limit_indodax(coin, qty_koin, price_idr):
       "price": harga_str,
       "quantity": qty_str,
   }
-  res = panggil_indodax_v2("/api/v2/order", http_method="POST", params=params_v2)
-  print(
-      f"👉 [INDODAX V2 LIVE SELL] {symbol_v2} | Qty={qty_str} @"
-      f" Harga=Rp{harga_str} -> Respon: {res}"
-  )
-  return res
+  return kirim_request_v2(host, "/api/v2/order", "POST", params_v2, algo)
 
 
 def batalkan_order_indodax(coin, order_id):
   if not order_id or str(order_id).startswith("SIM"):
     return
-  symbol_v2 = WATCHLIST_COINS[coin]["symbol_v2"]
-  params = {"symbol": symbol_v2, "orderId": str(order_id)}
-  res = panggil_indodax_v2("/api/v2/order", http_method="DELETE", params=params)
-  print(
-      f"👉 [INDODAX V2 CANCEL ORDER] {symbol_v2} ID={order_id} -> Respon: {res}"
-  )
+  ver, host, algo = ACTIVE_ENGINE or ("V2", "https://api.indodax.com", "SHA256")
+  if ver == "V1":
+    pair_v1 = WATCHLIST_COINS[coin]["pair"]
+    kirim_request_v1(
+        "cancelOrder", {"pair": pair_v1, "order_id": int(order_id), "type": "buy"}
+    )
+  else:
+    symbol_v2 = WATCHLIST_COINS[coin]["symbol_v2"]
+    kirim_request_v2(
+        host,
+        "/api/v2/order",
+        "DELETE",
+        {"symbol": symbol_v2, "orderId": str(order_id)},
+        algo,
+    )
 
 
 def ambil_harga_idr_semua_koin():
@@ -422,9 +512,11 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, saldo_koin_map):
         respon_baru, qty_baru = eksekusi_beli_limit_indodax(
             coin, slot["capital_idr"], entry_baru_idr
         )
-        order_id_baru = respon_baru.get("orderId") or (
-            respon_baru.get("data") or {}
-        ).get("orderId")
+        order_id_baru = (
+            respon_baru.get("orderId")
+            or (respon_baru.get("data") or {}).get("orderId")
+            or (respon_baru.get("return") or {}).get("order_id")
+        )
         if order_id_baru:
           slot["entry_price_idr"] = entry_baru_idr
           slot["qty"] = qty_baru
@@ -604,8 +696,7 @@ def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
   if not daftar_peluru_idr:
     return state, [
         f"[MODAL TERKELOLA MAKSIMAL] Aktif: Rp{modal_sedang_terpakai:,.0f} |"
-        f" Sisa Saldo Bebas: Rp{anggaran_bisa_dipakai:,.0f} (di bawah min order"
-        " Rp11.000)."
+        f" Sisa Saldo Bebas: Rp{anggaran_bisa_dipakai:,.0f}."
     ]
 
   kandidat_urut = sorted(
@@ -660,7 +751,7 @@ def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
       }
       state["active_slots"].append(slot_baru)
       log_alokasi.append(
-          f"🚀 [INDODAX V2 ORDER #{order_id} - {gaya}] {coin} | Modal:"
+          f"🚀 [INDODAX ORDER #{order_id} - {gaya}] {coin} | Modal:"
           f" Rp{nominal_peluru:,.0f} (Qty:{qty_dikirim}) | Beli:"
           f" Rp{entry_idr:,.0f} -> TP: Rp{tp_idr:,.0f}"
       )
@@ -671,7 +762,7 @@ def kelola_anggaran_elastis_indodax(state, peta_analisa, saldo_idr_dompet):
           or str(respon_order)
       )
       log_alokasi.append(
-          f"⚠️ [INFO ORDER INDODAX V2] {coin} (Rp{nominal_peluru:,.0f} @"
+          f"⚠️ [INFO ORDER INDODAX] {coin} (Rp{nominal_peluru:,.0f} @"
           f" Rp{entry_idr:,.0f}) -> {pesan_gagal}"
       )
 
@@ -691,7 +782,7 @@ def lapor_ke_google_sheets(state, semua_log, saldo_idr_dompet):
 
   payload = {
       "tanggal": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-      "pasangan": f"INDODAX V2 ({len(state['active_slots'])} Slot)",
+      "pasangan": f"INDODAX QUAD ({len(state['active_slots'])} Slot)",
       "modal_aktif_idr": total_modal_aktif,
       "harga_acuan_idr": (
           saldo_idr_dompet
@@ -702,11 +793,11 @@ def lapor_ke_google_sheets(state, semua_log, saldo_idr_dompet):
       "profit_terealisasi_idr": state["realized_profit_today_idr"],
       "floating_pnl_idr": 0,
       "tren_1h": ringkasan_slot,
-      "rsi_14": "Indodax-V2",
+      "rsi_14": "Indodax-Auto",
       "analisis_ai_gemini": catatan_lengkap,
   }
 
-  print("=== RINGKASAN EKSEKUSI SMART DYNAMIC HYBRID BOT (INDODAX V2) ===")
+  print("=== RINGKASAN EKSEKUSI SMART DYNAMIC HYBRID BOT (INDODAX) ===")
   print(json.dumps(payload, indent=2))
 
   if GOOGLE_SHEETS_WEBHOOK_URL:
@@ -724,7 +815,7 @@ def lapor_ke_google_sheets(state, semua_log, saldo_idr_dompet):
 
 if __name__ == "__main__":
   state = muat_state_bot()
-  saldo_idr_bebas, saldo_koin_map = cek_saldo_asli_indodax()
+  saldo_idr_bebas, saldo_koin_map = deteksi_dan_cek_saldo_indodax()
   harga_live = ambil_harga_idr_semua_koin()
   peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live)
   state, log_kawal = evaluasi_dan_kawal_posisi_dinamis(
