@@ -1,5 +1,62 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "venue": "INDODAX",
+      "coin": "SUI",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000,
+      "qty": 1.64,
+      "entry_price_idr": 15238,
+      "tp_price_idr": 15787,
+      "sl_price_idr": 14964,
+      "rsi_at_entry": 52.0,
+      "buy_order_id": 43484581,
+      "timestamp": 1794297528.706525
+    },
+    {
+      "venue": "INDODAX",
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000,
+      "qty": 1.8e-05,
+      "entry_price_idr": 1346695584,
+      "tp_price_idr": 1373629496,
+      "sl_price_idr": 1319761672,
+      "rsi_at_entry": 52.2,
+      "buy_order_id": 273604908,
+      "timestamp": 1794297529.0159109
+    },
+    {
+      "venue": "INDODAX",
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 25000,
+      "qty": 1.26,
+      "entry_price_idr": 19742,
+      "tp_price_idr": 20137,
+      "sl_price_idr": 19347,
+      "rsi_at_entry": 52.9,
+      "buy_order_id": 219926552,
+      "timestamp": 1794297529.3080764
+    },
+    {
+      "venue": "INDODAX",
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 23335,
+      "qty": 18.0,
+      "entry_price_idr": 1261,
+      "tp_price_idr": 1286,
+      "sl_price_idr": 1236,
+      "rsi_at_entry": 54.3,
+      "buy_order_id": 135469417,
+      "timestamp": 1794297529.619664
+    }
+  ],
   "realized_profit_today_idr": 0.0,
   "completed_trades_today": 0
 }
