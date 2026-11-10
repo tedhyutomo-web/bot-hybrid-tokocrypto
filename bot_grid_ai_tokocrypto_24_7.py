@@ -735,4 +735,3 @@ if __name__ == "__main__":
                 break
     else:
         print("\n🟢 [MODE PATROLI CEPAT SELESAI] Pasar masih berada di zona tenang & TP sudah terpasang di Indodax.")
-        
