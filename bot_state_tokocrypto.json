@@ -14,7 +14,8 @@
       "buy_order_id": 43484581,
       "timestamp": 1794297528.706525,
       "filled_timestamp": 1794304531.1563618,
-      "highest_price_idr": 15213.0
+      "highest_price_idr": 15213.0,
+      "tp_order_id": 43510584
     },
     {
       "venue": "INDODAX",
@@ -30,23 +31,8 @@
       "buy_order_id": 273604908,
       "timestamp": 1794297529.0159109,
       "filled_timestamp": 1794304531.1563618,
-      "highest_price_idr": 1345783000.0
-    },
-    {
-      "venue": "INDODAX",
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 25000,
-      "qty": 1.26,
-      "entry_price_idr": 19742,
-      "tp_price_idr": 20137,
-      "sl_price_idr": 19347,
-      "rsi_at_entry": 52.9,
-      "buy_order_id": 219926552,
-      "timestamp": 1794297529.3080764,
-      "filled_timestamp": 1794304531.1563618,
-      "highest_price_idr": 19679.0
+      "highest_price_idr": 1354306150.0,
+      "tp_order_id": 273635861
     },
     {
       "venue": "INDODAX",
@@ -62,9 +48,10 @@
       "buy_order_id": 135469417,
       "timestamp": 1794297529.619664,
       "filled_timestamp": 1794304531.1563618,
-      "highest_price_idr": 1258.0
+      "highest_price_idr": 1265.0,
+      "tp_order_id": 135484196
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0
+  "realized_profit_today_idr": -811.0,
+  "completed_trades_today": 1
 }
