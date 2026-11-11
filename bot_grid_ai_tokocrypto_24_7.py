@@ -715,23 +715,30 @@ def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
 # ==============================================================================
 # BAGIAN 9: LAPORAN OTOMATIS KE GOOGLE SHEETS (WEBHOOK TAB 4)
 # ==============================================================================
-def lapor_ke_google_sheets(state, semua_log, dompet):
-    ringkasan_slot = ", ".join(
-        [f"{s['coin']}[{s['style']}:Rp{s['capital_idr']:,.0f}@Rp{s['entry_price_idr']:,.0f}]" for s in state["active_slots"]]
-    ) or "Semua slot kosong"
-    catatan_lengkap = " | ".join(semua_log)[:490]
+from datetime import datetime, timedelta, timezone
+
+def lapor_ke_google_sheets(state, semua_log, dompet, harga_live_map=None):
+    tz_wib = timezone(timedelta(hours=7))
+    waktu_wib = datetime.now(tz_wib).strftime("%Y-%m-%d %H:%M:%S")
+
+    floating_pnl = 0.0
+    if harga_live_map:
+        for s in state["active_slots"]:
+            if s.get("status") == "HOLDING_FOR_TP":
+                harga_skrg = harga_live_map.get(s["coin"], {}).get("last", s["entry_price_idr"])
+                floating_pnl += (harga_skrg - s["entry_price_idr"]) * s.get("qty", 0.0)
 
     payload = {
-        "tanggal": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "tanggal": waktu_wib,
         "pasangan": f"PRO KELLY AI ({len(state['active_slots'])} Posisi)",
         "modal_aktif_idr": sum(s["capital_idr"] for s in state["active_slots"]),
         "harga_acuan_idr": round(dompet.get("idr_free", 0.0), 0),
         "jumlah_grid_tereksekusi": state["completed_trades_today"],
         "profit_terealisasi_idr": state["realized_profit_today_idr"],
-        "floating_pnl_idr": 0,
-        "tren_1h": ringkasan_slot,
+        "floating_pnl_idr": round(floating_pnl, 0),
+        "tren_1h": ", ".join([f"{s['coin']}[{s['style']}:Rp{s['capital_idr']:,.0f}@Rp{s['entry_price_idr']:,.0f}]" for s in state["active_slots"]]) or "Semua slot kosong",
         "rsi_14": "Dynamic-Watch-AI",
-        "analisis_ai_gemini": catatan_lengkap
+        "analisis_ai_gemini": " | ".join(semua_log)[:490]
     }
 
     print("=== RINGKASAN EKSEKUSI PRO QUANT HYBRID BOT (INDODAX V2) ===")
@@ -754,7 +761,9 @@ def lapor_ke_google_sheets(state, semua_log, dompet):
 # ==============================================================================
 def jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True):
     dompet = ambil_saldo_lengkap_indodax()
-    harga_live_map = ambil_harga_idr_semua_koin()
+    if LIVE_TRADING_ENABLED and not dompet.get("terhubung"):
+        print("⚠️ Gagal terhubung ke API Indodax. Siklus dilewati agar state tidak rusak.")
+        return state, False, [], False
 
     # Langkah 1: Pulihkan otomatis koin di dompet yang belum masuk daftar aktif (misal 1.26 XRP)
     state, log_recovery = sinkronkan_koin_dompet_indodax(state, dompet, harga_live_map)
