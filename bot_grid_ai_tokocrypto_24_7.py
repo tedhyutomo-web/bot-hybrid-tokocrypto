@@ -565,6 +565,10 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         )
                         continue
                     else:
+                        log_aksi.append(
+                        f"⚠️ [SL TERTAHAN <Rp25rb] {coin} turun {kenaikan_skrg_pct*100:.2f}% (Nilai: Rp{estimasi_nilai_jual_skrg:,.0f} < Rp25.000). "
+                        f"Antrean TP #{slot.get('tp_order_id')} dipertahankan menunggu rebound."
+                    )
                         pasang_antrean_tp_di_indodax(slot, qty_dimiliki)
 
             # 4. Pastikan antrean LIMIT SELL (TP) terpasang di buku order Indodax
@@ -675,7 +679,7 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     return state, log_alokasi, ada_order_baru
 
 # ==============================================================================
-# BAGIAN 8: DETEKTOR SINYAL SIAGA DINAMIS (APAKAH PERLU AKTIF 30 MENIT?)
+# BAGIAN 8: DETEKTOR SINYAL SIAGA & KESIMPULAN PASAR DINAMIS
 # ==============================================================================
 def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
     alasan_siaga = []
@@ -711,6 +715,68 @@ def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
                 alasan_siaga.append(f"Antrean beli {coin} tinggal berjarak {jarak_beli_pct*100:.2f}% (siap pasang TP begitu terbeli)")
 
     return (len(alasan_siaga) > 0), alasan_siaga
+
+def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
+    """Menghasilkan pesan status dinamis berdasarkan kondisi posisi aktif & indikator pasar."""
+    # 1. Rekap kondisi teknikal seluruh pasar
+    total_koin_pasar = len(peta_analisa)
+    koin_uptrend = [k for k, v in peta_analisa.items() if v.get("tren") == "UPTREND"]
+    rata_rsi = (sum(v.get("rsi", 50.0) for v in peta_analisa.values()) / total_koin_pasar) if total_koin_pasar > 0 else 50.0
+    kandidat_terkuat = max(peta_analisa.values(), key=lambda x: x.get("skor", 0.0)) if peta_analisa else None
+    info_skor_tertinggi = f"{kandidat_terkuat['coin']} (Skor:{kandidat_terkuat['skor']})" if kandidat_terkuat else "-"
+    ringkasan_pasar = (
+        f"Pasar: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
+        f"Rata-rata RSI: {rata_rsi:.1f} | Sinyal Tertinggi: {info_skor_tertinggi}"
+    )
+
+    # 2. Rekap kondisi portofolio aktif
+    koin_tertahan_sl = []
+    koin_floating_minus = []
+    koin_floating_plus = []
+
+    for slot in state.get("active_slots", []):
+        if slot.get("status") != "HOLDING_FOR_TP":
+            continue
+        coin = slot["coin"]
+        info = peta_analisa.get(coin, {})
+        skrg = info.get("harga_idr", float(slot["entry_price_idr"]))
+        entry = float(slot["entry_price_idr"])
+        sl_idr = float(slot.get("sl_price_idr", entry * 0.98))
+        pnl_pct = (skrg - entry) / entry
+        nilai_idr = float(slot.get("qty", 0)) * skrg
+
+        if skrg <= sl_idr or pnl_pct <= -0.018:
+            if nilai_idr < MIN_LIMIT_ORDER_INDODAX_IDR:
+                koin_tertahan_sl.append(f"{coin} ({pnl_pct*100:+.2f}%, nilai Rp{nilai_idr:,.0f} < Rp25rb)")
+            else:
+                koin_floating_minus.append(f"{coin} ({pnl_pct*100:+.2f}%)")
+        elif pnl_pct < 0:
+            koin_floating_minus.append(f"{coin} ({pnl_pct*100:+.2f}%)")
+        else:
+            koin_floating_plus.append(f"{coin} ({pnl_pct*100:+.2f}%)")
+
+    if koin_tertahan_sl:
+        return (
+            f"⚠️ [PATROLI SELESAI - SL TERTAHAN ATURAN <Rp25.000 INDODAX]\n"
+            f"   -> Posisi melewati batas SL namun tidak bisa dijual karena nilai < Rp25.000: {', '.join(koin_tertahan_sl)}.\n"
+            f"   -> Posisi minus wajar (di atas SL): {', '.join(koin_floating_minus) or 'Tidak ada'}.\n"
+            f"   -> Tindakan Bot: Mempertahankan antrean Limit TP di Indodax menunggu rebound harga.\n"
+            f"   -> {ringkasan_pasar}"
+        )
+    elif koin_floating_minus:
+        return (
+            f"🟡 [PATROLI SELESAI - PASAR KOREKSI WAJAR (BELUM SENTUH SL)]\n"
+            f"   -> Posisi sedang terkoreksi (masih di atas SL): {', '.join(koin_floating_minus)}.\n"
+            f"   -> Posisi profit tipis: {', '.join(koin_floating_plus) or 'Tidak ada'}.\n"
+            f"   -> {ringkasan_pasar}"
+        )
+    else:
+        return (
+            f"🟢 [PATROLI SELESAI - PORTOFOLIO AMAN & TERKENDALI]\n"
+            f"   -> Posisi profit/stabil: {', '.join(koin_floating_plus) or 'Belum ada posisi aktif'}.\n"
+            f"   -> {ringkasan_pasar}"
+        )
+
 
 # ==============================================================================
 # BAGIAN 9: LAPORAN OTOMATIS KE GOOGLE SHEETS (WEBHOOK TAB 4)
@@ -763,7 +829,7 @@ def jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True):
     dompet = ambil_saldo_lengkap_indodax()
     if LIVE_TRADING_ENABLED and not dompet.get("terhubung"):
         print("⚠️ Gagal terhubung ke API Indodax. Siklus dilewati agar state tidak rusak.")
-        return state, False, [], False
+        return state, False, [], False, {}
 
     harga_live_map = ambil_harga_idr_semua_koin()
 
@@ -792,14 +858,16 @@ def jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True):
         except TypeError:
             lapor_ke_google_sheets(state, semua_log, dompet)
 
-    return state, butuh_siaga, alasan_siaga, ada_perubahan
+    return state, butuh_siaga, alasan_siaga, ada_perubahan, peta_analisa_pasar
 
 if __name__ == "__main__":
     waktu_mulai = time.time()
     batas_waktu_siaga = waktu_mulai + (ACTIVE_WATCH_MINUTES * 60)
 
     state = muat_state_bot()
-    state, butuh_siaga, alasan_siaga, _ = jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True)
+    state, butuh_siaga, alasan_siaga, _, peta_analisa_terakhir = jalankan_satu_siklus_penuh(
+        state, kirim_sheets_selalu=True
+    )
 
     if butuh_siaga and ACTIVE_WATCH_MINUTES > 0:
         print(f"\n🔥 [SINYAL DETEKSI AKTIF] Bot masuk Mode Pengawasan Intensif selama {ACTIVE_WATCH_MINUTES} menit:")
@@ -813,13 +881,13 @@ if __name__ == "__main__":
             time.sleep(WATCH_INTERVAL_SECONDS)
             putaran += 1
 
-            state, masih_butuh_siaga, alasan_baru, ada_eksekusi = jalankan_satu_siklus_penuh(
+            state, masih_butuh_siaga, alasan_baru, ada_eksekusi, peta_analisa_terakhir = jalankan_satu_siklus_penuh(
                 state, kirim_sheets_selalu=False
             )
             if ada_eksekusi:
                 print("✅ [EKSEKUSI REAL-TIME BERHASIL] State & Google Sheets telah diperbarui!")
             if not masih_butuh_siaga:
-                print("🟢 [KONDISI KEMBALI TENANG] Semua posisi sudah aman/tereksekusi. Mengakhiri mode siaga lebih awal.")
+                print("\n" + buat_kesimpulan_patroli_dinamis(state, peta_analisa_terakhir))
                 break
     else:
-        print("\n🟢 [MODE PATROLI CEPAT SELESAI] Pasar masih berada di zona tenang & TP sudah terpasang di Indodax.")
+        print("\n" + buat_kesimpulan_patroli_dinamis(state, peta_analisa_terakhir))
