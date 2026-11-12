@@ -765,7 +765,9 @@ def jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True):
         print("⚠️ Gagal terhubung ke API Indodax. Siklus dilewati agar state tidak rusak.")
         return state, False, [], False
 
-    # Langkah 1: Pulihkan otomatis koin di dompet yang belum masuk daftar aktif (misal 1.26 XRP)
+    harga_live_map = ambil_harga_idr_semua_koin()
+
+    # Langkah 1: Pulihkan otomatis koin di dompet yang belum masuk daftar aktif
     state, log_recovery = sinkronkan_koin_dompet_indodax(state, dompet, harga_live_map)
     if log_recovery:
         dompet = ambil_saldo_lengkap_indodax()
@@ -785,7 +787,10 @@ def jalankan_satu_siklus_penuh(state, kirim_sheets_selalu=True):
 
     ada_perubahan = bool(log_recovery) or ada_aksi_kawal or ada_aksi_beli
     if kirim_sheets_selalu or ada_perubahan:
-        lapor_ke_google_sheets(state, semua_log, dompet)
+        try:
+            lapor_ke_google_sheets(state, semua_log, dompet, harga_live_map)
+        except TypeError:
+            lapor_ke_google_sheets(state, semua_log, dompet)
 
     return state, butuh_siaga, alasan_siaga, ada_perubahan
 
