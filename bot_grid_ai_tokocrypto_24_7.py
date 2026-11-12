@@ -757,8 +757,109 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
         tp_pct = TP_SNIPER_BASE_PCT if gaya == "SNIPER" else TP_GRID_BASE_PCT
         sl_pct = SL_SNIPER_BASE_PCT if gaya == "SNIPER" else SL_GRID_BASE_PCT
         tp_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct))
+# ==============================================================================
+# BAGIAN 7: ALOKASI MODAL DINAMIS (HANYA KOIN SIAP ENTRY & AMAN BATAS SL)
+# ==============================================================================
+def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
+    modal_aktif_state = sum(float(s.get("capital_idr", 0)) for s in state["active_slots"])
+    sisa_plafon_bot = max(0.0, MAX_BOT_CAPITAL_IDR - modal_aktif_state)
+    saldo_idr_tersedia = min(dompet["idr_free"], sisa_plafon_bot) if dompet["terhubung"] else sisa_plafon_bot
+
+    slot_terisi = len(state["active_slots"])
+    sisa_slot_maks = max(0, MAX_CONCURRENT_COINS - slot_terisi)
+
+    if saldo_idr_tersedia < MIN_NEW_BUY_ALLOCATION_IDR or sisa_slot_maks <= 0:
+        return state, [
+            f"[MODAL AKTIF BEKERJA] Rp{modal_aktif_state:,.0f} di {slot_terisi} posisi (Sisa IDR: Rp{dompet['idr_free']:,.0f}, min beli baru Rp{MIN_NEW_BUY_ALLOCATION_IDR:,.0f})."
+        ], False
+
+    maks_koin_terbiayai_aman = int(saldo_idr_tersedia // MIN_NEW_BUY_ALLOCATION_IDR)
+    batas_ambil_kandidat = min(sisa_slot_maks, maks_koin_terbiayai_aman)
+
+    if batas_ambil_kandidat <= 0:
+        return state, [
+            f"⏸️ [SALDO BELUM CUKUP AMAN UNTUK SL] Sisa IDR Rp{saldo_idr_tersedia:,.0f} < batas aman Rp{MIN_NEW_BUY_ALLOCATION_IDR:,.0f}/koin."
+        ], False
+
+    koin_sudah_ada = {s["coin"] for s in state["active_slots"]}
+
+    kandidat_siap_entry = sorted(
+        [
+            v for v in peta_analisa.values()
+            if (
+                v["coin"] not in koin_sudah_ada
+                and v.get("siap_entry") is True
+                and v["skor"] >= MIN_CONVICTION_SCORE
+            )
+        ],
+        key=lambda x: x.get("bobot_alokasi", x["skor"]),
+        reverse=True
+    )[:batas_ambil_kandidat]
+
+    if not kandidat_siap_entry:
+        return state, [
+            f"⏸️ [AI WAIT / CASH IS KING] Dana Rp{saldo_idr_tersedia:,.0f} ditahan karena belum ada koin berstatus SIAP ENTRY (Skor >= {MIN_CONVICTION_SCORE})."
+        ], False
+
+    jumlah_siap = len(kandidat_siap_entry)
+    total_bobot = sum(k.get("bobot_alokasi", k["skor"]) for k in kandidat_siap_entry)
+    log_alokasi = []
+    ada_order_baru = False
+    sisa_kas = saldo_idr_tersedia
+
+    if jumlah_siap == 1 and sisa_slot_maks >= 2 and saldo_idr_tersedia >= (MIN_NEW_BUY_ALLOCATION_IDR * 2):
+        k_tunggal = kandidat_siap_entry[0]
+        rasio_status = MAX_SINGLE_COIN_CAP_PCT if k_tunggal["gaya"] == "SNIPER" else 0.38
+        anggaran_sesi_ini = max(MIN_NEW_BUY_ALLOCATION_IDR + 1000.0, min(saldo_idr_tersedia, math.floor(MAX_BOT_CAPITAL_IDR * rasio_status)))
+    else:
+        anggaran_sesi_ini = saldo_idr_tersedia
+
+    for idx, kandidat in enumerate(kandidat_siap_entry):
+        if sisa_kas < MIN_NEW_BUY_ALLOCATION_IDR:
+            break
+
+        if idx == jumlah_siap - 1:
+            alokasi_idr = math.floor(min(sisa_kas, anggaran_sesi_ini))
+        else:
+            porsi = kandidat.get("bobot_alokasi", kandidat["skor"]) / total_bobot
+            alokasi_idr = math.floor(anggaran_sesi_ini * porsi)
+            sisa_kandidat_lain = jumlah_siap - 1 - idx
+            maks_boleh_pakai = sisa_kas - (sisa_kandidat_lain * MIN_NEW_BUY_ALLOCATION_IDR)
+            alokasi_idr = max(int(MIN_NEW_BUY_ALLOCATION_IDR), min(int(alokasi_idr), int(maks_boleh_pakai)))
+
+        if alokasi_idr < MIN_NEW_BUY_ALLOCATION_IDR:
+            continue
+
+        coin = kandidat["coin"]
+        gaya = kandidat["gaya"]
+        entry_idr = kandidat["entry_ideal_idr"]
+        qty_rencana = hitung_kuantitas_koin(coin, alokasi_idr, entry_idr)
+        nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
+
+        if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
+            step_qty = 10 ** (-WATCHLIST_COINS[coin]["step_decimals"])
+            qty_tambah = format_qty_koin(coin, qty_rencana + step_qty)
+            if (qty_tambah * entry_idr) <= sisa_kas:
+                qty_rencana = qty_tambah
+                nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
+                alokasi_idr = nilai_efektif_idr
+
+        if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
+            log_alokasi.append(
+                f"⚠️ [SKIP {coin}] Nilai efektif Rp{nilai_efektif_idr:,.0f} terlalu dekat batas minimum Rp25.000 Indodax."
+            )
+            continue
+
+        setuju_beli, alasan_gemini = konsultasi_keputusan_entry_gemini(kandidat, nilai_efektif_idr)
+        if not setuju_beli:
+            log_alokasi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin}] Setup ditunda AI: {alasan_gemini}")
+            continue
+
+        tp_pct = TP_SNIPER_BASE_PCT if gaya == "SNIPER" else TP_GRID_BASE_PCT
+        sl_pct = SL_SNIPER_BASE_PCT if gaya == "SNIPER" else SL_GRID_BASE_PCT
+        tp_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct))
         sl_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 - sl_pct))
-        estimasi_nilai_ saat_sl = round(qty_rencana * sl_idr, 0)
+        estimasi_nilai_saat_sl = round(qty_rencana * sl_idr, 0)
 
         res_order = eksekusi_order_indodax(coin, "BUY", entry_idr, qty_koin=qty_rencana)
         if apakah_order_sukses(res_order):
