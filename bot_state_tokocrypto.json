@@ -1,5 +1,34 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37887.0,
+      "qty": 2.58,
+      "entry_price_idr": 14685,
+      "tp_price_idr": 14883.0,
+      "sl_price_idr": 14421.0,
+      "highest_price_idr": 14685,
+      "rsi_at_entry": 33.3,
+      "buy_order_id": "43894921",
+      "timestamp": 1794602050.7680104
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 62088.0,
+      "qty": 4.23,
+      "entry_price_idr": 14678,
+      "tp_price_idr": 14876.0,
+      "sl_price_idr": 14414.0,
+      "highest_price_idr": 14678,
+      "rsi_at_entry": 38.3,
+      "buy_order_id": "43895008",
+      "timestamp": 1794602123.5482962
+    }
+  ],
   "realized_profit_today_idr": -1282.0,
   "completed_trades_today": 5,
   "last_reset_date": "2026-11-14",
