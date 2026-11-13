@@ -13,6 +13,20 @@
       "rsi_at_entry": 60.1,
       "buy_order_id": "43882299",
       "timestamp": 1794591765.2979288
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37904.0,
+      "qty": 12.18,
+      "entry_price_idr": 3112,
+      "tp_price_idr": 3154.0,
+      "sl_price_idr": 3056.0,
+      "highest_price_idr": 3112,
+      "rsi_at_entry": 46.8,
+      "buy_order_id": "143767170",
+      "timestamp": 1794593118.9587674
     }
   ],
   "realized_profit_today_idr": -1282.0,
