@@ -1,5 +1,20 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37930.0,
+      "qty": 2.04,
+      "entry_price_idr": 18593,
+      "tp_price_idr": 18965.0,
+      "sl_price_idr": 18221.0,
+      "highest_price_idr": 18593,
+      "rsi_at_entry": 27.8,
+      "buy_order_id": "220521843",
+      "timestamp": 1794569940.7919588
+    }
+  ],
   "realized_profit_today_idr": 1823.0,
   "completed_trades_today": 4
 }
