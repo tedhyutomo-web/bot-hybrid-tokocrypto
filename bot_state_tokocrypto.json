@@ -7,14 +7,14 @@
       "capital_idr": 37887.0,
       "qty": 2.58,
       "entry_price_idr": 14685,
-      "tp_price_idr": 14883,
+      "tp_price_idr": 14883.0,
       "sl_price_idr": 14421.0,
       "highest_price_idr": 14827.0,
       "rsi_at_entry": 33.3,
       "buy_order_id": "43894921",
       "timestamp": 1794602050.7680104,
       "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43909528"
+      "tp_order_id": "43909597"
     },
     {
       "coin": "SUI",
@@ -23,14 +23,14 @@
       "capital_idr": 62088.0,
       "qty": 4.23,
       "entry_price_idr": 14678,
-      "tp_price_idr": 14876,
+      "tp_price_idr": 14876.0,
       "sl_price_idr": 14414.0,
       "highest_price_idr": 14827.0,
       "rsi_at_entry": 38.3,
       "buy_order_id": "43895008",
       "timestamp": 1794602123.5482962,
       "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43909532"
+      "tp_order_id": "43909598"
     }
   ],
   "realized_profit_today_idr": -1282.0,
