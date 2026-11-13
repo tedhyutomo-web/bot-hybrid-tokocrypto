@@ -1,9 +1,10 @@
 name: Smart Hybrid AI Bot Tokocrypto 24/7
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
+  # Cron bawaan GitHub dinonaktifkan karena sudah dipicu presisi tiap 5 menit oleh Google Sheets:
+  # schedule:
+  #   - cron: '*/5 * * * *'
 
 concurrency:
   group: indodax-hybrid-bot-live
@@ -28,13 +29,15 @@ jobs:
 
       - name: 3. Jalankan Smart Dynamic Hybrid AI Bot & Kirim ke Google Sheets
         env:
+          INDODAX_API_KEY: ${{ secrets.INDODAX_API_KEY }}
+          INDODAX_SECRET_KEY: ${{ secrets.INDODAX_SECRET_KEY }}
           TOKOCRYPTO_API_KEY: ${{ secrets.TOKOCRYPTO_API_KEY }}
           TOKOCRYPTO_SECRET_KEY: ${{ secrets.TOKOCRYPTO_SECRET_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
           MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
           LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'false' }}
-          ACTIVE_WATCH_MINUTES: '30'
+          ACTIVE_WATCH_MINUTES: '4'
           WATCH_INTERVAL_SECONDS: '60'
         run: |
           python bot_grid_ai_tokocrypto_24_7.py
@@ -47,4 +50,3 @@ jobs:
             git add bot_state_tokocrypto.json
             git diff --staged --quiet || (git commit -m "Auto-update memori posisi bot Indodax V2" && git pull --rebase -X theirs origin main && git push)
           fi
-
