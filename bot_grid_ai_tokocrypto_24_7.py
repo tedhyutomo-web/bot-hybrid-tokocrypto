@@ -1,13 +1,14 @@
 # ==============================================================================
-# PRO QUANT HYBRID AI TRADING BOT 24/7 (INDODAX TRADE API V2 + GEMINI AI)
+# PRO QUANT HYBRID AI TRADING BOT 24/7 (100% NATIVE INDODAX V2 + GEMINI AI)
 # ==============================================================================
-# Fitur Unggulan Edisi Pro Scalper (5M+15M+1H, Dynamic ATR TP & Time-Stop):
-# 1. TRIPLE-TIMEFRAME SCALPING (5M Trigger + 15M Momentum + 1H Trend Compass)
-# 2. DYNAMIC ATR TAKE PROFIT (+1.35% s/d +3.40%) AGAR PROFIT CAIR TIAP HARI
-# 3. TIME-BASED SCALP EXIT (>2.5 Jam Stagnan langsung kunci profit tipis)
-# 4. FILTER KOMPAS BITCOIN (BTC REGIME) & FILTER BID-ASK SPREAD INDODAX
-# 5. DAILY CIRCUIT BREAKER (-2.5%) & VALIDASI PENUH GEMINI AI (ENTRY, TP, SL)
-# 6. LAPORAN GOOGLE SHEETS BERSIH (Hanya kirim saat terjadi transaksi nyata)
+# Fitur Unggulan Edisi Full Native Indodax IDR (5M+15M+1H, Dynamic ATR & Gemini):
+# 1. NATIVE INDODAX IDR CANDLESTICK API (tradingview/history_v2 tf=5 Menit)
+# 2. TRIPLE-TIMEFRAME SCALPING (5M Trigger + 15M Momentum + 1H Trend Compass)
+# 3. DYNAMIC ATR TAKE PROFIT (+1.35% s/d +3.40%) AGAR PROFIT CAIR TIAP HARI
+# 4. TIME-BASED SCALP EXIT (>2.5 Jam Stagnan langsung kunci profit tipis)
+# 5. FILTER KOMPAS BITCOIN (BTCIDR) & FILTER BID-ASK SPREAD ORDER BOOK INDODAX
+# 6. DAILY CIRCUIT BREAKER (-2.5%) & VALIDASI PENUH GEMINI AI (ENTRY, TP, SL)
+# 7. LAPORAN GOOGLE SHEETS BERSIH (Hanya kirim saat terjadi transaksi nyata)
 # ==============================================================================
 
 import os
@@ -35,7 +36,7 @@ MAX_CONCURRENT_COINS = 3               # Maksimal 3 koin bersamaan (dengan modal
 MAX_SPREAD_INDODAX_PCT = 0.0035        # Maksimal toleransi Bid-Ask Spread Indodax (0.35%) untuk scalping
 DAILY_LOSS_LIMIT_PCT = -0.025          # Batas rugi harian (-2.5% modal) untuk menyalakan Circuit Breaker
 
-# Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR 5M/15M)
+# Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR Rupiah Indodax)
 TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi (untung bersih ~0.80%)
 TP_GRID_MAX_PCT = 0.0220               # +2.20% Target TP maksimal mode Grid saat volatilitas tinggi
 SL_GRID_BASE_PCT = 0.0180              # -1.80% Batas Hard SL mode Grid
@@ -269,8 +270,7 @@ def ambil_harga_idr_semua_koin():
     return harga_map
 
 def hitung_tp_sl_dinamis_atr(coin, entry_idr, gaya, atr_5m_pct):
-    """Menentukan harga TP & SL secara dinamis berdasarkan volatilitas (ATR) agar profit cair tiap hari."""
-    # Estimasi jangkauan ayunan 1-3 jam dari ATR 5 menit (dikali 4.5)
+    """Menentukan harga TP & SL secara dinamis berdasarkan volatilitas (ATR) Rupiah Indodax."""
     target_ayunan_pasar = atr_5m_pct * 4.5
     if gaya == "SNIPER":
         tp_pct = min(TP_SNIPER_MAX_PCT, max(TP_SNIPER_MIN_PCT, target_ayunan_pasar))
@@ -334,7 +334,7 @@ def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
     return state, log_recovery
 
 # ==============================================================================
-# BAGIAN 5: MESIN TRIPLE-TIMEFRAME SCALPING (5M + 15M + 1H) & KONSULTASI GEMINI
+# BAGIAN 5: NATIVE INDODAX IDR CANDLESTICK API (5M+15M+1H) & KONSULTASI GEMINI
 # ==============================================================================
 def hitung_rsi(closes_list, periode=14):
     if len(closes_list) <= periode:
@@ -348,6 +348,59 @@ def hitung_rsi(closes_list, periode=14):
     avg_loss = (sum(losses) / float(periode)) or 0.0001
     return 100.0 - (100.0 / (1.0 + (avg_gain / avg_loss)))
 
+def ambil_data_ohlc_5m_indodax(coin, info):
+    """
+    Mengambil data candlestick 5 menit (OHLCV) Rupiah asli langsung dari Indodax
+    (https://indodax.com/tradingview/history_v2). Dilengkapi fallback otomatis ke Kraken
+    apabila server chart Indodax sedang sibuk/maintenance.
+    """
+    now_ts = int(time.time())
+    from_ts = now_ts - (400 * 5 * 60)  # 400 candle 5 menit (~33 jam terakhir)
+    symbol = info["v2_symbol"]
+    url_indodax = f"https://indodax.com/tradingview/history_v2?symbol={symbol}&tf=5&from={from_ts}&to={now_ts}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Accept": "application/json"
+    }
+    try:
+        req = urllib.request.Request(url_indodax, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+
+        # Format utama Indodax history_v2: List of objects [{"Time":..., "Open":..., "High":..., "Low":..., "Close":..., "Volume":...}]
+        if isinstance(data, list) and len(data) >= 30:
+            raw = data[-360:]
+            closes = [float(r.get("Close", r.get("close", 0))) for r in raw]
+            highs = [float(r.get("High", r.get("high", 0))) for r in raw]
+            lows = [float(r.get("Low", r.get("low", 0))) for r in raw]
+            vols = [float(r.get("Volume", r.get("volume", 0)) or 0) for r in raw]
+            if closes and closes[-1] > 0:
+                return closes, highs, lows, vols, "INDODAX-IDR"
+
+        # Format alternatif TradingView UDF {"s": "ok", "c": [...], "h": [...], "l": [...], "v": [...]}
+        if isinstance(data, dict) and "c" in data and len(data["c"]) >= 30:
+            closes = [float(x) for x in data["c"][-360:]]
+            highs = [float(x) for x in data["h"][-360:]]
+            lows = [float(x) for x in data["l"][-360:]]
+            vols = [float(x) for x in data.get("v", [1.0] * len(closes))[-360:]]
+            if closes and closes[-1] > 0:
+                return closes, highs, lows, vols, "INDODAX-IDR"
+    except Exception:
+        pass
+
+    # Fallback otomatis ke Kraken jika server chart Indodax gagal merespons
+    url_kraken = f"https://api.kraken.com/0/public/OHLC?pair={info['kraken_pair']}&interval=5"
+    req_k = urllib.request.Request(url_kraken, headers=headers)
+    with urllib.request.urlopen(req_k, timeout=10) as resp_k:
+        res_k = json.loads(resp_k.read().decode())
+    result_key = [k for k in res_k["result"].keys() if k != "last"][0]
+    raw_k = res_k["result"][result_key][-360:]
+    closes = [float(r[4]) for r in raw_k]
+    highs = [float(r[2]) for r in raw_k]
+    lows = [float(r[3]) for r in raw_k]
+    vols = [float(r[6]) for r in raw_k]
+    return closes, highs, lows, vols, "KRAKEN-FALLBACK"
+
 def analisa_teknikal_lengkap_pasar(harga_idr_map):
     peta_analisa = {}
     for coin, info in WATCHLIST_COINS.items():
@@ -357,19 +410,9 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         harga_idr = data_ticker["last"]
         spread_pct = data_ticker.get("spread_pct", 0.0)
         try:
-            # Menggunakan interval=5 (5 Menit) untuk mengekstrak sinyal 5M, 15M, dan 1H sekaligus!
-            url = f"https://api.kraken.com/0/public/OHLC?pair={info['kraken_pair']}&interval=5"
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                res = json.loads(resp.read().decode())
-            result_key = [k for k in res["result"].keys() if k != "last"][0]
-            raw = res["result"][result_key][-360:]  # 360 candle 5M = 30 jam terakhir
-            closes = [float(r[4]) for r in raw]
-            highs = [float(r[2]) for r in raw]
-            lows = [float(r[3]) for r in raw]
-            vols = [float(r[6]) for r in raw]
+            closes, highs, lows, vols, sumber_ohlc = ambil_data_ohlc_5m_indodax(coin, info)
 
-            # 1. Indikator Timeframe 5 Menit (Pelatuk Eksekusi Scalping)
+            # 1. Indikator Timeframe 5 Menit Asli Indodax (Pelatuk Eksekusi Scalping)
             ema20_5m = sum(closes[-20:]) / len(closes[-20:])
             ema50_5m = sum(closes[-50:]) / len(closes[-50:])
             tren_5m_naik = ema20_5m > ema50_5m
@@ -382,21 +425,26 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             tren_15m_naik = ema20_15m > ema50_15m
             rsi_15m = hitung_rsi(closes_15m, 14)
 
-            # 3. Indikator Setara Timeframe 1 Jam (240 candle 5M = 20 jam)
+            # 3. Indikator Setara Timeframe 1 Jam
             ema_1h_cepat = sum(closes[-180:]) / len(closes[-180:])
             ema_1h_lambat = sum(closes[-360:]) / len(closes[-360:])
             tren_1h_naik = ema_1h_cepat > ema_1h_lambat
 
             # 4. ATR 5M & High 2 Jam Terakhir (24 candle x 5 menit = 2 jam)
-            tr_list = [highs[i] - lows[i] for i in range(-14, 0)]
-            atr_5m_pct = (sum(tr_list) / 14.0) / closes[-1]
-            rasio_high_2jam = max(highs[-24:]) / closes[-1] if closes[-1] > 0 else 1.0
-            high_2jam_idr = round(harga_idr * max(1.0, rasio_high_2jam), 0)
+            periode_atr = min(14, len(closes) - 1)
+            tr_list = [highs[i] - lows[i] for i in range(-periode_atr, 0)]
+            atr_5m_pct = ((sum(tr_list) / float(periode_atr)) / closes[-1]) if closes[-1] > 0 else 0.003
+
+            if sumber_ohlc == "INDODAX-IDR":
+                high_2jam_idr = round(max(harga_idr, max(highs[-24:])), 0)
+            else:
+                rasio_high_2jam = max(highs[-24:]) / closes[-1] if closes[-1] > 0 else 1.0
+                high_2jam_idr = round(harga_idr * max(1.0, rasio_high_2jam), 0)
 
             vol_rata = sum(vols[-20:-1]) / 19.0 if len(vols) >= 20 else (vols[-1] or 1.0)
             rasio_vol = vols[-1] / (vol_rata or 1.0)
 
-            # Deteksi struktur candle 5 menit terakhir
+            # Deteksi struktur candle 5 menit terakhir di Indodax
             candle_5m_hijau = closes[-1] >= closes[-2]
             dua_candle_5m_naik = (closes[-1] >= closes[-2] >= closes[-3])
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
@@ -408,7 +456,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 bonus_1h = 5.0 if tren_1h_naik else 0.0
                 skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
                 diskon_entry_pct = min(max(atr_5m_pct * 0.40, 0.0015), 0.0045)
-                prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Kompak Naik - SIAP ENTRY)"
+                prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Indodax Naik - SIAP ENTRY)"
                 siap_entry = spread_aman
                 faktor_bobot_status = 1.30
             elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and not candle_jatuh_beruntun:
@@ -422,7 +470,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 gaya = "GRID"
                 skor_dasar = 67.0 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
-                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M terkonfirmasi memantul - SIAP ENTRY)"
+                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
                 siap_entry = spread_aman
                 faktor_bobot_status = 1.05
             elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
@@ -452,7 +500,6 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}% > 0.35%) - Tunda beli agar tidak rugi spread"
 
             conviction_score = round(max(10.0, min(98.0, skor_dasar)), 1)
-            # Gunakan harga bid/last terbaik untuk antrean Limit Buy
             acuan_beli_dasar = min(harga_idr, data_ticker.get("sell", harga_idr))
             entry_ideal_idr = bulatkan_harga_indodax(coin, acuan_beli_dasar * (1.0 - diskon_entry_pct))
             tp_ideal_idr, sl_ideal_idr, tp_target_pct = hitung_tp_sl_dinamis_atr(
@@ -461,6 +508,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
 
             peta_analisa[coin] = {
                 "coin": coin,
+                "sumber_ohlc": sumber_ohlc,
                 "harga_idr": harga_idr,
                 "spread_pct": spread_pct,
                 "high_2jam_idr": high_2jam_idr,
@@ -486,10 +534,10 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
 
 def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc):
     if not GEMINI_API_KEY:
-        return True, "Validasi kuantitatif Triple-Timeframe (5M+15M+1H) terpenuhi."
+        return True, "Validasi kuantitatif Native Indodax (5M+15M+1H) terpenuhi."
     try:
         prompt = (
-            f"Evaluasi sinyal scalping 5M Indodax: Koin {kandidat['coin']} ({kandidat['gaya']}), "
+            f"Evaluasi sinyal scalping 5M Native Indodax: Koin {kandidat['coin']} ({kandidat['gaya']}), "
             f"Harga Rp{kandidat['harga_idr']:,.0f}, Rencana Beli Rp{kandidat['entry_ideal_idr']:,.0f}, "
             f"Target TP Dinamis +{kandidat['tp_target_pct']}% (Modal Rp{alokasi_idr:,.0f}). "
             f"Tren {kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
@@ -506,16 +554,16 @@ def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc):
             setuju_beli = not teks.upper().startswith("TUNDA")
             return setuju_beli, teks
     except Exception:
-        return True, "Lolos filter kuantitatif Triple-Timeframe."
+        return True, "Lolos filter kuantitatif Native Indodax."
 
 def konsultasi_keputusan_exit_gemini(coin, mode_slot, beli_idr, skrg_idr, tp_idr, puncak_idr, rsi, tren, jenis_kasus):
     if not GEMINI_API_KEY:
-        return True, "Eksekusi otomatis sesuai indikator teknikal 5M/15M."
+        return True, "Eksekusi otomatis sesuai indikator teknikal 5M/15M Indodax."
     try:
         prompt = (
             f"Koin {coin} ({mode_slot}) dibeli di Rp{beli_idr:,.0f}, target TP Rp{tp_idr:,.0f}. "
             f"Harga tertinggi sempat Rp{puncak_idr:,.0f}, sekarang Rp{skrg_idr:,.0f} "
-            f"(Tren: {tren}, RSI 5M: {rsi}). Kasus: {jenis_kasus}. "
+            f"(Tren Indodax: {tren}, RSI 5M: {rsi}). Kasus: {jenis_kasus}. "
             f"Apakah sebaiknya langsung JUAL SEKARANG (jawab YA) atau TAHAN (jawab TAHAN)? "
             f"Jawab singkat: YA/TAHAN - alasan maksimal 12 kata."
         )
@@ -746,7 +794,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
     return state, log_aksi, log_transaksi, ada_eksekusi_penting
 
 # ==============================================================================
-# BAGIAN 7: ALOKASI MODAL PRO (KOMPAS BTC, CIRCUIT BREAKER & DYNAMIC ATR TP)
+# BAGIAN 7: ALOKASI MODAL PRO (KOMPAS BTCIDR, CIRCUIT BREAKER & DYNAMIC ATR TP)
 # ==============================================================================
 def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     modal_aktif_state = sum(float(s.get("capital_idr", 0)) for s in state["active_slots"])
@@ -768,7 +816,7 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     if profit_hari_ini <= batas_rugi_harian:
         skor_minimal_sesi = 82.0  # Mode defensif ketat jika rugi harian melewati -2.5%
 
-    # 2. CEK FILTER KOMPAS BITCOIN (BTC MARKET REGIME FILTER)
+    # 2. CEK FILTER KOMPAS BITCOIN (BTCIDR INDODAX REGIME FILTER)
     info_btc = peta_analisa.get("BTC", {})
     btc_sedang_dump = str(info_btc.get("prediksi", "")).startswith("🔴 BAHAYA") and info_btc.get("rsi", 50.0) < 36.0
     status_kompas_btc = f"{info_btc.get('tren_detail', 'N/A')} (RSI 5M:{info_btc.get('rsi', '-')})"
@@ -792,7 +840,7 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     )[:batas_ambil_kandidat]
 
     if not kandidat_siap_entry:
-        alasan_tahan = "Kompas BTC sedang dump tajam" if btc_sedang_dump else f"Belum ada koin berstatus SIAP ENTRY (Skor >= {skor_minimal_sesi})"
+        alasan_tahan = "Kompas BTCIDR sedang dump tajam" if btc_sedang_dump else f"Belum ada koin berstatus SIAP ENTRY (Skor >= {skor_minimal_sesi})"
         return state, [
             f"⏸️ [AI WAIT / CASH IS KING] Dana Rp{saldo_idr_tersedia:,.0f} siaga ({alasan_tahan})."
         ], [], False
@@ -855,7 +903,6 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
         tp_idr = kandidat["tp_ideal_idr"]
         sl_idr = kandidat["sl_ideal_idr"]
         tp_target_pct = kandidat["tp_target_pct"]
-        estimasi_nilai_saat_sl = round(qty_rencana * sl_idr, 0)
 
         res_order = eksekusi_order_indodax(coin, "BUY", entry_idr, qty_koin=qty_rencana)
         if apakah_order_sukses(res_order):
@@ -934,11 +981,12 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
     rata_rsi_5m = (sum(v.get("rsi", 50.0) for v in peta_analisa.values()) / total_koin_pasar) if total_koin_pasar > 0 else 50.0
     kandidat_terkuat = max(peta_analisa.values(), key=lambda x: x.get("skor", 0.0)) if peta_analisa else None
     info_skor_tertinggi = f"{kandidat_terkuat['coin']} (Skor:{kandidat_terkuat['skor']})" if kandidat_terkuat else "-"
+    sumber_grafik = kandidat_terkuat.get("sumber_ohlc", "INDODAX-IDR") if kandidat_terkuat else "INDODAX-IDR"
     info_btc = peta_analisa.get("BTC", {})
-    kompas_btc_str = f"BTC {info_btc.get('tren_detail', '-')} (RSI 5M:{info_btc.get('rsi', '-')})"
+    kompas_btc_str = f"BTCIDR {info_btc.get('tren_detail', '-')} (RSI 5M:{info_btc.get('rsi', '-')})"
 
     ringkasan_pasar = (
-        f"Pasar (5M+15M+1H): {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
+        f"Pasar [{sumber_grafik} 5M+15M+1H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
         f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (menunggu konfirmasi candle 5M hijau)'}"
     )
@@ -965,11 +1013,11 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
                 f"   * {coin} ({pnl_pct*100:+.2f}% | Nilai Rp{nilai_idr:,.0f} -> TP Rp{tp_idr:,.0f}) -> {prediksi_k} [{tren_k}, RSI 5M:{rsi_k}]"
             )
 
-    teks_diagnosa = "\n".join(detail_diagnosa_koin) if detail_diagnosa_koin else "   * Belum ada posisi aktif (100% Cash is King - Memburu Sinyal Scalping 5M)."
+    teks_diagnosa = "\n".join(detail_diagnosa_koin) if detail_diagnosa_koin else "   * Belum ada posisi aktif (100% Cash is King - Memburu Sinyal Scalping 5M Indodax)."
 
     return (
         f"🟢 [PATROLI PRO SCALPER 5M SELESAI | Profit Hari Ini: Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)]\n"
-        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI TRIPLE-TIMEFRAME (5M + 15M + 1H):\n"
+        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI CANDLESTICK RUPIAH INDODAX (5M + 15M + 1H):\n"
         f"{teks_diagnosa}\n"
         f"   -> {ringkasan_pasar}"
     )
@@ -995,14 +1043,14 @@ def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=N
 
     payload = {
         "tanggal": waktu_lokal,
-        "pasangan": f"PRO SCALPER 5M ({len(state['active_slots'])} Posisi)",
+        "pasangan": f"INDODAX NATIVE 5M ({len(state['active_slots'])} Posisi)",
         "modal_aktif_idr": sum(s["capital_idr"] for s in state["active_slots"]),
         "harga_acuan_idr": round(dompet.get("idr_free", 0.0), 0),
         "jumlah_grid_tereksekusi": state["completed_trades_today"],
         "profit_terealisasi_idr": state["realized_profit_today_idr"],
         "floating_pnl_idr": round(floating_pnl, 0),
         "tren_1h": ringkasan_slot,
-        "rsi_14": "Triple-TF-5M/15M/1H",
+        "rsi_14": "Indodax-IDR-5M/15M/1H",
         "analisis_ai_gemini": catatan_transaksi
     }
 
@@ -1037,7 +1085,7 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     if log_recovery:
         dompet = ambil_saldo_lengkap_indodax()
 
-    # Langkah 2: Analisa Triple-Timeframe (5M + 15M + 1H) & kawal semua posisi aktif
+    # Langkah 2: Analisa Native Indodax (5M + 15M + 1H) & kawal semua posisi aktif
     peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live_map)
     state, log_kawal, log_tx_kawal, ada_aksi_kawal = evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa_pasar, dompet)
     state, log_alokasi, log_tx_beli, ada_aksi_beli = kelola_anggaran_kosong_dengan_analisa(state, peta_analisa_pasar, dompet)
