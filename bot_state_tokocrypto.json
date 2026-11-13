@@ -14,7 +14,7 @@
       "buy_order_id": "43894921",
       "timestamp": 1794602050.7680104,
       "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43906111"
+      "tp_order_id": "43906961"
     },
     {
       "coin": "SUI",
@@ -30,7 +30,7 @@
       "buy_order_id": "43895008",
       "timestamp": 1794602123.5482962,
       "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43906119"
+      "tp_order_id": "43906977"
     }
   ],
   "realized_profit_today_idr": -1282.0,
