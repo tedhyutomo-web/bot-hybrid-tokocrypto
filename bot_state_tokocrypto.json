@@ -17,23 +17,21 @@
       "tp_order_id": "220555547"
     },
     {
-      "coin": "ETH",
+      "coin": "SUI",
       "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 61864.0,
-      "qty": 0.00176,
-      "entry_price_idr": 35150000,
-      "tp_price_idr": 35625000.0,
-      "sl_price_idr": 34517000.0,
-      "highest_price_idr": 36297000.0,
-      "rsi_at_entry": 20.7,
-      "buy_order_id": "218338054",
-      "timestamp": 1794583823.6007657,
-      "filled_timestamp": 1794583897.642855,
-      "tp_order_id": "218338331"
+      "status": "WAITING_BUY",
+      "capital_idr": 62095.0,
+      "qty": 4.24,
+      "entry_price_idr": 14645,
+      "tp_price_idr": 14843,
+      "sl_price_idr": 14381,
+      "highest_price_idr": 14645,
+      "rsi_at_entry": 60.1,
+      "buy_order_id": "43882299",
+      "timestamp": 1794591765.2979288
     }
   ],
-  "realized_profit_today_idr": -1716.0,
-  "completed_trades_today": 3,
+  "realized_profit_today_idr": -1451.0,
+  "completed_trades_today": 4,
   "last_reset_date": "2026-11-14"
 }
