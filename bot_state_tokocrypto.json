@@ -1,5 +1,34 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 44178,
+      "qty": 37,
+      "entry_price_idr": 1194,
+      "tp_price_idr": 1215.0,
+      "sl_price_idr": 1175.0,
+      "highest_price_idr": 1194,
+      "rsi_at_entry": 62.5,
+      "buy_order_id": "135706066",
+      "timestamp": 1794597850.1335506
+    },
+    {
+      "coin": "DOGE",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 54924,
+      "qty": 46,
+      "entry_price_idr": 1194,
+      "tp_price_idr": 1215.0,
+      "sl_price_idr": 1175.0,
+      "highest_price_idr": 1194,
+      "rsi_at_entry": 50.0,
+      "buy_order_id": "135706110",
+      "timestamp": 1794597922.5825846
+    }
+  ],
   "realized_profit_today_idr": -1282.0,
   "completed_trades_today": 5,
   "last_reset_date": "2026-11-14",
