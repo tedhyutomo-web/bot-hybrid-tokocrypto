@@ -1,22 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "DOGE",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62036,
-      "qty": 52,
-      "entry_price_idr": 1193,
-      "tp_price_idr": 1214.0,
-      "sl_price_idr": 1202.0,
-      "highest_price_idr": 1214.0,
-      "rsi_at_entry": 53.8,
-      "buy_order_id": "135684190",
-      "timestamp": 1794574507.4084234,
-      "filled_timestamp": 1794574931.684382,
-      "tp_order_id": "135684318"
-    },
-    {
       "coin": "SOL",
       "style": "SNIPER",
       "status": "WAITING_BUY",
@@ -31,7 +15,7 @@
       "timestamp": 1794575640.8873742
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": 439.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-13"
 }
