@@ -1,11 +1,13 @@
 # ==============================================================================
 # PRO QUANT HYBRID AI TRADING BOT 24/7 (INDODAX TRADE API V2 + GEMINI AI)
 # ==============================================================================
-# Fitur Unggulan Versi Scalping 15M+1H, Validasi Penuh Gemini & Clean Sheets Log:
-# 1. VALIDASI PENUH GEMINI AI PADA ENTRY, TP RANGE, DAN STOP LOSS (SMART & HARD SL)
-# 2. LAPORAN GOOGLE SHEETS HANYA SAAT TERJADI TRANSAKSI (ENTRY, TP, SL, CANCEL)
-# 3. PROTEKSI MUTLAK SL (>= Rp32.000/KOIN) AGAR TIDAK TERTOLAK BATAS Rp25.000 INDODAX
-# 4. ALOKASI MODAL PROPORSIONAL BERDASARKAN JUMLAH KOIN SIAP ENTRY & STATUSNYA
+# Fitur Unggulan Edisi Pro Scalper (5M+15M+1H, Dynamic ATR TP & Time-Stop):
+# 1. TRIPLE-TIMEFRAME SCALPING (5M Trigger + 15M Momentum + 1H Trend Compass)
+# 2. DYNAMIC ATR TAKE PROFIT (+1.35% s/d +3.40%) AGAR PROFIT CAIR TIAP HARI
+# 3. TIME-BASED SCALP EXIT (>2.5 Jam Stagnan langsung kunci profit tipis)
+# 4. FILTER KOMPAS BITCOIN (BTC REGIME) & FILTER BID-ASK SPREAD INDODAX
+# 5. DAILY CIRCUIT BREAKER (-2.5%) & VALIDASI PENUH GEMINI AI (ENTRY, TP, SL)
+# 6. LAPORAN GOOGLE SHEETS BERSIH (Hanya kirim saat terjadi transaksi nyata)
 # ==============================================================================
 
 import os
@@ -19,7 +21,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 # ==============================================================================
-# BAGIAN 1: KONFIGURASI UTAMA, PROTEKSI SL & PARAMETER MODE SIAGA DINAMIS
+# BAGIAN 1: KONFIGURASI UTAMA, PARAMETER SCALPING 5M & PROTEKSI MODAL
 # ==============================================================================
 MAX_BOT_CAPITAL_IDR = float(os.getenv("MAX_BOT_CAPITAL_IDR", "100000"))
 MIN_LIMIT_ORDER_INDODAX_IDR = 25000.0  # Syarat minimum nilai Limit Order Indodax
@@ -30,22 +32,30 @@ FEE_ROUNDTRIP_MAKER_PCT = 0.0055       # Estimasi total biaya beli+jual+PPN+CFX 
 
 MIN_CONVICTION_SCORE = 64.0            # Skor kelayakan minimal agar koin masuk nominasi siap_entry (0 - 100)
 MAX_CONCURRENT_COINS = 3               # Maksimal 3 koin bersamaan (dengan modal Rp100rb -> ~Rp32rb-Rp35rb/koin)
+MAX_SPREAD_INDODAX_PCT = 0.0035        # Maksimal toleransi Bid-Ask Spread Indodax (0.35%) untuk scalping
+DAILY_LOSS_LIMIT_PCT = -0.025          # Batas rugi harian (-2.5% modal) untuk menyalakan Circuit Breaker
 
-TP_GRID_BASE_PCT = 0.020               # +2.0% Target dasar mode Grid (Mean-Reversion / Rebound)
-SL_GRID_BASE_PCT = 0.020               # -2.0% Batas Hard SL mode Grid
-TP_SNIPER_BASE_PCT = 0.036             # +3.6% Target dasar mode Sniper (Momentum Breakout)
-SL_SNIPER_BASE_PCT = 0.018             # -1.8% Batas Hard SL mode Sniper
-EMERGENCY_SL_PCT = -0.032              # -3.2% Batas Darurat Mutlak (Wajib Cut Loss tanpa bisa ditahan)
+# Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR 5M/15M)
+TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi (untung bersih ~0.80%)
+TP_GRID_MAX_PCT = 0.0220               # +2.20% Target TP maksimal mode Grid saat volatilitas tinggi
+SL_GRID_BASE_PCT = 0.0180              # -1.80% Batas Hard SL mode Grid
+
+TP_SNIPER_MIN_PCT = 0.0180             # +1.80% Target TP minimal mode Sniper saat pasar moderat
+TP_SNIPER_MAX_PCT = 0.0340             # +3.40% Target TP maksimal mode Sniper saat breakout kencang
+SL_SNIPER_BASE_PCT = 0.0160            # -1.60% Batas Hard SL mode Sniper
+EMERGENCY_SL_PCT = -0.0300             # -3.00% Batas Darurat Mutlak (Wajib Cut Loss tanpa bisa ditahan)
+
+TIME_STOP_HOURS = 2.5                  # Jika posisi ditahan >= 2.5 jam & profit >= +1.05% melambat, cairkan profit
+TIME_STOP_MIN_PROFIT_PCT = 0.0105      # Minimal profit kotor +1.05% (~+0.50% bersih) untuk Time-Based Exit
+REVIEW_ENTRY_HOURS = 1.5               # Evaluasi ulang antrean Limit Buy yang belum terjemput setelah 1.5 jam
 
 ACTIVE_WATCH_MINUTES = int(os.getenv("ACTIVE_WATCH_MINUTES", "4"))
 WATCH_INTERVAL_SECONDS = int(os.getenv("WATCH_INTERVAL_SECONDS", "60"))
 FORCE_CONTINUOUS_WATCH = os.getenv("FORCE_CONTINUOUS_WATCH", "false").lower() == "true"
 
-REVIEW_ENTRY_HOURS = 4.0               # Evaluasi ulang antrean Limit Buy setelah 4 jam
-
 WATCHLIST_COINS = {
-    "SOL":  {"v2_symbol": "SOLIDR",  "indodax_key": "sol_idr",  "kraken_pair": "SOLUSD",   "step_decimals": 4, "price_step": 1},
     "BTC":  {"v2_symbol": "BTCIDR",  "indodax_key": "btc_idr",  "kraken_pair": "XXBTZUSD", "step_decimals": 6, "price_step": 1000},
+    "SOL":  {"v2_symbol": "SOLIDR",  "indodax_key": "sol_idr",  "kraken_pair": "SOLUSD",   "step_decimals": 4, "price_step": 1},
     "ETH":  {"v2_symbol": "ETHIDR",  "indodax_key": "eth_idr",  "kraken_pair": "XETHZUSD", "step_decimals": 5, "price_step": 1000},
     "XRP":  {"v2_symbol": "XRPIDR",  "indodax_key": "xrp_idr",  "kraken_pair": "XXRPZUSD", "step_decimals": 2, "price_step": 1},
     "ADA":  {"v2_symbol": "ADAIDR",  "indodax_key": "ada_idr",  "kraken_pair": "ADAUSD",   "step_decimals": 2, "price_step": 1},
@@ -53,9 +63,7 @@ WATCHLIST_COINS = {
     "DOGE": {"v2_symbol": "DOGEIDR", "indodax_key": "doge_idr", "kraken_pair": "XDGUSD",   "step_decimals": 0, "price_step": 1}
 }
 
-# Dikosongkan karena posisi lama sudah dilikuidasi; pemulihan baru akan mengikuti harga pasar aktual
 KNOWN_ENTRY_REFERENCE = {}
-
 STATE_FILE = "bot_state_tokocrypto.json"
 
 INDODAX_API_KEY = os.getenv("INDODAX_API_KEY", os.getenv("TOKOCRYPTO_API_KEY", "")).strip()
@@ -65,27 +73,39 @@ GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
 LIVE_TRADING_ENABLED = os.getenv("LIVE_TRADING_ENABLED", "false").lower() == "true"
 
 # ==============================================================================
-# BAGIAN 2: MANAJEMEN MEMORI POSISI BOT (STATE TRACKER)
+# BAGIAN 2: MANAJEMEN MEMORI POSISI BOT & RESET PROFIT HARIAN OTOMATIS
 # ==============================================================================
+def tanggal_wib_hari_ini():
+    tz_wib = timezone(timedelta(hours=7))
+    return datetime.now(tz_wib).strftime("%Y-%m-%d")
+
 def muat_state_bot():
+    tgl_skrg = tanggal_wib_hari_ini()
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
-                return json.load(f)
+                state = json.load(f)
+            if state.get("last_reset_date") != tgl_skrg:
+                state["realized_profit_today_idr"] = 0.0
+                state["completed_trades_today"] = 0
+                state["last_reset_date"] = tgl_skrg
+            return state
         except Exception:
             pass
     return {
         "active_slots": [],
         "realized_profit_today_idr": 0.0,
-        "completed_trades_today": 0
+        "completed_trades_today": 0,
+        "last_reset_date": tgl_skrg
     }
 
 def simpan_state_bot(state):
+    state["last_reset_date"] = tanggal_wib_hari_ini()
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
 # ==============================================================================
-# BAGIAN 3: KONEKSI RESMI INDODAX TRADE API V2 (HMAC-SHA256)
+# BAGIAN 3: KONEKSI RESMI INDODAX TRADE API V2 & CEK SPREAD ORDER BOOK
 # ==============================================================================
 def panggil_indodax_v2(endpoint, method="GET", params=None):
     if params is None:
@@ -222,6 +242,7 @@ def pasang_antrean_tp_di_indodax(slot, koin_free):
     return None
 
 def ambil_harga_idr_semua_koin():
+    """Mengambil harga last, bid (buy), ask (sell), dan menghitung spread order book Indodax."""
     harga_map = {}
     try:
         url = "https://indodax.com/api/tickers"
@@ -231,14 +252,36 @@ def ambil_harga_idr_semua_koin():
         for coin, info in WATCHLIST_COINS.items():
             t = tickers.get(info["indodax_key"], {})
             if "last" in t:
+                last_p = float(t["last"])
+                buy_p = float(t.get("buy", last_p) or last_p)
+                sell_p = float(t.get("sell", last_p) or last_p)
+                spread_pct = ((sell_p - buy_p) / buy_p) if buy_p > 0 else 0.0
                 harga_map[coin] = {
-                    "last": float(t["last"]),
-                    "high_24h": float(t.get("high", t["last"])),
-                    "low_24h": float(t.get("low", t["last"]))
+                    "last": last_p,
+                    "buy": buy_p,
+                    "sell": sell_p,
+                    "spread_pct": round(max(0.0, spread_pct), 5),
+                    "high_24h": float(t.get("high", last_p)),
+                    "low_24h": float(t.get("low", last_p))
                 }
     except Exception as e:
         print("Fallback harga IDR:", e)
     return harga_map
+
+def hitung_tp_sl_dinamis_atr(coin, entry_idr, gaya, atr_5m_pct):
+    """Menentukan harga TP & SL secara dinamis berdasarkan volatilitas (ATR) agar profit cair tiap hari."""
+    # Estimasi jangkauan ayunan 1-3 jam dari ATR 5 menit (dikali 4.5)
+    target_ayunan_pasar = atr_5m_pct * 4.5
+    if gaya == "SNIPER":
+        tp_pct = min(TP_SNIPER_MAX_PCT, max(TP_SNIPER_MIN_PCT, target_ayunan_pasar))
+        sl_pct = SL_SNIPER_BASE_PCT
+    else:
+        tp_pct = min(TP_GRID_MAX_PCT, max(TP_GRID_MIN_PCT, target_ayunan_pasar * 0.85))
+        sl_pct = SL_GRID_BASE_PCT
+
+    tp_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct))
+    sl_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 - sl_pct))
+    return tp_idr, sl_idr, round(tp_pct * 100, 2)
 
 # ==============================================================================
 # BAGIAN 4: AUTO-RECOVERY KOIN DOMPET INDODAX (PEMULIHAN POSISI YATIM)
@@ -262,10 +305,9 @@ def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
             ref = KNOWN_ENTRY_REFERENCE.get(coin, {})
             entry_idr = ref.get("entry_price_idr", bulatkan_harga_indodax(coin, harga_skrg))
             style = ref.get("style", "GRID")
-            tp_pct = TP_SNIPER_BASE_PCT if style == "SNIPER" else TP_GRID_BASE_PCT
-            sl_pct = SL_SNIPER_BASE_PCT if style == "SNIPER" else SL_GRID_BASE_PCT
-            tp_idr = ref.get("tp_price_idr", bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct)))
-            sl_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 - sl_pct))
+            tp_idr_default, sl_idr_default, _ = hitung_tp_sl_dinamis_atr(coin, entry_idr, style, 0.0035)
+            tp_idr = ref.get("tp_price_idr", tp_idr_default)
+            sl_idr = sl_idr_default
             modal_idr = ref.get("capital_idr", round(total_qty * entry_idr, 0))
 
             slot_pulih = {
@@ -292,8 +334,20 @@ def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
     return state, log_recovery
 
 # ==============================================================================
-# BAGIAN 5: ANALISIS SCALPING (15M + 1H), STATUS SIAP ENTRY & KONSULTASI GEMINI
+# BAGIAN 5: MESIN TRIPLE-TIMEFRAME SCALPING (5M + 15M + 1H) & KONSULTASI GEMINI
 # ==============================================================================
+def hitung_rsi(closes_list, periode=14):
+    if len(closes_list) <= periode:
+        return 50.0
+    gains, losses = [], []
+    for i in range(-periode, 0):
+        diff = closes_list[i] - closes_list[i - 1]
+        gains.append(max(diff, 0.0))
+        losses.append(max(-diff, 0.0))
+    avg_gain = sum(gains) / float(periode)
+    avg_loss = (sum(losses) / float(periode)) or 0.0001
+    return 100.0 - (100.0 / (1.0 + (avg_gain / avg_loss)))
+
 def analisa_teknikal_lengkap_pasar(harga_idr_map):
     peta_analisa = {}
     for coin, info in WATCHLIST_COINS.items():
@@ -301,101 +355,125 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         if not data_ticker or data_ticker["last"] <= 0:
             continue
         harga_idr = data_ticker["last"]
+        spread_pct = data_ticker.get("spread_pct", 0.0)
         try:
-            url = f"https://api.kraken.com/0/public/OHLC?pair={info['kraken_pair']}&interval=15"
+            # Menggunakan interval=5 (5 Menit) untuk mengekstrak sinyal 5M, 15M, dan 1H sekaligus!
+            url = f"https://api.kraken.com/0/public/OHLC?pair={info['kraken_pair']}&interval=5"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=10) as resp:
                 res = json.loads(resp.read().decode())
             result_key = [k for k in res["result"].keys() if k != "last"][0]
-            raw = res["result"][result_key][-200:]
+            raw = res["result"][result_key][-360:]  # 360 candle 5M = 30 jam terakhir
             closes = [float(r[4]) for r in raw]
             highs = [float(r[2]) for r in raw]
             lows = [float(r[3]) for r in raw]
             vols = [float(r[6]) for r in raw]
 
-            ema20 = sum(closes[-20:]) / len(closes[-20:])
-            ema50 = sum(closes[-50:]) / len(closes[-50:])
-            ema_1h_cepat = sum(closes[-80:]) / len(closes[-80:])
-            ema_1h_lambat = sum(closes[-200:]) / len(closes[-200:])
-            tren_15m_naik = ema20 > ema50
+            # 1. Indikator Timeframe 5 Menit (Pelatuk Eksekusi Scalping)
+            ema20_5m = sum(closes[-20:]) / len(closes[-20:])
+            ema50_5m = sum(closes[-50:]) / len(closes[-50:])
+            tren_5m_naik = ema20_5m > ema50_5m
+            rsi_5m = hitung_rsi(closes, 14)
+
+            # 2. Indikator Setara Timeframe 15 Menit (1 candle 15M = 3 candle 5M)
+            closes_15m = closes[::3]
+            ema20_15m = sum(closes_15m[-20:]) / len(closes_15m[-20:])
+            ema50_15m = sum(closes_15m[-50:]) / len(closes_15m[-50:])
+            tren_15m_naik = ema20_15m > ema50_15m
+            rsi_15m = hitung_rsi(closes_15m, 14)
+
+            # 3. Indikator Setara Timeframe 1 Jam (240 candle 5M = 20 jam)
+            ema_1h_cepat = sum(closes[-180:]) / len(closes[-180:])
+            ema_1h_lambat = sum(closes[-360:]) / len(closes[-360:])
             tren_1h_naik = ema_1h_cepat > ema_1h_lambat
 
-            gains, losses = [], []
-            for i in range(-14, 0):
-                diff = closes[i] - closes[i - 1]
-                gains.append(max(diff, 0))
-                losses.append(max(-diff, 0))
-            rsi = 100 - (100 / (1 + (sum(gains) / 14.0) / ((sum(losses) / 14.0) or 0.0001)))
-
+            # 4. ATR 5M & High 2 Jam Terakhir (24 candle x 5 menit = 2 jam)
             tr_list = [highs[i] - lows[i] for i in range(-14, 0)]
-            atr_pct = (sum(tr_list) / 14.0) / closes[-1]
-            rasio_high_2jam = max(highs[-8:]) / closes[-1] if closes[-1] > 0 else 1.0
+            atr_5m_pct = (sum(tr_list) / 14.0) / closes[-1]
+            rasio_high_2jam = max(highs[-24:]) / closes[-1] if closes[-1] > 0 else 1.0
             high_2jam_idr = round(harga_idr * max(1.0, rasio_high_2jam), 0)
 
             vol_rata = sum(vols[-20:-1]) / 19.0 if len(vols) >= 20 else (vols[-1] or 1.0)
             rasio_vol = vols[-1] / (vol_rata or 1.0)
 
-            candle_memantul = closes[-1] >= closes[-2]
+            # Deteksi struktur candle 5 menit terakhir
+            candle_5m_hijau = closes[-1] >= closes[-2]
+            dua_candle_5m_naik = (closes[-1] >= closes[-2] >= closes[-3])
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
+            spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
 
-            if tren_15m_naik and tren_1h_naik and 42.0 <= rsi <= 63.0 and candle_memantul and not candle_jatuh_beruntun:
+            # Klasifikasi Setup Scalping Pro (5M + 15M + 1H)
+            if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and not candle_jatuh_beruntun:
                 gaya = "SNIPER"
-                skor_dasar = 80.0 + min(14.0, (rasio_vol - 0.8) * 10.0) - abs(50.0 - rsi) * 0.35
-                diskon_entry_pct = min(max(atr_pct * 0.30, 0.002), 0.006)
-                prediksi = "🚀 BERPELUANG UNTUNG / NAIK (Tren 15M & 1H Bullish - SIAP ENTRY)"
-                siap_entry = True
+                bonus_1h = 5.0 if tren_1h_naik else 0.0
+                skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
+                diskon_entry_pct = min(max(atr_5m_pct * 0.40, 0.0015), 0.0045)
+                prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Kompak Naik - SIAP ENTRY)"
+                siap_entry = spread_aman
                 faktor_bobot_status = 1.30
-            elif tren_1h_naik and 32.0 <= rsi <= 52.0 and candle_memantul and not candle_jatuh_beruntun:
+            elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 72.0 + (50.0 - rsi) * 0.45 + 3.0
-                diskon_entry_pct = min(max(atr_pct * 0.50, 0.003), 0.010)
-                prediksi = "🟢 POTENSI REBOUND KUAT (Pullback di Tren 1H Naik - SIAP ENTRY)"
-                siap_entry = True
+                skor_dasar = 72.0 + (48.0 - rsi_5m) * 0.55 + (4.0 if dua_candle_5m_naik else 0.0)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.65, 0.0020), 0.0075)
+                prediksi = "🟢 POTENSI REBOUND KUAT (Pullback 5M di Tren Naik - SIAP ENTRY)"
+                siap_entry = spread_aman
                 faktor_bobot_status = 1.15
-            elif rsi <= 35.0 and candle_memantul and not candle_jatuh_beruntun:
+            elif (rsi_5m <= 33.0 or rsi_15m <= 35.0) and dua_candle_5m_naik and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 67.0 + (36.0 - rsi) * 0.8
-                diskon_entry_pct = min(max(atr_pct * 0.50, 0.003), 0.010)
-                prediksi = "🟢 POTENSI REBOUND (Oversold mulai memantul - SIAP ENTRY)"
-                siap_entry = True
-                faktor_bobot_status = 1.00
-            elif tren_1h_naik and not candle_jatuh_beruntun:
+                skor_dasar = 67.0 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
+                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M terkonfirmasi memantul - SIAP ENTRY)"
+                siap_entry = spread_aman
+                faktor_bobot_status = 1.05
+            elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
                 gaya = "WAIT_PULLBACK"
                 skor_dasar = 58.0
-                diskon_entry_pct = 0.008
-                prediksi = "🟢 POTENSI REBOUND (Tren 1H naik, tunggu candle 15M hijau untuk beli baru)"
+                diskon_entry_pct = 0.005
+                prediksi = "🟢 POTENSI REBOUND (Tren makro naik, menunggu candle 5M memantul hijau)"
                 siap_entry = False
                 faktor_bobot_status = 0.0
-            elif not tren_15m_naik and not tren_1h_naik and (candle_jatuh_beruntun or (rsi < 42.0 and rasio_vol >= 1.25)):
+            elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and rasio_vol >= 1.25)):
                 gaya = "WAIT_DOWNTREND"
                 skor_dasar = 25.0
-                diskon_entry_pct = 0.015
-                prediksi = "🔴 BAHAYA JATUH LEBIH DALAM (Tekanan jual 15M & 1H kuat - JANGAN BELI)"
+                diskon_entry_pct = 0.012
+                prediksi = "🔴 BAHAYA JATUH LEBIH DALAM (Tekanan jual 5M & 15M deras - JANGAN BELI)"
                 siap_entry = False
                 faktor_bobot_status = 0.0
             else:
                 gaya = "WAIT_SIDEWAYS"
                 skor_dasar = 45.0
-                diskon_entry_pct = 0.010
-                prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi normal, aman ditahan / jangan beli dulu)"
+                diskon_entry_pct = 0.008
+                prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi 5M/15M normal, aman ditahan / jangan beli dulu)"
                 siap_entry = False
                 faktor_bobot_status = 0.0
 
+            if not spread_aman and siap_entry:
+                siap_entry = False
+                prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}% > 0.35%) - Tunda beli agar tidak rugi spread"
+
             conviction_score = round(max(10.0, min(98.0, skor_dasar)), 1)
-            entry_ideal_idr = bulatkan_harga_indodax(coin, harga_idr * (1.0 - diskon_entry_pct))
-            potensi_naik_pct = round(max(atr_pct * 3.0, 0.012), 4)
+            # Gunakan harga bid/last terbaik untuk antrean Limit Buy
+            acuan_beli_dasar = min(harga_idr, data_ticker.get("sell", harga_idr))
+            entry_ideal_idr = bulatkan_harga_indodax(coin, acuan_beli_dasar * (1.0 - diskon_entry_pct))
+            tp_ideal_idr, sl_ideal_idr, tp_target_pct = hitung_tp_sl_dinamis_atr(
+                coin, entry_ideal_idr, gaya if gaya in ["SNIPER", "GRID"] else "GRID", atr_5m_pct
+            )
 
             peta_analisa[coin] = {
                 "coin": coin,
                 "harga_idr": harga_idr,
+                "spread_pct": spread_pct,
                 "high_2jam_idr": high_2jam_idr,
-                "tren": "UPTREND" if (tren_15m_naik or tren_1h_naik) else "SIDEWAYS/DOWN",
-                "tren_detail": f"15M:{'UP' if tren_15m_naik else 'DOWN'}/1H:{'UP' if tren_1h_naik else 'DOWN'}",
-                "rsi": round(rsi, 1),
-                "atr_pct": round(atr_pct, 4),
+                "tren": "UPTREND" if (tren_5m_naik or tren_15m_naik) else "SIDEWAYS/DOWN",
+                "tren_detail": f"5M:{'UP' if tren_5m_naik else 'DN'}/15M:{'UP' if tren_15m_naik else 'DN'}/1H:{'UP' if tren_1h_naik else 'DN'}",
+                "rsi": round(rsi_5m, 1),
+                "rsi_15m": round(rsi_15m, 1),
+                "atr_pct": round(atr_5m_pct, 5),
                 "rasio_vol": round(rasio_vol, 2),
-                "potensi_naik_pct": potensi_naik_pct,
                 "entry_ideal_idr": entry_ideal_idr,
+                "tp_ideal_idr": tp_ideal_idr,
+                "sl_ideal_idr": sl_ideal_idr,
+                "tp_target_pct": tp_target_pct,
                 "gaya": gaya,
                 "skor": conviction_score,
                 "prediksi": prediksi,
@@ -406,16 +484,17 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             continue
     return peta_analisa
 
-def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr):
+def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc):
     if not GEMINI_API_KEY:
-        return True, "Validasi kuantitatif multi-timeframe terpenuhi."
+        return True, "Validasi kuantitatif Triple-Timeframe (5M+15M+1H) terpenuhi."
     try:
         prompt = (
-            f"Evaluasi sinyal scalping Indodax: Koin {kandidat['coin']} mode {kandidat['gaya']}, "
-            f"Harga Rp{kandidat['harga_idr']:,.0f}, Rencana Beli Rp{kandidat['entry_ideal_idr']:,.0f} "
-            f"(Modal Rp{alokasi_idr:,.0f}), Tren {kandidat['tren_detail']}, RSI 15M: {kandidat['rsi']}, "
-            f"Rasio Volume: {kandidat['rasio_vol']}x, Status: {kandidat['prediksi']}. "
-            f"Apakah setup ini layak dieksekusi BELI sekarang (jawab YA) atau TUNDA (jawab TUNDA)? "
+            f"Evaluasi sinyal scalping 5M Indodax: Koin {kandidat['coin']} ({kandidat['gaya']}), "
+            f"Harga Rp{kandidat['harga_idr']:,.0f}, Rencana Beli Rp{kandidat['entry_ideal_idr']:,.0f}, "
+            f"Target TP Dinamis +{kandidat['tp_target_pct']}% (Modal Rp{alokasi_idr:,.0f}). "
+            f"Tren {kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
+            f"Spread:{kandidat['spread_pct']*100:.2f}%, Kompas BTC:{status_kompas_btc}. "
+            f"Apakah layak dieksekusi BELI sekarang (jawab YA) atau TUNDA (jawab TUNDA)? "
             f"Jawab singkat: YA/TUNDA - alasan maksimal 10 kata."
         )
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
@@ -427,18 +506,18 @@ def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr):
             setuju_beli = not teks.upper().startswith("TUNDA")
             return setuju_beli, teks
     except Exception:
-        return True, "Lolos filter kuantitatif siap_entry."
+        return True, "Lolos filter kuantitatif Triple-Timeframe."
 
 def konsultasi_keputusan_exit_gemini(coin, mode_slot, beli_idr, skrg_idr, tp_idr, puncak_idr, rsi, tren, jenis_kasus):
     if not GEMINI_API_KEY:
-        return True, "Eksekusi otomatis sesuai indikator teknikal."
+        return True, "Eksekusi otomatis sesuai indikator teknikal 5M/15M."
     try:
         prompt = (
             f"Koin {coin} ({mode_slot}) dibeli di Rp{beli_idr:,.0f}, target TP Rp{tp_idr:,.0f}. "
-            f"Riwayat harga tertinggi sempat menyentuh Rp{puncak_idr:,.0f}, sekarang di Rp{skrg_idr:,.0f} "
-            f"(Tren: {tren}, RSI 15M: {rsi}). Kasus: {jenis_kasus}. "
+            f"Harga tertinggi sempat Rp{puncak_idr:,.0f}, sekarang Rp{skrg_idr:,.0f} "
+            f"(Tren: {tren}, RSI 5M: {rsi}). Kasus: {jenis_kasus}. "
             f"Apakah sebaiknya langsung JUAL SEKARANG (jawab YA) atau TAHAN (jawab TAHAN)? "
-            f"Jawab dengan format: YA/TAHAN - alasan singkat 12 kata."
+            f"Jawab singkat: YA/TAHAN - alasan maksimal 12 kata."
         )
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
         body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
@@ -452,7 +531,7 @@ def konsultasi_keputusan_exit_gemini(coin, mode_slot, beli_idr, skrg_idr, tp_idr
         return True, "Validasi teknikal otomatis aktif."
 
 # ==============================================================================
-# BAGIAN 6: EVALUASI POSISI AKTIF, ANTREAN TP INDODAX, TP RANGE & SL GEMINI
+# BAGIAN 6: EVALUASI POSISI AKTIF (TP DINAMIS, TIME-STOP 2.5J, & SL GEMINI)
 # ==============================================================================
 def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
     slot_tetap_aktif = []
@@ -473,11 +552,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
 
         mode_slot = slot.get("style", "GRID")
         entry_idr = float(slot["entry_price_idr"])
-        tp_default_pct = TP_SNIPER_BASE_PCT if mode_slot == "SNIPER" else TP_GRID_BASE_PCT
-        sl_default_pct = SL_SNIPER_BASE_PCT if mode_slot == "SNIPER" else SL_GRID_BASE_PCT
-
-        tp_idr = float(slot.get("tp_price_idr", round(entry_idr * (1.0 + tp_default_pct), 0)))
-        sl_idr = float(slot.get("sl_price_idr", round(entry_idr * (1.0 - sl_default_pct), 0)))
+        tp_idr = float(slot.get("tp_price_idr", round(entry_idr * 1.016, 0)))
+        sl_idr = float(slot.get("sl_price_idr", round(entry_idr * 0.982, 0)))
         slot["tp_price_idr"] = tp_idr
         slot["sl_price_idr"] = sl_idr
 
@@ -496,7 +572,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                 ada_eksekusi_penting = True
                 pesan = (
                     f"✅ [TERBELI & PASANG TP] {coin} ({mode_slot}) aktif di Rp{entry_idr:,.0f}! "
-                    f"Antrean Jual TP dipasang di Rp{slot['tp_price_idr']:,.0f}."
+                    f"Antrean Jual TP Dinamis dipasang di Rp{slot['tp_price_idr']:,.0f}."
                 )
                 log_aksi.append(pesan)
                 log_transaksi.append(pesan)
@@ -506,19 +582,19 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
             umur_antre_jam = (now_ts - slot.get("timestamp", now_ts)) / 3600.0
             if umur_antre_jam <= REVIEW_ENTRY_HOURS:
                 log_aksi.append(
-                    f"⏳ [ANTRE BELI {umur_antre_jam:.1f}j] {coin} ({mode_slot}) di Rp{entry_idr:,.0f} (Skrg: Rp{harga_sekarang:,.0f})."
+                    f"⏳ [ANTRE BELI {umur_antre_jam*60:.0f}m] {coin} ({mode_slot}) di Rp{entry_idr:,.0f} (Skrg: Rp{harga_sekarang:,.0f})."
                 )
                 slot_tetap_aktif.append(slot)
                 continue
 
             jarak_ke_entry_pct = (harga_sekarang - entry_idr) / entry_idr
-            if jarak_ke_entry_pct <= 0.012 and rsi_sekarang <= 54 and info_pasar and info_pasar.get("siap_entry"):
+            if jarak_ke_entry_pct <= 0.008 and info_pasar and info_pasar.get("siap_entry"):
                 log_aksi.append(f"🔍 [PERTAHANKAN ANTREAN] {coin} dekat titik beli ({jarak_ke_entry_pct*100:.2f}%).")
                 slot_tetap_aktif.append(slot)
             else:
                 batalkan_order_indodax(coin, slot.get("buy_order_id"))
                 ada_eksekusi_penting = True
-                pesan = f"🔄 [BATAL ANTREAN BELI] Order {coin} >{REVIEW_ENTRY_HOURS:.0f}j dibatalkan untuk realokasi modal."
+                pesan = f"🔄 [BATAL ANTREAN BELI] Order {coin} >{REVIEW_ENTRY_HOURS:.1f}j dibatalkan agar modal berputar ke sinyal 5M baru."
                 log_aksi.append(pesan)
                 log_transaksi.append(pesan)
             continue
@@ -553,21 +629,32 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
             kenaikan_puncak_pct = (puncak_tercatat - entry_idr) / entry_idr
             target_tp_pct = max(0.008, (tp_idr - entry_idr) / entry_idr)
             pencapaian_puncak_ke_tp = kenaikan_puncak_pct / target_tp_pct
+            lama_pegang_jam = (now_ts - float(slot.get("filled_timestamp", slot.get("timestamp", now_ts)))) / 3600.0
 
             qty_dimiliki = format_qty_koin(coin, total_koin_dimiliki if total_koin_dimiliki > 0 else slot.get("qty", 0))
             estimasi_nilai_jual_skrg = qty_dimiliki * harga_sekarang
 
-            # 2. FITUR DETEKTOR PUNCAK TERLEWAT (TP RANGE DETECTOR) + KONSULTASI GEMINI
-            if (
-                pencapaian_puncak_ke_tp >= 0.70
+            # 2. FITUR DETEKTOR PUNCAK TERLEWAT (TP RANGE) ATAU TIME-BASED SCALP EXIT (>2.5 JAM UNTUNG TIPIS)
+            kondisi_tp_range = (
+                pencapaian_puncak_ke_tp >= 0.68
                 and harga_sekarang < puncak_tercatat * 0.996
                 and kenaikan_skrg_pct >= 0.0095
-                and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR
-                and (tren_sekarang != "UPTREND" or rsi_sekarang < 56.0 or rsi_sekarang >= 67.0)
-            ):
+                and (tren_sekarang != "UPTREND" or rsi_sekarang < 54.0 or rsi_sekarang >= 67.0)
+            )
+            kondisi_time_stop = (
+                lama_pegang_jam >= TIME_STOP_HOURS
+                and kenaikan_skrg_pct >= TIME_STOP_MIN_PROFIT_PCT
+                and (tren_sekarang != "UPTREND" or rsi_sekarang < 52.0)
+            )
+
+            if (kondisi_tp_range or kondisi_time_stop) and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
+                label_exit = "TP RANGE" if kondisi_tp_range else f"TIME-STOP {lama_pegang_jam:.1f}JAM"
+                deskripsi_kasus = (
+                    f"Posisi sudah untung +{kenaikan_skrg_pct*100:.2f}% ({label_exit}) namun momentum 5M melambat. "
+                    f"Amankan profit tipis sekarang agar modal cepat berputar?"
+                )
                 setuju_jual, alasan_ai = konsultasi_keputusan_exit_gemini(
-                    coin, mode_slot, entry_idr, harga_sekarang, tp_idr, puncak_tercatat, rsi_sekarang, tren_detail,
-                    "Harga sempat menyentuh area dekat TP namun terkoreksi & momentum melambat (TP Range)"
+                    coin, mode_slot, entry_idr, harga_sekarang, tp_idr, puncak_tercatat, rsi_sekarang, tren_detail, deskripsi_kasus
                 )
                 if setuju_jual:
                     if slot.get("tp_order_id"):
@@ -581,7 +668,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         state["completed_trades_today"] += 1
                         ada_eksekusi_penting = True
                         pesan = (
-                            f"⚡ [TP RANGE DIEKSEKUSI] {coin} dijual di Rp{harga_sekarang:,.0f} "
+                            f"⚡ [{label_exit} DIEKSEKUSI] {coin} dijual di Rp{harga_sekarang:,.0f} "
                             f"(+{kenaikan_skrg_pct*100:.2f}%, Profit Bersih: +Rp{profit_bersih:,.0f}) | AI: {alasan_ai}"
                         )
                         log_aksi.append(pesan)
@@ -591,18 +678,17 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         pasang_antrean_tp_di_indodax(slot, qty_dimiliki)
 
             # 3. FITUR SMART SL RANGE & HARD STOP LOSS (SEMUA SL KONSULTASI GEMINI TERLEBIH DAHULU)
-            butuh_sl = (harga_sekarang <= sl_idr) or (kenaikan_skrg_pct <= -0.012 and tren_sekarang != "UPTREND" and rsi_sekarang < 39.0)
+            butuh_sl = (harga_sekarang <= sl_idr) or (kenaikan_skrg_pct <= -0.0115 and tren_sekarang != "UPTREND" and rsi_sekarang < 38.0)
             if butuh_sl and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
                 label_sl = "HARD STOP LOSS" if harga_sekarang <= sl_idr else "SMART SL RANGE"
                 kasus_sl = (
-                    f"Posisi turun {kenaikan_skrg_pct*100:+.2f}% menyentuh area {label_sl} (Batas SL: Rp{sl_idr:,.0f}, "
+                    f"Posisi turun {kenaikan_skrg_pct*100:+.2f}% menyentuh {label_sl} (Batas SL: Rp{sl_idr:,.0f}, "
                     f"Diagnosa: {prediksi_koin}). Apakah tren benar-benar patah sehingga harus CUT LOSS sekarang (jawab YA) "
-                    f"ataukah ini hanya oversold/koreksi wajar yang berpotensi rebound sehingga layak TAHAN (jawab TAHAN)?"
+                    f"ataukah ini hanya oversold 5M yang berpotensi memantul sehingga layak TAHAN (jawab TAHAN)?"
                 )
                 setuju_sl_ai, alasan_sl_ai = konsultasi_keputusan_exit_gemini(
                     coin, mode_slot, entry_idr, harga_sekarang, tp_idr, puncak_tercatat, rsi_sekarang, tren_detail, kasus_sl
                 )
-                # Jika turun melewati batas darurat (-3.2%), paksa eksekusi SL demi keamanan modal
                 if kenaikan_skrg_pct <= EMERGENCY_SL_PCT and not setuju_sl_ai:
                     setuju_sl_ai = True
                     alasan_sl_ai = f"Emergency SL ({kenaikan_skrg_pct*100:+.2f}%) dieksekusi otomatis untuk proteksi modal."
@@ -629,7 +715,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         pasang_antrean_tp_di_indodax(slot, qty_dimiliki)
                 else:
                     log_aksi.append(
-                        f"🛑 [SL DITAHAN GEMINI AI] {coin} ({kenaikan_skrg_pct*100:+.2f}%) tidak jadi Cut Loss | AI: {alasan_sl_ai}"
+                        f"🛑 [SL DITAHAN GEMINI AI] {coin} ({kenaikan_skrg_pct*100:+.2f}%) ditahan menunggu pantulan | AI: {alasan_sl_ai}"
                     )
 
             # 4. Pastikan antrean LIMIT SELL (TP) terpasang di buku order Indodax
@@ -640,19 +726,19 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                 log_aksi.append(pesan)
                 log_transaksi.append(pesan)
 
-            # 5. TRAILING PROFIT LOCK OTOMATIS
-            if kenaikan_skrg_pct >= 0.016:
-                sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.009)
+            # 5. TRAILING PROFIT LOCK OTOMATIS (Kunci untung begitu naik >= +1.25%)
+            if kenaikan_skrg_pct >= 0.0125:
+                sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0075)
                 if sl_kunci_untung > slot["sl_price_idr"]:
                     slot["sl_price_idr"] = sl_kunci_untung
                     log_aksi.append(
-                        f"🔒 [TRAILING PROFIT LOCK] {coin} naik +{kenaikan_skrg_pct*100:.2f}%! SL dinaikkan ke Rp{sl_kunci_untung:,.0f}."
+                        f"🔒 [TRAILING PROFIT LOCK] {coin} naik +{kenaikan_skrg_pct*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
                     )
 
             status_tp_order = f"OrderTP:#{slot.get('tp_order_id')}" if slot.get("tp_order_id") else "TP-Aktif"
             log_aksi.append(
-                f"🎯 [KAWAL TP {status_tp_order}] {coin} ({mode_slot}) | Skrg: Rp{harga_sekarang:,.0f} ({kenaikan_skrg_pct*100:+.2f}%) "
-                f"| Puncak: Rp{puncak_tercatat:,.0f} -> TP: Rp{tp_idr:,.0f} | SL: Rp{slot['sl_price_idr']:,.0f}"
+                f"🎯 [KAWAL {status_tp_order} | {lama_pegang_jam:.1f}j] {coin} ({mode_slot}) | Skrg: Rp{harga_sekarang:,.0f} ({kenaikan_skrg_pct*100:+.2f}%) "
+                f"-> TP: Rp{tp_idr:,.0f} | SL: Rp{slot['sl_price_idr']:,.0f}"
             )
             slot_tetap_aktif.append(slot)
 
@@ -660,7 +746,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
     return state, log_aksi, log_transaksi, ada_eksekusi_penting
 
 # ==============================================================================
-# BAGIAN 7: ALOKASI MODAL DINAMIS (HANYA KOIN SIAP ENTRY & AMAN BATAS SL)
+# BAGIAN 7: ALOKASI MODAL PRO (KOMPAS BTC, CIRCUIT BREAKER & DYNAMIC ATR TP)
 # ==============================================================================
 def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     modal_aktif_state = sum(float(s.get("capital_idr", 0)) for s in state["active_slots"])
@@ -675,23 +761,30 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
             f"[MODAL AKTIF BEKERJA] Rp{modal_aktif_state:,.0f} di {slot_terisi} posisi (Sisa IDR: Rp{dompet['idr_free']:,.0f})."
         ], [], False
 
+    # 1. CEK DAILY LOSS CIRCUIT BREAKER (-2.5% dari Plafon Modal)
+    profit_hari_ini = float(state.get("realized_profit_today_idr", 0.0))
+    batas_rugi_harian = MAX_BOT_CAPITAL_IDR * DAILY_LOSS_LIMIT_PCT
+    skor_minimal_sesi = MIN_CONVICTION_SCORE
+    if profit_hari_ini <= batas_rugi_harian:
+        skor_minimal_sesi = 82.0  # Mode defensif ketat jika rugi harian melewati -2.5%
+
+    # 2. CEK FILTER KOMPAS BITCOIN (BTC MARKET REGIME FILTER)
+    info_btc = peta_analisa.get("BTC", {})
+    btc_sedang_dump = str(info_btc.get("prediksi", "")).startswith("🔴 BAHAYA") and info_btc.get("rsi", 50.0) < 36.0
+    status_kompas_btc = f"{info_btc.get('tren_detail', 'N/A')} (RSI 5M:{info_btc.get('rsi', '-')})"
+
     maks_koin_terbiayai_aman = int(saldo_idr_tersedia // MIN_NEW_BUY_ALLOCATION_IDR)
     batas_ambil_kandidat = min(sisa_slot_maks, maks_koin_terbiayai_aman)
 
-    if batas_ambil_kandidat <= 0:
-        return state, [
-            f"⏸️ [SALDO BELUM CUKUP AMAN UNTUK SL] Sisa IDR Rp{saldo_idr_tersedia:,.0f} < batas aman Rp{MIN_NEW_BUY_ALLOCATION_IDR:,.0f}/koin."
-        ], [], False
-
     koin_sudah_ada = {s["coin"] for s in state["active_slots"]}
-
     kandidat_siap_entry = sorted(
         [
             v for v in peta_analisa.values()
             if (
                 v["coin"] not in koin_sudah_ada
                 and v.get("siap_entry") is True
-                and v["skor"] >= MIN_CONVICTION_SCORE
+                and v["skor"] >= skor_minimal_sesi
+                and (not btc_sedang_dump or v["coin"] == "BTC" or v["skor"] >= 82.0)
             )
         ],
         key=lambda x: x.get("bobot_alokasi", x["skor"]),
@@ -699,8 +792,9 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     )[:batas_ambil_kandidat]
 
     if not kandidat_siap_entry:
+        alasan_tahan = "Kompas BTC sedang dump tajam" if btc_sedang_dump else f"Belum ada koin berstatus SIAP ENTRY (Skor >= {skor_minimal_sesi})"
         return state, [
-            f"⏸️ [AI WAIT / CASH IS KING] Dana Rp{saldo_idr_tersedia:,.0f} ditahan karena belum ada koin berstatus SIAP ENTRY (Skor >= {MIN_CONVICTION_SCORE})."
+            f"⏸️ [AI WAIT / CASH IS KING] Dana Rp{saldo_idr_tersedia:,.0f} siaga ({alasan_tahan})."
         ], [], False
 
     jumlah_siap = len(kandidat_siap_entry)
@@ -749,19 +843,18 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
 
         if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
             log_alokasi.append(
-                f"⚠️ [SKIP {coin}] Nilai efektif Rp{nilai_efektif_idr:,.0f} terlalu dekat batas minimum Rp25.000 Indodax."
+                f"⚠️ [SKIP {coin}] Nilai efektif Rp{nilai_efektif_idr:,.0f} di bawah buffer aman SL Rp{MIN_SAFE_SL_BUFFER_IDR:,.0f}."
             )
             continue
 
-        setuju_beli, alasan_gemini = konsultasi_keputusan_entry_gemini(kandidat, nilai_efektif_idr)
+        setuju_beli, alasan_gemini = konsultasi_keputusan_entry_gemini(kandidat, nilai_efektif_idr, status_kompas_btc)
         if not setuju_beli:
             log_alokasi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin}] Setup ditunda AI: {alasan_gemini}")
             continue
 
-        tp_pct = TP_SNIPER_BASE_PCT if gaya == "SNIPER" else TP_GRID_BASE_PCT
-        sl_pct = SL_SNIPER_BASE_PCT if gaya == "SNIPER" else SL_GRID_BASE_PCT
-        tp_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct))
-        sl_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 - sl_pct))
+        tp_idr = kandidat["tp_ideal_idr"]
+        sl_idr = kandidat["sl_ideal_idr"]
+        tp_target_pct = kandidat["tp_target_pct"]
         estimasi_nilai_saat_sl = round(qty_rencana * sl_idr, 0)
 
         res_order = eksekusi_order_indodax(coin, "BUY", entry_idr, qty_koin=qty_rencana)
@@ -788,8 +881,8 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
             persen_plafon = (nilai_efektif_idr / MAX_BOT_CAPITAL_IDR) * 100.0
             pesan = (
                 f"🚀 [ENTRY ORDER BELI #{order_id} - {gaya}] {coin} (Skor:{kandidat['skor']}) | "
-                f"Alokasi: Rp{nilai_efektif_idr:,.0f} ({persen_plafon:.0f}% Modal, Aman SL: Rp{estimasi_nilai_saat_sl:,.0f}) | "
-                f"Beli: Rp{entry_idr:,.0f} -> TP: Rp{tp_idr:,.0f} | AI: {alasan_gemini}"
+                f"Alokasi: Rp{nilai_efektif_idr:,.0f} ({persen_plafon:.0f}% Modal) | "
+                f"Beli: Rp{entry_idr:,.0f} -> TP Dinamis (+{tp_target_pct}%): Rp{tp_idr:,.0f} | AI: {alasan_gemini}"
             )
             log_alokasi.append(pesan)
             log_transaksi_beli.append(pesan)
@@ -811,7 +904,7 @@ def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
             continue
         skrg = info["harga_idr"]
         entry = float(slot["entry_price_idr"])
-        tp = float(slot.get("tp_price_idr", entry * 1.02))
+        tp = float(slot.get("tp_price_idr", entry * 1.015))
         puncak = max(float(slot.get("highest_price_idr", skrg)), skrg, info.get("high_2jam_idr", skrg))
         nilai_skrg = float(slot.get("qty", 0)) * skrg
 
@@ -820,16 +913,16 @@ def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
             target_pct = max(0.008, (tp - entry) / entry)
             rasio_puncak_ke_tp = ((puncak - entry) / entry) / target_pct
 
-            if pnl_pct >= 0.009:
-                alasan_siaga.append(f"{coin} di zona profit +{pnl_pct*100:.2f}% (kawal ketat TP Range)")
+            if pnl_pct >= 0.0085:
+                alasan_siaga.append(f"{coin} di zona profit +{pnl_pct*100:.2f}% (kawal ketat TP Dinamis)")
             elif rasio_puncak_ke_tp >= 0.55:
                 alasan_siaga.append(f"{coin} pernah menyentuh {rasio_puncak_ke_tp*100:.0f}% target TP (kawal Missed-Peak)")
-            elif pnl_pct <= -0.0090 and nilai_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
+            elif pnl_pct <= -0.0085 and nilai_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
                 alasan_siaga.append(f"{coin} turun {pnl_pct*100:.2f}% mendekati SL Range (kawal penyelamatan SL)")
 
         elif slot["status"] == "WAITING_BUY":
             jarak_beli_pct = abs(skrg - entry) / entry
-            if jarak_beli_pct <= 0.008:
+            if jarak_beli_pct <= 0.007:
                 alasan_siaga.append(f"Antrean beli {coin} tinggal berjarak {jarak_beli_pct*100:.2f}% (siap pasang TP begitu terbeli)")
 
     return (len(alasan_siaga) > 0), alasan_siaga
@@ -837,56 +930,46 @@ def cek_apakah_butuh_pengawasan_intensif(state, peta_analisa):
 def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
     total_koin_pasar = len(peta_analisa)
     koin_uptrend = [k for k, v in peta_analisa.items() if v.get("tren") == "UPTREND"]
-    koin_siap_beli = [f"{k}({v['gaya']}:Skor {v['skor']})" for k, v in peta_analisa.items() if v.get("siap_entry")]
-    rata_rsi = (sum(v.get("rsi", 50.0) for v in peta_analisa.values()) / total_koin_pasar) if total_koin_pasar > 0 else 50.0
+    koin_siap_beli = [f"{k}({v['gaya']}:Skor {v['skor']}|TP+{v['tp_target_pct']}%)" for k, v in peta_analisa.items() if v.get("siap_entry")]
+    rata_rsi_5m = (sum(v.get("rsi", 50.0) for v in peta_analisa.values()) / total_koin_pasar) if total_koin_pasar > 0 else 50.0
     kandidat_terkuat = max(peta_analisa.values(), key=lambda x: x.get("skor", 0.0)) if peta_analisa else None
     info_skor_tertinggi = f"{kandidat_terkuat['coin']} (Skor:{kandidat_terkuat['skor']})" if kandidat_terkuat else "-"
+    info_btc = peta_analisa.get("BTC", {})
+    kompas_btc_str = f"BTC {info_btc.get('tren_detail', '-')} (RSI 5M:{info_btc.get('rsi', '-')})"
+
     ringkasan_pasar = (
-        f"Pasar (15M+1H): {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
-        f"Rata-rata RSI 15M: {rata_rsi:.1f} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
-        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (menunggu konfirmasi pantulan)'}"
+        f"Pasar (5M+15M+1H): {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
+        f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
+        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (menunggu konfirmasi candle 5M hijau)'}"
     )
 
-    koin_tertahan_sl = []
     detail_diagnosa_koin = []
-
     for slot in state.get("active_slots", []):
         coin = slot["coin"]
         info = peta_analisa.get(coin, {})
         skrg = info.get("harga_idr", float(slot["entry_price_idr"]))
         entry = float(slot["entry_price_idr"])
-        sl_idr = float(slot.get("sl_price_idr", entry * 0.98))
+        tp_idr = float(slot.get("tp_price_idr", entry * 1.015))
         pnl_pct = (skrg - entry) / entry
         nilai_idr = float(slot.get("qty", 0)) * skrg
-
         rsi_k = info.get("rsi", 50.0)
         tren_k = info.get("tren_detail", info.get("tren", "-"))
         prediksi_k = info.get("prediksi", "🟡 SIDEWAYS WAJAR")
 
         if slot.get("status") == "WAITING_BUY":
             detail_diagnosa_koin.append(
-                f"   * {coin} [ANTRE BELI @ Rp{entry:,.0f} | Skrg: Rp{skrg:,.0f}] -> {prediksi_k} [Tren {tren_k}, RSI:{rsi_k}]"
+                f"   * {coin} [ANTRE BELI @ Rp{entry:,.0f} -> TP Rp{tp_idr:,.0f} | Skrg: Rp{skrg:,.0f}] -> {prediksi_k} [{tren_k}, RSI 5M:{rsi_k}]"
             )
-            continue
+        else:
+            detail_diagnosa_koin.append(
+                f"   * {coin} ({pnl_pct*100:+.2f}% | Nilai Rp{nilai_idr:,.0f} -> TP Rp{tp_idr:,.0f}) -> {prediksi_k} [{tren_k}, RSI 5M:{rsi_k}]"
+            )
 
-        status_sl = "Tertahan <Rp25rb" if (skrg <= sl_idr and nilai_idr < MIN_LIMIT_ORDER_INDODAX_IDR) else "Aktif"
-        detail_diagnosa_koin.append(
-            f"   * {coin} ({pnl_pct*100:+.2f}% | Rp{nilai_idr:,.0f} | {status_sl}) -> {prediksi_k} [Tren {tren_k}, RSI:{rsi_k}]"
-        )
-
-        if skrg <= sl_idr and nilai_idr < MIN_LIMIT_ORDER_INDODAX_IDR:
-            koin_tertahan_sl.append(f"{coin} ({pnl_pct*100:+.2f}%)")
-
-    teks_diagnosa = "\n".join(detail_diagnosa_koin) if detail_diagnosa_koin else "   * Belum ada posisi aktif (100% Cash is King - Memburu Sinyal SIAP ENTRY)."
-
-    if koin_tertahan_sl:
-        header = f"⚠️ [PATROLI SELESAI - {len(koin_tertahan_sl)} POSISI TERTAHAN ATURAN <Rp25.000 INDODAX]"
-    else:
-        header = "🟢 [PATROLI SELESAI - STATUS & PREDIKSI PORTOFOLIO]"
+    teks_diagnosa = "\n".join(detail_diagnosa_koin) if detail_diagnosa_koin else "   * Belum ada posisi aktif (100% Cash is King - Memburu Sinyal Scalping 5M)."
 
     return (
-        f"{header}\n"
-        f"📊 DIAGNOSA & PREDIKSI TEKNIKAL PER KOIN (TIMEFRAME SCALPING 15M + 1H):\n"
+        f"🟢 [PATROLI PRO SCALPER 5M SELESAI | Profit Hari Ini: Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)]\n"
+        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI TRIPLE-TIMEFRAME (5M + 15M + 1H):\n"
         f"{teks_diagnosa}\n"
         f"   -> {ringkasan_pasar}"
     )
@@ -906,20 +989,20 @@ def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=N
                 floating_pnl += (harga_skrg - float(s["entry_price_idr"])) * float(s.get("qty", 0.0))
 
     ringkasan_slot = ", ".join(
-        [f"{s['coin']}[{s['style']}:{s['status']}:Rp{s['capital_idr']:,.0f}@Rp{s['entry_price_idr']:,.0f}]" for s in state["active_slots"]]
+        [f"{s['coin']}[{s['style']}:{s['status']}:Rp{s['capital_idr']:,.0f}@Rp{s['entry_price_idr']:,.0f}->TP:Rp{s['tp_price_idr']:,.0f}]" for s in state["active_slots"]]
     ) or "Semua slot kosong"
     catatan_transaksi = " | ".join(log_khusus_transaksi)[:490]
 
     payload = {
         "tanggal": waktu_lokal,
-        "pasangan": f"PRO KELLY AI ({len(state['active_slots'])} Posisi)",
+        "pasangan": f"PRO SCALPER 5M ({len(state['active_slots'])} Posisi)",
         "modal_aktif_idr": sum(s["capital_idr"] for s in state["active_slots"]),
         "harga_acuan_idr": round(dompet.get("idr_free", 0.0), 0),
         "jumlah_grid_tereksekusi": state["completed_trades_today"],
         "profit_terealisasi_idr": state["realized_profit_today_idr"],
         "floating_pnl_idr": round(floating_pnl, 0),
         "tren_1h": ringkasan_slot,
-        "rsi_14": "Scalping-15M+1H",
+        "rsi_14": "Triple-TF-5M/15M/1H",
         "analisis_ai_gemini": catatan_transaksi
     }
 
@@ -954,7 +1037,7 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     if log_recovery:
         dompet = ambil_saldo_lengkap_indodax()
 
-    # Langkah 2: Analisa teknikal (15M + 1H) & kawal semua posisi aktif
+    # Langkah 2: Analisa Triple-Timeframe (5M + 15M + 1H) & kawal semua posisi aktif
     peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live_map)
     state, log_kawal, log_tx_kawal, ada_aksi_kawal = evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa_pasar, dompet)
     state, log_alokasi, log_tx_beli, ada_aksi_beli = kelola_anggaran_kosong_dengan_analisa(state, peta_analisa_pasar, dompet)
@@ -965,7 +1048,6 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     for baris in semua_log_konsol:
         print("  ", baris)
 
-    # Kumpulkan HANYA log yang berisi kejadian transaksi nyata (Entry, Terbeli, TP, SL, Batal, Recovery)
     log_khusus_transaksi = log_recovery + log_tx_kawal + log_tx_beli
     ada_transaksi_nyata = bool(log_khusus_transaksi) or ada_aksi_kawal or ada_aksi_beli
 
@@ -981,7 +1063,6 @@ if __name__ == "__main__":
     batas_waktu_siaga = waktu_mulai + (ACTIVE_WATCH_MINUTES * 60)
 
     state = muat_state_bot()
-    # paksa_kirim_sheets=False agar Google Sheets HANYA mencatat saat ada Entry, TP, atau SL!
     state, butuh_siaga, alasan_siaga, _, peta_analisa_terakhir = jalankan_satu_siklus_penuh(
         state, paksa_kirim_sheets=False
     )
