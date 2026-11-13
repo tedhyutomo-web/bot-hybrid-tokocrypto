@@ -13,6 +13,20 @@
       "rsi_at_entry": 47.8,
       "buy_order_id": "116645125",
       "timestamp": 1794575640.8873742
+    },
+    {
+      "coin": "ETH",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 61875.0,
+      "qty": 0.00173,
+      "entry_price_idr": 35766000,
+      "tp_price_idr": 36410000.0,
+      "sl_price_idr": 35194000.0,
+      "highest_price_idr": 35766000,
+      "rsi_at_entry": 52.0,
+      "buy_order_id": "218325786",
+      "timestamp": 1794579848.6984997
     }
   ],
   "realized_profit_today_idr": 439.0,
