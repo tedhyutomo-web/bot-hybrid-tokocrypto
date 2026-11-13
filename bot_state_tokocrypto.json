@@ -17,16 +17,18 @@
     {
       "coin": "DOGE",
       "style": "SNIPER",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 62036,
       "qty": 52,
       "entry_price_idr": 1193,
-      "tp_price_idr": 1214.0,
+      "tp_price_idr": 1214,
       "sl_price_idr": 1174.0,
-      "highest_price_idr": 1193,
+      "highest_price_idr": 1198.0,
       "rsi_at_entry": 53.8,
       "buy_order_id": "135684190",
-      "timestamp": 1794574507.4084234
+      "timestamp": 1794574507.4084234,
+      "filled_timestamp": 1794574931.684382,
+      "tp_order_id": "135684318"
     }
   ],
   "realized_profit_today_idr": 0.0,
