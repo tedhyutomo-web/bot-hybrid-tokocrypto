@@ -27,9 +27,14 @@
       "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah dan RSI 5M belum cukup jenuh beli."
     },
     "SUI": {
-      "until": 1794669852.4112144,
-      "last_score": 82.3,
-      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
+      "until": 1794671353.1776252,
+      "last_score": 83.7,
+      "reason": "[gemini-3.5-flash] TUNDA - Volume sangat rendah dan tren 3TF turun penuh."
+    },
+    "ETH": {
+      "until": 1794671353.1776252,
+      "last_score": 82.7,
+      "reason": "[gemini-3.5-flash] TUNDA - Kompas BTC dan tren 3TF turun penuh."
     }
   }
 }
