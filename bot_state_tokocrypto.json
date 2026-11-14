@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "SOL",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37992.0,
+      "qty": 0.0287,
+      "entry_price_idr": 1323777,
+      "tp_price_idr": 1341648.0,
+      "sl_price_idr": 1299949.0,
+      "highest_price_idr": 1323777,
+      "rsi_at_entry": 35.6,
+      "buy_order_id": "116863280",
+      "unverified_by_ai": false,
+      "timestamp": 1794685151.6374583
+    }
+  ],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
@@ -12,19 +28,14 @@
       "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
     },
     "DOGE": {
-      "until": 1794681329.5962281,
-      "last_score": 75.5,
-      "reason": "[gemini-3.5-flash] TUNDA - Volume 0.3x terlalu rendah dan momentum belum mengonfirmasi rebound."
+      "until": 1794685593.3105836,
+      "last_score": 75.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume mati 0.23x, risiko terseret tren turun BTCIDR."
     },
     "ETH": {
       "until": 1794683648.7277,
       "last_score": 73.2,
       "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
-    },
-    "SOL": {
-      "until": 1794684848.567002,
-      "last_score": 79.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko terseret tren turun."
     }
   }
 }
