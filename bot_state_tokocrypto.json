@@ -1,8 +1,8 @@
 {
   "active_slots": [],
-  "realized_profit_today_idr": -4084.0,
-  "completed_trades_today": 7,
-  "last_reset_date": "2026-11-14",
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0,
+  "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 2802.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
@@ -20,11 +20,6 @@
       "until": 1794669248.1130347,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
-    },
-    "SOL": {
-      "until": 1794674647.888897,
-      "last_score": 78.1,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren BTC/SOL bearish total dan volume rendah, risiko tinggi."
     },
     "SUI": {
       "until": 1794674946.2002537,
