@@ -1,20 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 46668.0,
-      "qty": 15.65,
-      "entry_price_idr": 2982,
-      "tp_price_idr": 3022.0,
-      "sl_price_idr": 2928.0,
-      "highest_price_idr": 2982,
-      "rsi_at_entry": 27.6,
-      "buy_order_id": "143816286",
-      "timestamp": 1794648918.4429643
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -4084.0,
   "completed_trades_today": 7,
   "last_reset_date": "2026-11-14",
