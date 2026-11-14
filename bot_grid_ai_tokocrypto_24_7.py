@@ -880,70 +880,122 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
 
             estimasi_nilai_jual_skrg = qty_milik_slot * harga_eksekusi_jual
 
-            # 2. PENYELAMATAN PROFIT 3 LAPIS (WAJIB SEDANG UNTUNG DI HARGA BID & TREN BENAR-BENAR MELEMAH)
-            tren_patah_valid = (
-                not info_pasar.get("tren_5m_naik", True)
-                and not info_pasar.get("tren_15m_naik", True)
-                and info_pasar.get("candle_jatuh_beruntun", False)
+            # 2. DYNAMIC TECHNICAL TP + ANTI-SLIPPAGE GUARD (BEBAS BATAS WAKTU & ANTI TERJUAL IMPAS)
+            batas_pemicu_eval_tp_pct = 0.0070  # Minimal Bid +0.70% untuk mulai evaluasi (buffer aman di atas fee 0.55%)
+            batas_lantai_eksekusi_pct = 0.0065 # Batas mutlak eksekusi Limit Sell minimal +0.65% (pantang jual di +0.55%)
+
+            sedang_untung_aman_bid = (kenaikan_bid_pct >= batas_pemicu_eval_tp_pct)
+            candle_5m_merah = not (info_pasar.get("candle_5m_hijau", True) if info_pasar else True)
+            tren_5m_patah = not (info_pasar.get("tren_5m_naik", True) if info_pasar else True)
+            candle_jatuh = bool(info_pasar.get("candle_jatuh_beruntun", False)) if info_pasar else False
+
+            # Deteksi pelemahan teknikal real-time kapan saja tanpa syarat tunggu 15 menit / 2.5 jam
+            sinyal_teknikal_melemah = (
+                tren_5m_patah
+                or candle_jatuh
+                or (candle_5m_merah and (tren_sekarang != "UPTREND" or rsi_sekarang < 52.0))
+            )
+            sinyal_koreksi_puncak = (
+                (pencapaian_puncak_ke_tp >= 0.60 or kenaikan_puncak_pct >= 0.0085)
+                and harga_sekarang <= puncak_tercatat * 0.9970
+                and (candle_5m_merah or tren_5m_patah)
+            )
+            sinyal_momentum_melambat = (
+                kenaikan_bid_pct >= 0.0090
+                and (tren_sekarang != "UPTREND" or info_pasar.get("gaya", "") not in ["SNIPER", "GRID"])
             ) if info_pasar else False
 
-            kondisi_scratch_profit = (
-                kenaikan_bid_pct > SCRATCH_PROFIT_BID_PCT
-                and tren_patah_valid
-                and rsi_sekarang < 43.0
-                and lama_pegang_jam >= 0.25
-            )
-            kondisi_tp_range = (
-                pencapaian_puncak_ke_tp >= 0.72
-                and harga_sekarang < puncak_tercatat * 0.995
-                and kenaikan_bid_pct >= TP_RANGE_MIN_PROFIT_PCT
-                and tren_sekarang != "UPTREND"
-                and rsi_sekarang < 48.0
-            )
-            kondisi_time_stop = (
-                lama_pegang_jam >= TIME_STOP_HOURS
-                and kenaikan_bid_pct >= TIME_STOP_MIN_PROFIT_PCT
-                and tren_sekarang != "UPTREND"
-                and rsi_sekarang < 48.0
+            # Anti-Spam Evaluasi Profit: Jika Gemini memutuskan TAHAN, tunggu 5 menit (1 candle 5M)
+            # kecuali jika profit di harga Bid terkikis turun >= 0.20% dari saat evaluasi terakhir
+            waktu_eval_tp_terakhir = float(slot.get("last_tp_eval_ts", 0.0))
+            bid_eval_tp_terakhir = float(slot.get("last_tp_eval_bid_idr", harga_eksekusi_jual))
+            lewat_jeda_eval_tp = (now_ts - waktu_eval_tp_terakhir) >= 300.0
+            profit_terkikis = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) <= -0.0020
+
+            butuh_evaluasi_tp_dini = (
+                sedang_untung_aman_bid
+                and (sinyal_teknikal_melemah or sinyal_koreksi_puncak or sinyal_momentum_melambat)
+                and (lewat_jeda_eval_tp or profit_terkikis)
             )
 
-            if (kondisi_scratch_profit or kondisi_tp_range or kondisi_time_stop) and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
-                if kondisi_tp_range:
-                    label_exit = "TP RANGE"
-                elif kondisi_time_stop:
-                    label_exit = f"TIME-STOP {lama_pegang_jam:.1f}JAM"
+            if butuh_evaluasi_tp_dini and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
+                if sinyal_koreksi_puncak:
+                    label_exit = f"DYNAMIC TP: KOREKSI DARI PUNCAK ({pencapaian_puncak_ke_tp*100:.0f}% TARGET TP)"
+                elif sinyal_momentum_melambat:
+                    label_exit = "DYNAMIC TP: MOMENTUM MELAMBAT"
                 else:
-                    label_exit = "SCRATCH PROFIT (>+0.60% TREN PATAH)"
+                    label_exit = "DYNAMIC TP: SINYAL REVERSAL / TREN 5M MELEMAH"
 
                 estimasi_untung_bersih_pct = (kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT) * 100.0
+                rsi_15m_tp = info_pasar.get("rsi_15m", rsi_sekarang) if info_pasar else rsi_sekarang
+                vol_tp = info_pasar.get("rasio_vol", 1.0) if info_pasar else 1.0
+                arah_candle_tp = "Merah/Turun" if candle_5m_merah else "Hijau/Tertahan"
                 deskripsi_kasus = (
-                    f"Posisi sudah untung kotor +{kenaikan_bid_pct*100:.2f}% di harga Bid (Untung Bersih +{estimasi_untung_bersih_pct:.2f}% "
-                    f"setelah fee Indodax) [{label_exit}], namun indikator 5M & 15M berbalik turun ({prediksi_koin}). "
-                    f"JUAL SEKARANG mumpung masih untung atau TAHAN antrean TP?"
+                    f"Posisi sudah UNTUNG BERSIH +{estimasi_untung_bersih_pct:.2f}% setelah fee Indodax "
+                    f"(Untung Kotor Bid: +{kenaikan_bid_pct*100:.2f}%, Umur: {lama_pegang_jam*60:.0f} menit) [{label_exit}]. "
+                    f"Indikator saat ini: Tren {tren_detail}, RSI 5M:{rsi_sekarang}, RSI 15M:{rsi_15m_tp}, "
+                    f"Candle 5M:{arah_candle_tp}, Vol:{vol_tp}x, Diagnosa:{prediksi_koin}. "
+                    f"Apakah harga berisiko turun sehingga harus TAKE PROFIT SEKARANG untuk mengunci keuntungan (jawab YA), "
+                    f"ataukah tren naik masih kuat menuju target TP penuh Rp{tp_idr:,.0f} (jawab TAHAN)?"
                 )
                 setuju_jual, alasan_ai = konsultasi_keputusan_exit_gemini(
                     coin, mode_slot, entry_idr, harga_eksekusi_jual, tp_idr, puncak_tercatat, rsi_sekarang, tren_detail,
                     deskripsi_kasus, default_jika_limit=False
                 )
                 if setuju_jual:
-                    if slot.get("tp_order_id"):
-                        batalkan_order_indodax(coin, slot["tp_order_id"])
-                        slot["tp_order_id"] = None
-                        time.sleep(2)
-                    res_jual = eksekusi_order_indodax(coin, "SELL", harga_eksekusi_jual, qty_koin=qty_milik_slot)
-                    if apakah_order_sukses(res_jual):
-                        profit_bersih = round(slot["capital_idr"] * (kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
-                        catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
-                        ada_eksekusi_penting = True
-                        pesan = (
-                            f"⚡ [{label_exit} DIEKSEKUSI] {coin} (Qty:{qty_milik_slot}) dijual di Rp{harga_eksekusi_jual:,.0f} "
-                            f"(+{kenaikan_bid_pct*100:.2f}%, Profit Bersih: +Rp{profit_bersih:,.0f}) | AI: {alasan_ai}"
-                        )
-                        log_aksi.append(pesan)
-                        log_transaksi.append(pesan)
-                        continue
+                    # CEK ULANG HARGA BID REAL-TIME SETELAH GEMINI SELESAI BERPIKIR (SEBELUM CABUT TP!)
+                    peta_ticker_terbaru = ambil_harga_idr_semua_koin()
+                    data_koin_terbaru = peta_ticker_terbaru.get(coin, {})
+                    bid_detik_ini = float(data_koin_terbaru.get("buy", harga_bid_asli) or harga_bid_asli)
+                    last_detik_ini = float(data_koin_terbaru.get("last", harga_sekarang) or harga_sekarang)
+                    harga_jual_detik_ini = bulatkan_harga_indodax(coin, max(bid_detik_ini, last_detik_ini * 0.999))
+                    pct_untung_detik_ini = (harga_jual_detik_ini - entry_idr) / entry_idr
+
+                    # Hanya cabut TP & jual jika harga detik ini MASIH di atas lantai pengaman (+0.65%)
+                    if pct_untung_detik_ini >= batas_lantai_eksekusi_pct:
+                        harga_lantai_aman = bulatkan_harga_indodax(coin, entry_idr * (1.0 + batas_lantai_eksekusi_pct))
+                        harga_eksekusi_final = max(harga_jual_detik_ini, harga_lantai_aman)
+                        pct_final = (harga_eksekusi_final - entry_idr) / entry_idr
+
+                        if slot.get("tp_order_id"):
+                            batalkan_order_indodax(coin, slot["tp_order_id"])
+                            slot["tp_order_id"] = None
+                            time.sleep(0.5)  # Jeda cepat 0.5 detik agar tidak kehilangan momentum harga Bid
+
+                        res_jual = eksekusi_order_indodax(coin, "SELL", harga_eksekusi_final, qty_koin=qty_milik_slot)
+                        if apakah_order_sukses(res_jual):
+                            profit_bersih = round(slot["capital_idr"] * (pct_final - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                            catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
+                            ada_eksekusi_penting = True
+                            pesan = (
+                                f"⚡ [{label_exit} DIEKSEKUSI] {coin} (Qty:{qty_milik_slot}) dijual di Rp{harga_eksekusi_final:,.0f} "
+                                f"(Bid:+{pct_final*100:.2f}%, Profit Bersih: +Rp{profit_bersih:,.0f}) | AI: {alasan_ai}"
+                            )
+                            log_aksi.append(pesan)
+                            log_transaksi.append(pesan)
+                            continue
+                        else:
+                            pasang_antrean_tp_di_indodax(slot, qty_milik_slot)
                     else:
-                        pasang_antrean_tp_di_indodax(slot, qty_milik_slot)
+                        # Jika saat AI berpikir harga keburu turun ke +0.55%, JANGAN cabut TP utama!
+                        slot["last_tp_eval_ts"] = now_ts
+                        slot["last_tp_eval_bid_idr"] = harga_jual_detik_ini
+                        log_aksi.append(
+                            f"🛡️ [ANTI-SLIPPAGE GUARD] {coin} batal Dynamic TP karena harga Bid turun ke +{pct_untung_detik_ini*100:.2f}% "
+                            f"saat AI berpikir (di bawah batas aman +{batas_lantai_eksekusi_pct*100:.2f}%). Antrean TP Rp{tp_idr:,.0f} tetap dijaga!"
+                        )
+                else:
+                    slot["last_tp_eval_ts"] = now_ts
+                    slot["last_tp_eval_bid_idr"] = harga_eksekusi_jual
+                    slot["last_tp_eval_reason"] = alasan_ai
+                    log_aksi.append(
+                        f"💎 [{label_exit} -> DITAHAN GEMINI AI] {coin} (Untung Bersih +{estimasi_untung_bersih_pct:.2f}%) dikawal menuju TP Rp{tp_idr:,.0f} | AI: {alasan_ai}"
+                    )
+            elif sedang_untung_aman_bid and slot.get("last_tp_eval_reason"):
+                sisa_jeda_tp = max(0.0, (300.0 - (now_ts - waktu_eval_tp_terakhir)) / 60.0)
+                log_aksi.append(
+                    f"💎 [STATUS PROFIT DINI: DITAHAN GEMINI AI (Cek ulang {sisa_jeda_tp:.1f}m)] {coin} (Bid:+{kenaikan_bid_pct*100:.2f}%) | AI Terakhir: {slot.get('last_tp_eval_reason')}"
+                )
 
             # 3. FITUR EVALUASI MINUS DINI (<= -1.00%) & HARD STOP LOSS DENGAN KONSULTASI GEMINI AI
             # Cek Hard SL baik dari harga Last maupun harga Bid nyata agar tidak terhalang selisih beberapa Rupiah
