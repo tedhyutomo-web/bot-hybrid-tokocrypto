@@ -1,16 +1,26 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 34162,
+      "qty": 31,
+      "entry_price_idr": 1102,
+      "tp_price_idr": 1117.0,
+      "sl_price_idr": 1082.0,
+      "highest_price_idr": 1102,
+      "rsi_at_entry": 47.1,
+      "buy_order_id": "135777368",
+      "timestamp": 1794680807.5017052
+    }
+  ],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 2382.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "ADA": {
-      "until": 1794669248.1130347,
-      "last_score": 78.0,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
-    },
     "XRP": {
       "until": 1794680048.1392863,
       "last_score": 73.5,
@@ -25,6 +35,11 @@
       "until": 1794678852.7002816,
       "last_score": 71.4,
       "reason": "[gemini-3.5-flash] TUNDA - Volume 0.55x terlalu mati dan tren masih DN."
+    },
+    "SUI": {
+      "until": 1794681098.755572,
+      "last_score": 71.5,
+      "reason": "[gemini-3.5-flash] TUNDA - Volume mati 0.58x dan tekanan jual 5M berisiko."
     }
   }
 }
