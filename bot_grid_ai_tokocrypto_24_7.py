@@ -854,23 +854,37 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     else:
                         pasang_antrean_tp_di_indodax(slot, qty_milik_slot)
 
-            # 3. FITUR SMART SL RANGE & HARD STOP LOSS (PATUH BATAS SL_IDR & ANTI CUT-LOSS PREMATUR)
-            dump_deras_valid = (
-                tren_patah_valid
-                and rsi_sekarang < 34.0
-                and (info_pasar.get("rasio_vol", 1.0) >= 1.35 if info_pasar else False)
+            # 3. FITUR EVALUASI MINUS DINI (<= -1.00%) & HARD STOP LOSS DENGAN KONSULTASI GEMINI AI
+            kena_hard_sl = (harga_sekarang <= sl_idr)
+            kena_zona_minus_dini = (
+                (kenaikan_bid_pct <= -0.0100 or kenaikan_skrg_pct <= -0.0100)
+                and (tren_sekarang != "UPTREND" or not (info_pasar.get("tren_5m_naik", True) if info_pasar else True))
             )
-            butuh_sl = (harga_sekarang <= sl_idr) or (kenaikan_skrg_pct <= -0.0150 and dump_deras_valid)
+
+            # Pengaman Anti-Spam: Jika sudah dievaluasi & Gemini menjawab TAHAN, tunggu 10 menit
+            # kecuali harga turun lebih dalam lagi (>= -0.25% dari evaluasi terakhir) atau menyentuh Hard SL
+            waktu_eval_sl_terakhir = float(slot.get("last_sl_eval_ts", 0.0))
+            harga_eval_sl_terakhir = float(slot.get("last_sl_eval_price_idr", entry_idr))
+            lewat_jeda_eval = (now_ts - waktu_eval_sl_terakhir) >= 600.0
+            turun_makin_dalam = ((harga_sekarang - harga_eval_sl_terakhir) / harga_eval_sl_terakhir) <= -0.0025
+
+            butuh_sl = kena_hard_sl or (kena_zona_minus_dini and (lewat_jeda_eval or turun_makin_dalam))
             if butuh_sl and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
-                label_sl = "HARD STOP LOSS" if harga_sekarang <= sl_idr else "SMART SL DUMP DERAS"
+                label_sl = "HARD STOP LOSS" if kena_hard_sl else "EVALUASI CUT LOSS DINI (MINUS >1%)"
+                rsi_15m_k = info_pasar.get("rsi_15m", rsi_sekarang) if info_pasar else rsi_sekarang
+                vol_k = info_pasar.get("rasio_vol", 1.0) if info_pasar else 1.0
+                arah_candle = "Hijau/Tertahan" if (info_pasar and info_pasar.get("candle_5m_hijau")) else "Merah/Turun"
                 kasus_sl = (
-                    f"Posisi turun {kenaikan_skrg_pct*100:+.2f}% menyentuh {label_sl} (Batas SL: Rp{sl_idr:,.0f}, "
-                    f"Diagnosa: {prediksi_koin}). Apakah tren benar-benar patah sehingga harus CUT LOSS sekarang (jawab YA) "
-                    f"ataukah ini hanya oversold 5M yang berpotensi memantul sehingga layak TAHAN (jawab TAHAN)?"
+                    f"Posisi sedang minus {kenaikan_bid_pct*100:+.2f}% di harga Bid [{label_sl}] "
+                    f"(Harga Skrg: Rp{harga_sekarang:,.0f}, Batas Hard SL: Rp{sl_idr:,.0f}, "
+                    f"Tren: {tren_detail}, RSI 5M:{rsi_sekarang}, RSI 15M:{rsi_15m_k}, Candle 5M:{arah_candle}, Vol:{vol_k}x, "
+                    f"Diagnosa: {prediksi_koin}). Apakah harga akan terus turun sehingga harus CUT LOSS DINI sekarang "
+                    f"untuk memperkecil kerugian (jawab YA), atau masih berpeluang memantul naik sehingga layak DITUNGGU "
+                    f"sampai titik Hard SL (jawab TAHAN)?"
                 )
                 setuju_sl_ai, alasan_sl_ai = konsultasi_keputusan_exit_gemini(
                     coin, mode_slot, entry_idr, harga_sekarang, tp_idr, puncak_tercatat, rsi_sekarang, tren_detail,
-                    kasus_sl, default_jika_limit=(harga_sekarang <= sl_idr)
+                    kasus_sl, default_jika_limit=kena_hard_sl
                 )
                 if kenaikan_skrg_pct <= EMERGENCY_SL_PCT and not setuju_sl_ai:
                     setuju_sl_ai = True
@@ -889,7 +903,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         ada_eksekusi_penting = True
                         pesan = (
                             f"🛡️ [{label_sl} DIEKSEKUSI] {coin} (Qty:{qty_milik_slot}) dijual di Rp{harga_jual_sl:,.0f} "
-                            f"({kenaikan_skrg_pct*100:+.2f}%, PnL: Rp{pnl_bersih:,.0f} | Cooldown {SL_COOLDOWN_MINUTES}m & Mode Recovery Aktif) | AI: {alasan_sl_ai}"
+                            f"(Bid:{kenaikan_bid_pct*100:+.2f}%, PnL: Rp{pnl_bersih:,.0f} | Cooldown {SL_COOLDOWN_MINUTES}m & Mode Recovery Aktif) | AI: {alasan_sl_ai}"
                         )
                         log_aksi.append(pesan)
                         log_transaksi.append(pesan)
@@ -897,8 +911,11 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     else:
                         pasang_antrean_tp_di_indodax(slot, qty_milik_slot)
                 else:
+                    slot["last_sl_eval_ts"] = now_ts
+                    slot["last_sl_eval_price_idr"] = harga_sekarang
+                    slot["last_sl_eval_reason"] = alasan_sl_ai
                     log_aksi.append(
-                        f"🛑 [SL DITAHAN GEMINI AI] {coin} ({kenaikan_skrg_pct*100:+.2f}%) ditahan menunggu pantulan | AI: {alasan_sl_ai}"
+                        f"🛑 [{label_sl} -> DITAHAN GEMINI AI] {coin} (Bid:{kenaikan_bid_pct*100:+.2f}%) ditunggu ke titik SL Rp{sl_idr:,.0f} | AI: {alasan_sl_ai}"
                     )
 
             # 4. Pastikan antrean LIMIT SELL (TP) terpasang di buku order Indodax
