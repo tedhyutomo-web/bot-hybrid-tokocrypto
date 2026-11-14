@@ -1,34 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33694.0,
-      "qty": 11.25,
-      "entry_price_idr": 2995,
-      "tp_price_idr": 3035.0,
-      "sl_price_idr": 2941.0,
-      "highest_price_idr": 2995,
-      "rsi_at_entry": 39.5,
-      "buy_order_id": "143798574",
-      "timestamp": 1794627927.6702254
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 34320,
-      "qty": 30,
-      "entry_price_idr": 1144,
-      "tp_price_idr": 1159.0,
-      "sl_price_idr": 1123.0,
-      "highest_price_idr": 1144,
-      "rsi_at_entry": 41.4,
-      "buy_order_id": "135728486",
-      "timestamp": 1794627953.4349911
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -4084.0,
   "completed_trades_today": 7,
   "last_reset_date": "2026-11-14",
