@@ -1,21 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37992.0,
-      "qty": 0.0287,
-      "entry_price_idr": 1323777,
-      "tp_price_idr": 1341648.0,
-      "sl_price_idr": 1299949.0,
-      "highest_price_idr": 1323777,
-      "rsi_at_entry": 35.6,
-      "buy_order_id": "116863280",
-      "unverified_by_ai": false,
-      "timestamp": 1794685151.6374583
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
