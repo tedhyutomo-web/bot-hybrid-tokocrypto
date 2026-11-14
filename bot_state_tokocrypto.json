@@ -21,15 +21,10 @@
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
     },
-    "BTC": {
-      "until": 1794664450.0633416,
-      "last_score": 75.2,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish kuat dan volume rendah, risiko berlanjut turun."
-    },
     "SOL": {
-      "until": 1794669248.1130347,
-      "last_score": 77.9,
-      "reason": "[gemini-3-flash-preview] TUNDA - BTC RSI ekstrem rendah, tunggu stabilisasi pasar demi recovery."
+      "until": 1794671047.0177534,
+      "last_score": 80.9,
+      "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah dan RSI 5M belum cukup jenuh beli."
     },
     "SUI": {
       "until": 1794669852.4112144,
