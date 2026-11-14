@@ -17,9 +17,9 @@
       "reason": "[gemini-3-flash-preview] TUNDA - RSI netral dan tren mayor turun, konfirmasi pembalikan lemah."
     },
     "ADA": {
-      "until": 1794664147.214101,
-      "last_score": 72.6,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren semua timeframe turun dan volume sangat rendah."
+      "until": 1794669248.1130347,
+      "last_score": 78.0,
+      "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
     },
     "BTC": {
       "until": 1794664450.0633416,
@@ -27,9 +27,9 @@
       "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish kuat dan volume rendah, risiko berlanjut turun."
     },
     "SOL": {
-      "until": 1794667751.1680984,
-      "last_score": 73.0,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish total dan volume rendah, risiko terseret arus BTC."
+      "until": 1794669248.1130347,
+      "last_score": 77.9,
+      "reason": "[gemini-3-flash-preview] TUNDA - BTC RSI ekstrem rendah, tunggu stabilisasi pasar demi recovery."
     }
   }
 }
