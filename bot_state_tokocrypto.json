@@ -8,15 +8,48 @@
       "qty": 2.59,
       "entry_price_idr": 12711,
       "tp_price_idr": 12919.0,
-      "sl_price_idr": 12482.0,
-      "highest_price_idr": 12777.0,
+      "sl_price_idr": 12797.0,
+      "highest_price_idr": 12875.0,
       "rsi_at_entry": 52.2,
       "buy_order_id": "44064482",
       "unverified_by_ai": false,
       "timestamp": 1794698124.1111395,
       "filled_timestamp": 1794698263.5216343,
       "peak_verified": true,
-      "tp_order_id": "44064718"
+      "tp_order_id": "44064718",
+      "last_tp_eval_ts": 1794699846.8330302,
+      "last_tp_eval_bid_idr": 12801,
+      "last_tp_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - Tren mayor turun, kawal ke TP penuh lebih aman."
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33106.0,
+      "qty": 0.00102,
+      "entry_price_idr": 32424000.0,
+      "tp_price_idr": 33001000.0,
+      "sl_price_idr": 31840000.0,
+      "highest_price_idr": 32142000,
+      "rsi_at_entry": 42.3,
+      "buy_order_id": "218573487",
+      "unverified_by_ai": false,
+      "timestamp": 1794699995.2712893
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33954.0,
+      "qty": 2.8e-05,
+      "entry_price_idr": 1177343000.0,
+      "tp_price_idr": 1197681000,
+      "sl_price_idr": 1156151000,
+      "highest_price_idr": 1170844000,
+      "rsi_at_entry": 34.7,
+      "buy_order_id": "274162319",
+      "unverified_by_ai": false,
+      "timestamp": 1794700071.2863789
     }
   ],
   "realized_profit_today_idr": -1687.0,
@@ -34,6 +67,11 @@
       "until": 1794698122.4646156,
       "last_score": 82.5,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
+    },
+    "XRP": {
+      "until": 1794700146.8330302,
+      "last_score": 81.5,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume masih terlalu rendah (0.57x) dan rawan turun."
     }
   }
 }
