@@ -555,8 +555,8 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 "skor": conviction_score,
                 "prediksi": prediksi,
                 "siap_entry": siap_entry,
+                "teknikal_valid": teknikal_valid,
                 "bobot_alokasi": round(conviction_score * faktor_bobot_status, 2)
-            }
         except Exception:
             continue
     return peta_analisa
@@ -867,7 +867,11 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             umur_antre_menit = (now_ts - float(slot.get("timestamp", now_ts))) / 60.0
             umur_antre_jam = umur_antre_menit / 60.0
 
-            masih_layak_entry = bool(info_pasar and info_pasar.get("siap_entry") is True and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE)
+            masih_layak_entry = bool(
+                info_pasar
+                and info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
+                and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
+            )
             if not masih_layak_entry:
                 batalkan_order_indodax(coin, slot.get("buy_order_id"))
                 dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
@@ -1162,6 +1166,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         maks_koin_terbiayai_aman = int(saldo_idr_tersedia // MIN_NEW_BUY_ALLOCATION_IDR)
         batas_ambil_kandidat = min(sisa_slot_maks, maks_koin_terbiayai_aman)
         koin_sudah_ada = {s["coin"] for s in slot_aktif_sementara}
+        ai_hold_map = state.setdefault("ai_entry_hold_until", {})
 
         kandidat_siap_entry = sorted(
             [
@@ -1464,8 +1469,14 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
 
             setuju_beli, alasan_gemini = hasil_batch_ai.get(rb["task_id"], (False, "TUNDA - Menunggu konfirmasi Batch AI."))
             if not setuju_beli:
-                log_aksi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin}] Setup ditunda AI: {alasan_gemini}")
+                state.setdefault("ai_entry_hold_until", {})[coin] = {
+                    "until": now_ts + 300.0,
+                    "last_score": kandidat["skor"],
+                    "reason": alasan_gemini
+                }
+                log_aksi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin} (Tahan 5m)] Setup ditunda AI: {alasan_gemini}")
                 continue
+            state.setdefault("ai_entry_hold_until", {}).pop(coin, None)
 
             tp_idr = kandidat["tp_ideal_idr"]
             sl_idr = kandidat["sl_ideal_idr"]
