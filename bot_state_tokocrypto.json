@@ -9,13 +9,16 @@
       "entry_price_idr": 33623000,
       "tp_price_idr": 34084000.0,
       "sl_price_idr": 33018000.0,
-      "highest_price_idr": 33821000.0,
+      "highest_price_idr": 34008000.0,
       "rsi_at_entry": 51.4,
       "buy_order_id": "218508702",
       "timestamp": 1794676825.2771258,
       "filled_timestamp": 1794676897.6494482,
       "peak_verified": true,
-      "tp_order_id": "218508888"
+      "tp_order_id": "218508888",
+      "last_tp_eval_ts": 1794677347.6264796,
+      "last_tp_eval_bid_idr": 33961000,
+      "last_tp_eval_reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     }
   ],
   "realized_profit_today_idr": 226.0,
