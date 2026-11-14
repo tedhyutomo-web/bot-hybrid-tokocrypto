@@ -856,7 +856,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             umur_antre_menit = (now_ts - float(slot.get("timestamp", now_ts))) / 60.0
             umur_antre_jam = umur_antre_menit / 60.0
 
-                        masih_layak_entry = bool(
+            masih_layak_entry = bool(
                 info_pasar
                 and info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
                 and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
