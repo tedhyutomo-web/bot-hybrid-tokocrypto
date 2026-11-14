@@ -21,6 +21,21 @@
       "last_sl_eval_price_idr": 1048.0,
       "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M sangat oversold, potensi pantulan teknis segera terjadi.",
       "last_eval_was_hard_sl": false
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 62806.0,
+      "qty": 3.73,
+      "entry_price_idr": 16838,
+      "tp_price_idr": 17208.0,
+      "sl_price_idr": 16535.0,
+      "highest_price_idr": 16838,
+      "rsi_at_entry": 41.3,
+      "buy_order_id": "220778056",
+      "unverified_by_ai": false,
+      "timestamp": 1794692351.928905
     }
   ],
   "realized_profit_today_idr": 667.0,
