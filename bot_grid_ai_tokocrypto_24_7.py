@@ -548,67 +548,95 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
 _MODEL_GEMINI_AKTIF = None
 
 def dapatkan_daftar_model_gemini_aktif():
-    """Mendeteksi otomatis daftar nama model Gemini yang aktif di server Google saat ini."""
+    """Mendeteksi model Gemini aktif khusus pengguna baru (otomatis melewati seri 2.0 & 2.5 yang ditutup)."""
     global _MODEL_GEMINI_AKTIF
-    kandidat_utama = [
-        "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
+    kandidat_baru = [
+        "gemini-flash-lite-latest",
         "gemini-flash-latest",
-        "gemini-2.5-pro",
-        "gemini-pro-latest"
+        "gemini-3-flash-preview",
+        "gemini-3.0-flash"
     ]
     if _MODEL_GEMINI_AKTIF:
-        return [_MODEL_GEMINI_AKTIF] + [m for m in kandidat_utama if m != _MODEL_GEMINI_AKTIF]
+        return [_MODEL_GEMINI_AKTIF] + [m for m in kandidat_baru if m != _MODEL_GEMINI_AKTIF]
 
     try:
         url_list = f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}"
         req = urllib.request.Request(url_list, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode())
-            model_server = []
+            model_valid = []
             for m in data.get("models", []):
                 methods = m.get("supportedGenerationMethods", [])
                 nama = str(m.get("name", "")).replace("models/", "")
-                if "generateContent" in methods and "gemini" in nama.lower() and "tts" not in nama.lower() and "image" not in nama.lower():
-                    model_server.append(nama)
-            model_flash = [x for x in model_server if "flash" in x.lower()]
-            model_lain = [x for x in model_server if "flash" not in x.lower()]
+                nama_kecil = nama.lower()
+                # Lewati model seri 2.0, 2.5, 1.5, gambar, atau audio yang tidak relevan/ditutup untuk user baru
+                if (
+                    "generateContent" in methods
+                    and "gemini" in nama_kecil
+                    and not any(x in nama_kecil for x in ["2.5", "2.0", "1.5", "tts", "image", "vision", "embedding", "aqa"])
+                ):
+                    model_valid.append(nama)
+
+            # Urutkan: utamakan flash-lite & flash generasi terbaru (cepat & hemat kuota)
+            prioritas_flash = [x for x in model_valid if "flash" in x.lower()]
+            prioritas_lain = [x for x in model_valid if "flash" not in x.lower()]
             urutan_final = []
-            for k in kandidat_utama + model_flash + model_lain:
-                if k in model_server and k not in urutan_final:
+            for k in kandidat_baru + prioritas_flash + prioritas_lain:
+                if (k in model_valid or k in ["gemini-flash-lite-latest", "gemini-flash-latest"]) and k not in urutan_final:
                     urutan_final.append(k)
             if urutan_final:
                 return urutan_final[:4]
     except Exception:
         pass
-    return kandidat_utama[:3]
+    return ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3-flash-preview"]
 
-def panggil_teks_gemini_ai(prompt, timeout_detik=12):
-    """Memanggil API Gemini dengan Auto-Discovery model aktif & fallback anti-404."""
+def panggil_teks_gemini_ai(prompt, timeout_detik=25):
+    """Memanggil API Gemini dengan mode Cepat (Tingkat Penalaran Rendah) & batas timeout 25 detik."""
     global _MODEL_GEMINI_AKTIF
     daftar_model = dapatkan_daftar_model_gemini_aktif()
     catatan_err = []
+
     for nama_model in daftar_model:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{nama_model}:generateContent?key={GEMINI_API_KEY}"
-            body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
-            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
-            with urllib.request.urlopen(req, timeout=timeout_detik) as resp:
-                hasil = json.loads(resp.read().decode())
-                teks = hasil["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
-                if teks:
-                    _MODEL_GEMINI_AKTIF = nama_model
-                    return teks, None
-        except urllib.error.HTTPError as e:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{nama_model}:generateContent?key={GEMINI_API_KEY}"
+        # Opsi 1: Mode Tingkat Penalaran Rendah (thinkingBudget: 0) agar respons instan < 2 detik
+        # Opsi 2: Fallback payload standar jika model tidak memerlukan parameter thinkingConfig
+        daftar_payload = [
+            {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 150, "thinkingConfig": {"thinkingBudget": 0}}
+            },
+            {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 300}
+            }
+        ]
+        for idx_p, payload_dict in enumerate(daftar_payload):
             try:
-                detail_err = json.loads(e.read().decode()).get("error", {}).get("message", str(e))[:90]
-            except Exception:
-                detail_err = str(e)[:90]
-            catatan_err.append(f"{nama_model}->HTTP {e.code}({detail_err})")
-            if e.code in [400, 403] and "API key" in detail_err:
+                body = json.dumps(payload_dict).encode("utf-8")
+                req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=timeout_detik) as resp:
+                    hasil = json.loads(resp.read().decode())
+                    parts = hasil.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                    teks_list = [str(p.get("text", "")).strip() for p in parts if "text" in p and not p.get("thought", False)]
+                    teks = " ".join([t for t in teks_list if t]).replace("\n", " ").strip()
+                    if not teks and parts:
+                        teks = str(parts[-1].get("text", "")).strip().replace("\n", " ")
+                    if teks:
+                        _MODEL_GEMINI_AKTIF = nama_model
+                        return teks, None
+            except urllib.error.HTTPError as e:
+                try:
+                    detail_err = json.loads(e.read().decode()).get("error", {}).get("message", str(e))[:90]
+                except Exception:
+                    detail_err = str(e)[:90]
+                # Jika error 400 karena thinkingConfig pada percobaan pertama, langsung coba payload kedua (standar)
+                if e.code == 400 and idx_p == 0 and "thinking" in detail_err.lower():
+                    continue
+                catatan_err.append(f"{nama_model}->HTTP {e.code}({detail_err})")
                 break
-        except Exception as e:
-            catatan_err.append(f"{nama_model}->{str(e)[:60]}")
+            except Exception as e:
+                catatan_err.append(f"{nama_model}->{str(e)[:60]}")
+                break
     return None, " | ".join(catatan_err)
 
 def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc, defisit_recovery_idr=0.0, tembus_cooldown=False):
@@ -628,7 +656,7 @@ def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc, 
         f"Apakah pembalikan arah / setup ini valid untuk dieksekusi BELI sekarang (jawab YA) atau TUNDA (jawab TUNDA)? "
         f"Jawab singkat diawali kata YA atau TUNDA - alasan maksimal 10 kata."
     )
-    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=12)
+    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=25)
     if teks:
         teks_bersih = teks.upper().lstrip("*_ \t\"'-")
         setuju_beli = not teks_bersih.startswith("TUNDA")
@@ -646,7 +674,7 @@ def konsultasi_keputusan_exit_gemini(coin, mode_slot, beli_idr, skrg_idr, tp_idr
         f"Apakah sebaiknya langsung JUAL SEKARANG (jawab YA) atau TAHAN antrean TP (jawab TAHAN)? "
         f"Jawab singkat diawali kata YA atau TAHAN - alasan maksimal 12 kata."
     )
-    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=12)
+    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=25)
     if teks:
         teks_bersih = teks.upper().lstrip("*_ \t\"'-")
         setuju_jual = teks_bersih.startswith("YA") and ("TAHAN" not in teks_bersih[:25])
@@ -1374,9 +1402,9 @@ def cek_status_koneksi_gemini_awal():
     if not GEMINI_API_KEY:
         print("⚠️ [STATUS GEMINI AI]: BELUM TERHUBUNG (GEMINI_API_KEY kosong / belum terbaca dari Secrets)")
         return
-    teks, err_info = panggil_teks_gemini_ai("Tes koneksi sistem. Jawab singkat dengan 1 kata: SIAP", timeout_detik=10)
+    teks, err_info = panggil_teks_gemini_ai("Tes koneksi sistem. Jawab singkat dengan 1 kata: SIAP", timeout_detik=25)
     if teks:
-        print(f"✅ [STATUS GEMINI AI TERHUBUNG] Respons AI: '{teks}' (Siap mengawal Entry, TP & SL Dinamis)")
+        print(f"✅ [STATUS GEMINI AI TERHUBUNG | Model: {_MODEL_GEMINI_AKTIF}] Respons AI: '{teks}'")
     else:
         print(f"❌ [STATUS GEMINI AI GAGAL TERHUBUNG] Penyebab: {err_info}")
 
