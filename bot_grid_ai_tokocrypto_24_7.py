@@ -450,14 +450,17 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 rasio_high_2jam = max(highs[-24:]) / closes[-1] if closes[-1] > 0 else 1.0
                 high_2jam_idr = round(harga_idr * max(1.0, rasio_high_2jam), 0)
 
-            vol_rata = sum(vols[-20:-1]) / 19.0 if len(vols) >= 20 else (vols[-1] or 1.0)
-            rasio_vol = vols[-1] / (vol_rata or 1.0)
+            # Gunakan volume terbaik antara candle berjalan (vols[-1]) dan candle 5m utuh terakhir (vols[-2])
+            # agar saat bot jalan di awal menit kelipatan 5, volume tidak terbaca 0.0x
+            vol_acuan = max(vols[-1], vols[-2]) if len(vols) >= 2 else (vols[-1] if vols else 1.0)
+            vol_rata = (sum(vols[-21:-2]) / 19.0) if len(vols) >= 21 else (vol_acuan or 1.0)
+            rasio_vol = vol_acuan / (vol_rata or 1.0)
 
-                        # Wajib ada kenaikan harga nyata & minimal volume aktif (bukan candle datar volume 0.0x)
             vol_aktif = rasio_vol >= 0.15
             candle_5m_hijau = (closes[-1] > closes[-2]) or (closes[-1] == closes[-2] and closes[-2] > closes[-3] and vol_aktif)
             dua_candle_5m_naik = (closes[-1] > closes[-3]) and (closes[-1] >= closes[-2] >= closes[-3]) and vol_aktif
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
+            harga_di_atas_ema5m = closes[-1] >= (ema20_5m * 0.9985)
             spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
 
             if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
@@ -475,18 +478,19 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 prediksi = "🟢 POTENSI REBOUND KUAT (Pullback 5M di Tren Naik - SIAP ENTRY)"
                 teknikal_valid = True
                 faktor_bobot_status = 1.15
-            elif (rsi_5m <= 33.0 or (rsi_15m <= 35.0 and rsi_5m <= 46.0)) and dua_candle_5m_naik and not candle_jatuh_beruntun:
+            elif (rsi_5m <= 33.0 or (rsi_15m <= 35.0 and rsi_5m <= 46.0)) and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 67.0 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
+                skor_dasar = 68.0 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85) + (2.5 if dua_candle_5m_naik else 0.0)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
                 prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
                 teknikal_valid = True
                 faktor_bobot_status = 1.05
-            elif tren_5m_naik and dua_candle_5m_naik and 38.0 <= rsi_5m <= 62.0 and rasio_vol >= 0.85 and not candle_jatuh_beruntun:
+            elif tren_5m_naik and harga_di_atas_ema5m and candle_5m_hijau and 36.0 <= rsi_5m <= 65.0 and rasio_vol >= 0.35 and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 68.0 + min(6.0, (rasio_vol - 0.85) * 6.0) + (2.0 if rsi_15m >= 45.0 else 0.0)
+                bonus_2candle = 2.5 if dua_candle_5m_naik else 0.0
+                skor_dasar = 68.0 + bonus_2candle + min(6.0, max(0.0, rasio_vol - 0.35) * 5.0) + (2.0 if rsi_15m >= 45.0 else 0.0)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
-                prediksi = "🟢 AWAL KEBANGKITAN TREN 5M (Momentum 5M Naik & Volume Aktif - SIAP ENTRY)"
+                prediksi = "🟢 AWAL KEBANGKITAN TREN 5M (Momentum 5M Naik & RSI Sehat - SIAP ENTRY)"
                 teknikal_valid = True
                 faktor_bobot_status = 1.10
             elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
@@ -521,6 +525,9 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 coin, entry_ideal_idr, gaya if gaya in ["SNIPER", "GRID"] else "GRID", atr_5m_pct
             )
 
+            # Hanya beri label UPTREND jika harga nyata masih terjaga di atas EMA & RSI tidak sedang crash
+            uptrend_nyata = (tren_5m_naik and harga_di_atas_ema5m and rsi_5m >= 42.0) or (tren_15m_naik and rsi_5m >= 40.0)
+
             peta_analisa[coin] = {
                 "coin": coin,
                 "sumber_ohlc": sumber_ohlc,
@@ -529,7 +536,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 "harga_ask": harga_ask,
                 "spread_pct": spread_pct,
                 "high_2jam_idr": high_2jam_idr,
-                "tren": "UPTREND" if (tren_5m_naik or tren_15m_naik) else "SIDEWAYS/DOWN",
+                "tren": "UPTREND" if uptrend_nyata else "SIDEWAYS/DOWN",
                 "tren_5m_naik": tren_5m_naik,
                 "tren_15m_naik": tren_15m_naik,
                 "candle_5m_hijau": candle_5m_hijau,
