@@ -1,49 +1,22 @@
 {
   "active_slots": [
     {
-      "coin": "XRP",
+      "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 35263.0,
-      "qty": 2.14,
-      "entry_price_idr": 16478,
-      "tp_price_idr": 16841.0,
-      "sl_price_idr": 16181.0,
-      "highest_price_idr": 16478,
-      "rsi_at_entry": 40.8,
-      "buy_order_id": "220793714",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 32921.0,
+      "qty": 2.59,
+      "entry_price_idr": 12711,
+      "tp_price_idr": 12919,
+      "sl_price_idr": 12482.0,
+      "highest_price_idr": 12711.0,
+      "rsi_at_entry": 52.2,
+      "buy_order_id": "44064482",
       "unverified_by_ai": false,
-      "timestamp": 1794697752.3401537
-    },
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 32474.0,
-      "qty": 0.0254,
-      "entry_price_idr": 1278517,
-      "tp_price_idr": 1303808.0,
-      "sl_price_idr": 1255504.0,
-      "highest_price_idr": 1278517,
-      "rsi_at_entry": 47.1,
-      "buy_order_id": "116903623",
-      "unverified_by_ai": false,
-      "timestamp": 1794697901.7112095
-    },
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31705.0,
-      "qty": 2.7e-05,
-      "entry_price_idr": 1174274000,
-      "tp_price_idr": 1200108000,
-      "sl_price_idr": 1153137000,
-      "highest_price_idr": 1174274000,
-      "rsi_at_entry": 27.8,
-      "buy_order_id": "274157996",
-      "unverified_by_ai": false,
-      "timestamp": 1794697975.0077326
+      "timestamp": 1794698124.1111395,
+      "filled_timestamp": 1794698263.5216343,
+      "peak_verified": true,
+      "tp_order_id": "44064718"
     }
   ],
   "realized_profit_today_idr": -1687.0,
@@ -52,11 +25,6 @@
   "loss_to_recover_idr": 4489.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "SUI": {
-      "until": 1794697746.3754032,
-      "last_score": 77.3,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Tekanan jual 5M kuat, RSI belum masuk zona pantulan."
-    },
     "DOGE": {
       "until": 1794697746.3754032,
       "last_score": 77.7,
