@@ -12,14 +12,19 @@
       "reason": "[gemini-3-flash-preview] TUNDA - RSI 5M tinggi saat tren 15M/1H masih turun (DN)."
     },
     "XRP": {
-      "until": 1794662350.5089157,
-      "last_score": 71.6,
-      "reason": "[gemini-3-flash-preview] TUNDA - BTC tren turun kuat dan volume transaksi sangat rendah."
+      "until": 1794664450.0633416,
+      "last_score": 71.4,
+      "reason": "[gemini-3-flash-preview] TUNDA - RSI netral dan tren mayor turun, konfirmasi pembalikan lemah."
     },
     "ADA": {
       "until": 1794664147.214101,
       "last_score": 72.6,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren semua timeframe turun dan volume sangat rendah."
+    },
+    "BTC": {
+      "until": 1794664450.0633416,
+      "last_score": 75.2,
+      "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish kuat dan volume rendah, risiko berlanjut turun."
     }
   }
 }
