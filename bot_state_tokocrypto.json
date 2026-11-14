@@ -12,9 +12,9 @@
       "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
     },
     "XRP": {
-      "until": 1794677348.9088006,
-      "last_score": 86.5,
-      "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.87x dan tren 5M masih kuat turun."
+      "until": 1794680048.1392863,
+      "last_score": 73.5,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     },
     "ETH": {
       "until": 1794678852.7002816,
