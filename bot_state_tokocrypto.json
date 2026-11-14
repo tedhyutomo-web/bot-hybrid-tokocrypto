@@ -25,6 +25,11 @@
       "until": 1794664450.0633416,
       "last_score": 75.2,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish kuat dan volume rendah, risiko berlanjut turun."
+    },
+    "SOL": {
+      "until": 1794667751.1680984,
+      "last_score": 73.0,
+      "reason": "[gemini-3-flash-preview] TUNDA - Tren bearish total dan volume rendah, risiko terseret arus BTC."
     }
   }
 }
