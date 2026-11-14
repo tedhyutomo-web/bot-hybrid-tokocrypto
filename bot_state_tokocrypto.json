@@ -10,6 +10,11 @@
       "until": 1794659647.614821,
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview] TUNDA - RSI 5M tinggi saat tren 15M/1H masih turun (DN)."
+    },
+    "XRP": {
+      "until": 1794662350.5089157,
+      "last_score": 71.6,
+      "reason": "[gemini-3-flash-preview] TUNDA - BTC tren turun kuat dan volume transaksi sangat rendah."
     }
   }
 }
