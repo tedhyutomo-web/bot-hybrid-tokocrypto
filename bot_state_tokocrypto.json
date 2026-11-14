@@ -7,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
-      "until": 1794656946.8880541,
+      "until": 1794659647.614821,
       "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren 15M/1H turun, risiko tinggi saat mode recovery aktif."
+      "reason": "[gemini-3-flash-preview] TUNDA - RSI 5M tinggi saat tren 15M/1H masih turun (DN)."
     }
   }
 }
