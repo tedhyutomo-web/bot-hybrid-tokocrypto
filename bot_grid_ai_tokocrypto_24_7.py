@@ -453,66 +453,67 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             vol_rata = sum(vols[-20:-1]) / 19.0 if len(vols) >= 20 else (vols[-1] or 1.0)
             rasio_vol = vols[-1] / (vol_rata or 1.0)
 
-            candle_5m_hijau = closes[-1] >= closes[-2]
-            dua_candle_5m_naik = (closes[-1] >= closes[-2] >= closes[-3])
+                        # Wajib ada kenaikan harga nyata & minimal volume aktif (bukan candle datar volume 0.0x)
+            vol_aktif = rasio_vol >= 0.15
+            candle_5m_hijau = (closes[-1] > closes[-2]) or (closes[-1] == closes[-2] and closes[-2] > closes[-3] and vol_aktif)
+            dua_candle_5m_naik = (closes[-1] > closes[-3]) and (closes[-1] >= closes[-2] >= closes[-3]) and vol_aktif
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
             spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
 
-            if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and not candle_jatuh_beruntun:
+            if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "SNIPER"
                 bonus_1h = 5.0 if tren_1h_naik else 0.0
                 skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
                 diskon_entry_pct = min(max(atr_5m_pct * 0.40, 0.0015), 0.0045)
                 prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Indodax Naik - SIAP ENTRY)"
-                siap_entry = spread_aman
+                teknikal_valid = True
                 faktor_bobot_status = 1.30
-            elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and not candle_jatuh_beruntun:
+            elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "GRID"
                 skor_dasar = 72.0 + (48.0 - rsi_5m) * 0.55 + (4.0 if dua_candle_5m_naik else 0.0)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.65, 0.0020), 0.0075)
                 prediksi = "🟢 POTENSI REBOUND KUAT (Pullback 5M di Tren Naik - SIAP ENTRY)"
-                siap_entry = spread_aman
+                teknikal_valid = True
                 faktor_bobot_status = 1.15
-            elif (rsi_5m <= 33.0 or rsi_15m <= 35.0) and dua_candle_5m_naik and not candle_jatuh_beruntun:
+            elif (rsi_5m <= 33.0 or (rsi_15m <= 35.0 and rsi_5m <= 46.0)) and dua_candle_5m_naik and not candle_jatuh_beruntun:
                 gaya = "GRID"
                 skor_dasar = 67.0 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
                 prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
-                siap_entry = spread_aman
+                teknikal_valid = True
                 faktor_bobot_status = 1.05
-            elif tren_5m_naik and dua_candle_5m_naik and 38.0 <= rsi_5m <= 64.0 and rasio_vol >= 0.85 and not candle_jatuh_beruntun:
+            elif tren_5m_naik and dua_candle_5m_naik and 38.0 <= rsi_5m <= 62.0 and rasio_vol >= 0.85 and not candle_jatuh_beruntun:
                 gaya = "GRID"
                 skor_dasar = 68.0 + min(6.0, (rasio_vol - 0.85) * 6.0) + (2.0 if rsi_15m >= 45.0 else 0.0)
                 diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
-                prediksi = "🟢 AWAL KEBANGKITAN TREN 5M (Momentum 5M Naik & RSI Sehat - SIAP ENTRY)"
-                siap_entry = spread_aman
+                prediksi = "🟢 AWAL KEBANGKITAN TREN 5M (Momentum 5M Naik & Volume Aktif - SIAP ENTRY)"
+                teknikal_valid = True
                 faktor_bobot_status = 1.10
             elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
                 gaya = "WAIT_PULLBACK"
                 skor_dasar = 58.0
                 diskon_entry_pct = 0.005
                 prediksi = "🟢 POTENSI REBOUND (Tren makro naik, menunggu candle 5M memantul hijau)"
-                siap_entry = False
+                teknikal_valid = False
                 faktor_bobot_status = 0.0
             elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and rasio_vol >= 1.25)):
                 gaya = "WAIT_DOWNTREND"
                 skor_dasar = 25.0
                 diskon_entry_pct = 0.012
                 prediksi = "🔴 BAHAYA JATUH LEBIH DALAM (Tekanan jual 5M & 15M deras - JANGAN BELI)"
-                siap_entry = False
+                teknikal_valid = False
                 faktor_bobot_status = 0.0
             else:
                 gaya = "WAIT_SIDEWAYS"
                 skor_dasar = 45.0
                 diskon_entry_pct = 0.008
                 prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi 5M/15M normal, aman ditahan / jangan beli dulu)"
-                siap_entry = False
+                teknikal_valid = False
                 faktor_bobot_status = 0.0
 
-            if not spread_aman and siap_entry:
-                siap_entry = False
-                prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}% > 0.35%) - Tunda beli agar tidak rugi spread"
-
+            siap_entry = teknikal_valid and spread_aman
+            if teknikal_valid and not spread_aman:
+                prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}% > 0.35%) - Tunda beli baru agar tidak rugi spread"
             conviction_score = round(max(10.0, min(98.0, skor_dasar)), 1)
             acuan_beli_dasar = min(harga_idr, harga_ask)
             entry_ideal_idr = bulatkan_harga_indodax(coin, acuan_beli_dasar * (1.0 - diskon_entry_pct))
@@ -546,6 +547,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 "skor": conviction_score,
                 "prediksi": prediksi,
                 "siap_entry": siap_entry,
+                "teknikal_valid": teknikal_valid,
                 "bobot_alokasi": round(conviction_score * faktor_bobot_status, 2)
             }
         except Exception:
