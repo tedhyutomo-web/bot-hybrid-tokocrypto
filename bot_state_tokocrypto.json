@@ -1,18 +1,18 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
+      "coin": "ADA",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 36839.0,
-      "qty": 3e-05,
-      "entry_price_idr": 1227962000,
-      "tp_price_idr": 1244539000.0,
-      "sl_price_idr": 1205859000.0,
-      "highest_price_idr": 1227962000,
-      "rsi_at_entry": 30.1,
-      "buy_order_id": "274087650",
-      "timestamp": 1794648553.9604383
+      "capital_idr": 46668.0,
+      "qty": 15.65,
+      "entry_price_idr": 2982,
+      "tp_price_idr": 3022.0,
+      "sl_price_idr": 2928.0,
+      "highest_price_idr": 2982,
+      "rsi_at_entry": 27.6,
+      "buy_order_id": "143816286",
+      "timestamp": 1794648918.4429643
     }
   ],
   "realized_profit_today_idr": -4084.0,
