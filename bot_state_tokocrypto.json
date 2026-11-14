@@ -7,8 +7,8 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "XRP": {
-      "until": 1794680048.1392863,
-      "last_score": 73.5,
+      "until": 1794682753.358419,
+      "last_score": 76.6,
       "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     },
     "ETH": {
@@ -30,6 +30,11 @@
       "until": 1794681329.5962281,
       "last_score": 75.5,
       "reason": "[gemini-3.5-flash] TUNDA - Volume 0.3x terlalu rendah dan momentum belum mengonfirmasi rebound."
+    },
+    "SOL": {
+      "until": 1794682753.358419,
+      "last_score": 80.0,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     }
   }
 }
