@@ -545,58 +545,72 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             continue
     return peta_analisa
 
+def panggil_teks_gemini_ai(prompt, timeout_detik=12):
+    """Memanggil API Gemini dengan fallback otomatis (gemini-2.5-flash -> gemini-2.0-flash)."""
+    daftar_model = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    err_terakhir = ""
+    for nama_model in daftar_model:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{nama_model}:generateContent?key={GEMINI_API_KEY}"
+            body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=timeout_detik) as resp:
+                hasil = json.loads(resp.read().decode())
+                teks = hasil["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
+                if teks:
+                    return teks, None
+        except urllib.error.HTTPError as e:
+            try:
+                detail_err = e.read().decode()[:120].replace("\n", " ")
+            except Exception:
+                detail_err = str(e)
+            err_terakhir = f"HTTP {e.code} ({nama_model}): {detail_err}"
+        except Exception as e:
+            err_terakhir = f"{nama_model}: {str(e)[:80]}"
+    return None, err_terakhir
+
 def konsultasi_keputusan_entry_gemini(kandidat, alokasi_idr, status_kompas_btc, defisit_recovery_idr=0.0, tembus_cooldown=False):
     if not GEMINI_API_KEY:
         return True, "Validasi kuantitatif Native Indodax (5M+15M+1H) terpenuhi."
-    try:
-        info_reversal = " [PERHATIAN: Koin ini baru bangkit cepat (V-Shape Reversal) pasca terkena SL]." if tembus_cooldown else ""
-        konteks_recovery = (
-            f"MODE RECOVERY AKTIF (Target tutup defisit Rp{defisit_recovery_idr:,.0f}).{info_reversal}"
-            if (defisit_recovery_idr > 0 or tembus_cooldown) else "Mode Normal."
-        )
-        prompt = (
-            f"Evaluasi sinyal scalping 5M Native Indodax ({konteks_recovery}): Koin {kandidat['coin']} ({kandidat['gaya']}), "
-            f"Harga Rp{kandidat['harga_idr']:,.0f}, Rencana Beli Rp{kandidat['entry_ideal_idr']:,.0f}, "
-            f"Target TP Dinamis +{kandidat['tp_target_pct']}% (Modal Rp{alokasi_idr:,.0f}). "
-            f"Tren {kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
-            f"Rasio Volume:{kandidat['rasio_vol']}x, Spread:{kandidat['spread_pct']*100:.2f}%, Kompas BTC:{status_kompas_btc}. "
-            f"Apakah pembalikan arah / setup ini valid untuk dieksekusi BELI sekarang (jawab YA) atau TUNDA (jawab TUNDA)? "
-            f"Jawab singkat: YA/TUNDA - alasan maksimal 10 kata."
-        )
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-        body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            hasil = json.loads(resp.read().decode())
-            teks = hasil["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
-            setuju_beli = not teks.upper().startswith("TUNDA")
-            return setuju_beli, teks
-    except Exception:
-        return True, "Lolos filter kuantitatif Native Indodax."
+    info_reversal = " [PERHATIAN: Koin ini baru bangkit cepat (V-Shape Reversal) pasca terkena SL]." if tembus_cooldown else ""
+    konteks_recovery = (
+        f"MODE RECOVERY AKTIF (Target tutup defisit Rp{defisit_recovery_idr:,.0f}).{info_reversal}"
+        if (defisit_recovery_idr > 0 or tembus_cooldown) else "Mode Normal."
+    )
+    prompt = (
+        f"Evaluasi sinyal scalping 5M Native Indodax ({konteks_recovery}): Koin {kandidat['coin']} ({kandidat['gaya']}), "
+        f"Harga Rp{kandidat['harga_idr']:,.0f}, Rencana Beli Rp{kandidat['entry_ideal_idr']:,.0f}, "
+        f"Target TP Dinamis +{kandidat['tp_target_pct']}% (Modal Rp{alokasi_idr:,.0f}). "
+        f"Tren {kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
+        f"Rasio Volume:{kandidat['rasio_vol']}x, Spread:{kandidat['spread_pct']*100:.2f}%, Kompas BTC:{status_kompas_btc}. "
+        f"Apakah pembalikan arah / setup ini valid untuk dieksekusi BELI sekarang (jawab YA) atau TUNDA (jawab TUNDA)? "
+        f"Jawab singkat diawali kata YA atau TUNDA - alasan maksimal 10 kata."
+    )
+    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=12)
+    if teks:
+        teks_bersih = teks.upper().lstrip("*_ \t\"'-")
+        setuju_beli = not teks_bersih.startswith("TUNDA")
+        return setuju_beli, teks
+    print(f"⚠️ [INFO KONEKSI GEMINI ENTRY]: {err_info}")
+    return True, f"Lolos filter kuantitatif Indodax (Info AI: {err_info[:45]})."
 
 def konsultasi_keputusan_exit_gemini(coin, mode_slot, beli_idr, skrg_idr, tp_idr, puncak_idr, rsi, tren, jenis_kasus, default_jika_limit=False):
     if not GEMINI_API_KEY:
         return default_jika_limit, "Mode tanpa API Key Gemini (mengikuti pengaman default)."
-    try:
-        prompt = (
-            f"Koin {coin} ({mode_slot}) dibeli di Rp{beli_idr:,.0f}, target TP Rp{tp_idr:,.0f}. "
-            f"Harga tertinggi murni sejak beli Rp{puncak_idr:,.0f}, sekarang Rp{skrg_idr:,.0f} "
-            f"(Tren Indodax: {tren}, RSI 5M: {rsi}). Kasus: {jenis_kasus}. "
-            f"Apakah sebaiknya langsung JUAL SEKARANG (jawab YA) atau TAHAN antrean TP (jawab TAHAN)? "
-            f"Jawab singkat diawali kata YA atau TAHAN - alasan maksimal 12 kata."
-        )
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-        body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            hasil = json.loads(resp.read().decode())
-            teks = hasil["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
-            # Hanya izinkan JUAL jika Gemini tegas mengawali dengan YA dan tidak menulis kata TAHAN
-            teks_bersih = teks.upper().lstrip("*_ \t\"'-")
-            setuju_jual = teks_bersih.startswith("YA") and ("TAHAN" not in teks_bersih[:25])
-            return setuju_jual, teks
-    except Exception:
-        return default_jika_limit, "Koneksi Gemini timeout sesaat, mengikuti prosedur pengaman default."
+    prompt = (
+        f"Koin {coin} ({mode_slot}) dibeli di Rp{beli_idr:,.0f}, target TP Rp{tp_idr:,.0f}. "
+        f"Harga tertinggi murni sejak beli Rp{puncak_idr:,.0f}, sekarang Rp{skrg_idr:,.0f} "
+        f"(Tren Indodax: {tren}, RSI 5M: {rsi}). Kasus: {jenis_kasus}. "
+        f"Apakah sebaiknya langsung JUAL SEKARANG (jawab YA) atau TAHAN antrean TP (jawab TAHAN)? "
+        f"Jawab singkat diawali kata YA atau TAHAN - alasan maksimal 12 kata."
+    )
+    teks, err_info = panggil_teks_gemini_ai(prompt, timeout_detik=12)
+    if teks:
+        teks_bersih = teks.upper().lstrip("*_ \t\"'-")
+        setuju_jual = teks_bersih.startswith("YA") and ("TAHAN" not in teks_bersih[:25])
+        return setuju_jual, teks
+    print(f"⚠️ [INFO KONEKSI GEMINI EXIT]: {err_info}")
+    return default_jika_limit, f"Koneksi Gemini sibuk ({err_info[:40]}), mengikuti pengaman default."
 
 # ==============================================================================
 # BAGIAN 6: EVALUASI POSISI (DYNAMIC ENTRY TIAP 5M, SCRATCH >+0.60%, TP & SL)
@@ -976,12 +990,12 @@ def kelola_anggaran_kosong_dengan_analisa(state, peta_analisa, dompet):
     now_ts = time.time()
     defisit_recovery = float(state.get("loss_to_recover_idr", 0.0))
     profit_hari_ini = float(state.get("realized_profit_today_idr", 0.0))
-    batas_rugi_harian = MAX_BOT_CAPITAL_IDR * DAILY_LOSS_LIMIT_PCT
+    batas_rugi_harian_ekstrem = MAX_BOT_CAPITAL_IDR * -0.060  # Circuit Breaker darurat jika rugi harian <= -6.0% (-Rp6.000)
 
-    if profit_hari_ini <= batas_rugi_harian:
-        skor_minimal_sesi = 80.0
+    if profit_hari_ini <= batas_rugi_harian_ekstrem:
+        skor_minimal_sesi = 75.0
     elif defisit_recovery > 0:
-        skor_minimal_sesi = MIN_CONVICTION_SCORE + RECOVERY_SCORE_BOOST
+        skor_minimal_sesi = MIN_CONVICTION_SCORE + RECOVERY_SCORE_BOOST  # Mode Recovery Pro: Skor >= 67.5 (Bisa tangkap Rebound Kuat)
     else:
         skor_minimal_sesi = MIN_CONVICTION_SCORE
 
