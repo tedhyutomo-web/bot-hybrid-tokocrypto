@@ -557,6 +557,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 "siap_entry": siap_entry,
                 "teknikal_valid": teknikal_valid,
                 "bobot_alokasi": round(conviction_score * faktor_bobot_status, 2)
+            }
         except Exception:
             continue
     return peta_analisa
