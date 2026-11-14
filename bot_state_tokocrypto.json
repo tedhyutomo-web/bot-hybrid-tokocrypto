@@ -6,11 +6,6 @@
   "loss_to_recover_idr": 2382.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794673747.298671,
-      "last_score": 79.3,
-      "reason": "[gemini-3-flash-preview] TUNDA - Tren triple down dan volume rendah berisiko saat recovery."
-    },
     "ADA": {
       "until": 1794669248.1130347,
       "last_score": 78.0,
@@ -22,14 +17,14 @@
       "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.87x dan tren 5M masih kuat turun."
     },
     "ETH": {
-      "until": 1794678252.7066967,
-      "last_score": 74.0,
-      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
+      "until": 1794678852.7002816,
+      "last_score": 71.3,
+      "reason": "[gemini-3.5-flash] TUNDA - Volume 0.98x belum memadai dan tekanan DN kuat."
     },
     "BTC": {
-      "until": 1794678252.7066967,
-      "last_score": 68.9,
-      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
+      "until": 1794678852.7002816,
+      "last_score": 71.4,
+      "reason": "[gemini-3.5-flash] TUNDA - Volume 0.55x terlalu mati dan tren masih DN."
     }
   }
 }
