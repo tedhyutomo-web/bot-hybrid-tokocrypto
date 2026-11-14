@@ -25,17 +25,20 @@
     {
       "coin": "XRP",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 62806.0,
       "qty": 3.73,
       "entry_price_idr": 16838,
-      "tp_price_idr": 17208.0,
+      "tp_price_idr": 17208,
       "sl_price_idr": 16535.0,
-      "highest_price_idr": 16838,
+      "highest_price_idr": 17080.0,
       "rsi_at_entry": 41.3,
       "buy_order_id": "220778056",
       "unverified_by_ai": false,
-      "timestamp": 1794692351.928905
+      "timestamp": 1794692351.928905,
+      "filled_timestamp": 1794692949.4041703,
+      "peak_verified": true,
+      "tp_order_id": "220779905"
     }
   ],
   "realized_profit_today_idr": 667.0,
