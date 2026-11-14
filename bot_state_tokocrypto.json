@@ -5,7 +5,6 @@
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 4489.0,
   "sl_cooldown_until": {
-    "DOGE": 1794696853.1149251,
     "XRP": 1794697154.3308005
   },
   "ai_entry_hold_until": {
