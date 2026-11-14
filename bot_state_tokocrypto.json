@@ -12,14 +12,19 @@
       "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.44x berisiko terjebak sideway saat pemulihan."
     },
     "SUI": {
-      "until": 1794683348.4261184,
-      "last_score": 69.3,
-      "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah, spread lebar, target TP terlalu agresif."
+      "until": 1794683648.7277,
+      "last_score": 70.6,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
     },
     "DOGE": {
       "until": 1794681329.5962281,
       "last_score": 75.5,
       "reason": "[gemini-3.5-flash] TUNDA - Volume 0.3x terlalu rendah dan momentum belum mengonfirmasi rebound."
+    },
+    "ETH": {
+      "until": 1794683648.7277,
+      "last_score": 73.2,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
     }
   }
 }
