@@ -1,21 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37888.0,
-      "qty": 2.2,
-      "entry_price_idr": 17222,
-      "tp_price_idr": 17462,
-      "sl_price_idr": 16912,
-      "highest_price_idr": 17222,
-      "rsi_at_entry": 46.1,
-      "buy_order_id": "220768249",
-      "unverified_by_ai": false,
-      "timestamp": 1794689051.9170525
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
@@ -26,11 +10,6 @@
       "until": 1794688312.2510478,
       "last_score": 70.1,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren DN kuat dan volume 0.28x terlalu rendah untuk rebound."
-    },
-    "ETH": {
-      "until": 1794688228.6411614,
-      "last_score": 70.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah, pergerakan harga tidak mendukung scalping agresif."
     },
     "BTC": {
       "until": 1794689129.0175865,
