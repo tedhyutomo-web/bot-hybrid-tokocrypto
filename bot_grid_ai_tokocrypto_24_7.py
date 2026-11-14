@@ -548,16 +548,15 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
 _MODEL_GEMINI_AKTIF = None
 
 def dapatkan_daftar_model_gemini_aktif():
-    """Mendeteksi model Gemini aktif khusus pengguna baru (otomatis melewati seri 2.0 & 2.5 yang ditutup)."""
+    """Memprioritaskan gemini-flash-latest (model utama berpenalaran tajam) untuk pengguna baru."""
     global _MODEL_GEMINI_AKTIF
-    kandidat_baru = [
-        "gemini-flash-lite-latest",
+    kandidat_utama = [
         "gemini-flash-latest",
         "gemini-3-flash-preview",
-        "gemini-3.0-flash"
+        "gemini-flash-lite-latest"
     ]
     if _MODEL_GEMINI_AKTIF:
-        return [_MODEL_GEMINI_AKTIF] + [m for m in kandidat_baru if m != _MODEL_GEMINI_AKTIF]
+        return [_MODEL_GEMINI_AKTIF] + [m for m in kandidat_utama if m != _MODEL_GEMINI_AKTIF]
 
     try:
         url_list = f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}"
@@ -569,7 +568,6 @@ def dapatkan_daftar_model_gemini_aktif():
                 methods = m.get("supportedGenerationMethods", [])
                 nama = str(m.get("name", "")).replace("models/", "")
                 nama_kecil = nama.lower()
-                # Lewati model seri 2.0, 2.5, 1.5, gambar, atau audio yang tidak relevan/ditutup untuk user baru
                 if (
                     "generateContent" in methods
                     and "gemini" in nama_kecil
@@ -577,37 +575,47 @@ def dapatkan_daftar_model_gemini_aktif():
                 ):
                     model_valid.append(nama)
 
-            # Urutkan: utamakan flash-lite & flash generasi terbaru (cepat & hemat kuota)
-            prioritas_flash = [x for x in model_valid if "flash" in x.lower()]
-            prioritas_lain = [x for x in model_valid if "flash" not in x.lower()]
             urutan_final = []
-            for k in kandidat_baru + prioritas_flash + prioritas_lain:
-                if (k in model_valid or k in ["gemini-flash-lite-latest", "gemini-flash-latest"]) and k not in urutan_final:
+            for k in kandidat_utama + model_valid:
+                if (k in model_valid or k in kandidat_utama) and k not in urutan_final:
                     urutan_final.append(k)
             if urutan_final:
                 return urutan_final[:4]
     except Exception:
         pass
-    return ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3-flash-preview"]
+    return kandidat_utama
 
-def panggil_teks_gemini_ai(prompt, timeout_detik=25):
-    """Memanggil API Gemini dengan mode Cepat (Tingkat Penalaran Rendah) & batas timeout 25 detik."""
+def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
+    """
+    Memanggil API Gemini dengan Tingkat Penalaran Menengah (Kedalaman Seimbang - 1024 thinking tokens)
+    untuk analisa Entry, TP, dan SL agar keputusan akurat namun tetap cepat dieksekusi.
+    """
     global _MODEL_GEMINI_AKTIF
     daftar_model = dapatkan_daftar_model_gemini_aktif()
     catatan_err = []
 
+    # Gunakan 1024 token penalaran untuk analisa trading (Menengah), atau 0 khusus tes ping awal
+    budget_pikir = 0 if mode_penalaran == "RENDAH" else 1024
+
     for nama_model in daftar_model:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{nama_model}:generateContent?key={GEMINI_API_KEY}"
-        # Opsi 1: Mode Tingkat Penalaran Rendah (thinkingBudget: 0) agar respons instan < 2 detik
-        # Opsi 2: Fallback payload standar jika model tidak memerlukan parameter thinkingConfig
+        # Opsi 1: Mode Penalaran Menengah (maxOutputTokens 2048 agar ruang berpikir + jawaban lega)
+        # Opsi 2: Fallback standar (otomatis mengikuti tingkat penalaran bawaan server Google)
         daftar_payload = [
             {
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 150, "thinkingConfig": {"thinkingBudget": 0}}
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "maxOutputTokens": 2048,
+                    "thinkingConfig": {"thinkingBudget": budget_pikir}
+                }
             },
             {
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 300}
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "maxOutputTokens": 2048
+                }
             }
         ]
         for idx_p, payload_dict in enumerate(daftar_payload):
@@ -629,8 +637,7 @@ def panggil_teks_gemini_ai(prompt, timeout_detik=25):
                     detail_err = json.loads(e.read().decode()).get("error", {}).get("message", str(e))[:90]
                 except Exception:
                     detail_err = str(e)[:90]
-                # Jika error 400 karena thinkingConfig pada percobaan pertama, langsung coba payload kedua (standar)
-                if e.code == 400 and idx_p == 0 and "thinking" in detail_err.lower():
+                if e.code == 400 and idx_p == 0:
                     continue
                 catatan_err.append(f"{nama_model}->HTTP {e.code}({detail_err})")
                 break
