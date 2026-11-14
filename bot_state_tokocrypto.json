@@ -1,28 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37135,
-      "qty": 35,
-      "entry_price_idr": 1061,
-      "tp_price_idr": 1082.0,
-      "sl_price_idr": 1042.0,
-      "highest_price_idr": 1065.0,
-      "rsi_at_entry": 47.0,
-      "buy_order_id": "135787230",
-      "unverified_by_ai": false,
-      "timestamp": 1794689952.4861498,
-      "filled_timestamp": 1794690247.8450773,
-      "peak_verified": true,
-      "tp_order_id": "135788025",
-      "last_sl_eval_ts": 1794693847.1104152,
-      "last_sl_eval_price_idr": 1046,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, volume tinggi, potensi pantulan teknikal dekat.",
-      "last_eval_was_hard_sl": false
-    },
-    {
       "coin": "XRP",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -41,11 +19,13 @@
       "tp_order_id": "220779905"
     }
   ],
-  "realized_profit_today_idr": 667.0,
-  "completed_trades_today": 3,
+  "realized_profit_today_idr": -517.0,
+  "completed_trades_today": 4,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 2135.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 3319.0,
+  "sl_cooldown_until": {
+    "DOGE": 1794696853.1149251
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1794688312.2510478,
