@@ -17,6 +17,24 @@
       "filled_timestamp": 1794690247.8450773,
       "peak_verified": true,
       "tp_order_id": "135788025"
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 62646.0,
+      "qty": 0.00192,
+      "entry_price_idr": 32628000,
+      "tp_price_idr": 33278000,
+      "sl_price_idr": 32041000.0,
+      "highest_price_idr": 32628000.0,
+      "rsi_at_entry": 36.1,
+      "buy_order_id": "218542483",
+      "unverified_by_ai": false,
+      "timestamp": 1794690553.7162948,
+      "filled_timestamp": 1794690624.2208812,
+      "peak_verified": true,
+      "tp_order_id": "218542791"
     }
   ],
   "realized_profit_today_idr": 420.0,
