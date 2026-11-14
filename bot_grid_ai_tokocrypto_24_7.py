@@ -550,21 +550,19 @@ _LEVEL_PENALARAN_AKTIF = "MENENGAH (1024 Token Penalaran)"
 
 def dapatkan_daftar_model_gemini_aktif():
     """
-    Mengunci prioritas #1 pada model terbaik 'gemini-3-flash-preview'.
-    Model 'lite' hanya diletakkan di urutan terakhir sebagai cadangan darurat jika server utama down.
+    Mengunci prioritas #1 pada 'gemini-3-flash-preview' dan memblokir model '-pro' / 'customtools'
+    yang tidak memiliki kuota gratis (HTTP 429) pada akun Non-Pro.
     """
     global _MODEL_GEMINI_AKTIF
     prioritas_utama = [
         "gemini-3-flash-preview",
-        "gemini-3.1-flash-preview",
-        "gemini-3-pro-preview"
+        "gemini-3.1-flash-preview"
     ]
     cadangan_darurat = [
         "gemini-3.1-flash-lite-preview",
         "gemini-flash-lite-latest"
     ]
 
-    # Jika sudah menemukan model utama terbaik (bukan lite), kunci di urutan pertama
     if _MODEL_GEMINI_AKTIF and "lite" not in _MODEL_GEMINI_AKTIF.lower():
         daftar_awal = [_MODEL_GEMINI_AKTIF] + [m for m in prioritas_utama if m != _MODEL_GEMINI_AKTIF]
     else:
@@ -581,12 +579,13 @@ def dapatkan_daftar_model_gemini_aktif():
                 methods = m.get("supportedGenerationMethods", [])
                 nama = str(m.get("name", "")).replace("models/", "")
                 nama_kecil = nama.lower()
-                # Tolak semua model generasi lama (2.5, 2.0, 1.5), alias 'gemini-flash-latest' yang lambat, & non-teks
+                # Hanya ambil keluarga FLASH generasi terbaru (Blokir 'pro', 'customtools', '2.5', '2.0', '1.5')
                 if (
                     "generateContent" in methods
                     and "gemini" in nama_kecil
+                    and "flash" in nama_kecil
                     and nama_kecil != "gemini-flash-latest"
-                    and not any(x in nama_kecil for x in ["2.5", "2.0", "1.5", "tts", "image", "vision", "embedding", "aqa"])
+                    and not any(x in nama_kecil for x in ["pro", "custom", "2.5", "2.0", "1.5", "tts", "image", "vision", "embedding", "aqa"])
                 ):
                     if "lite" in nama_kecil:
                         model_server_lite.append(nama)
@@ -594,16 +593,14 @@ def dapatkan_daftar_model_gemini_aktif():
                         model_server_utama.append(nama)
 
             urutan_final = []
-            # Masukkan semua model kelas utama (Gemini 3 Flash/Pro) terlebih dahulu
             for k in daftar_awal + model_server_utama:
                 if (k in model_server_utama or k == "gemini-3-flash-preview") and k not in urutan_final:
                     urutan_final.append(k)
-            # Baru tambahkan cadangan lite di posisi paling buntut
             for k in cadangan_darurat + model_server_lite:
                 if k not in urutan_final:
                     urutan_final.append(k)
             if urutan_final:
-                return urutan_final[:4]
+                return urutan_final[:3]
     except Exception:
         pass
     return ["gemini-3-flash-preview", "gemini-flash-lite-latest"]
@@ -611,7 +608,7 @@ def dapatkan_daftar_model_gemini_aktif():
 def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
     """
     Memanggil API Gemini dengan mengutamakan 'gemini-3-flash-preview' + Tingkat Penalaran Menengah
-    (thinkingBudget: 1024 tokens) dan fitur Auto-Retry 2x agar tidak mudah turun ke model lite.
+    (thinkingBudget: 1024 tokens) serta jeda retry 6 detik jika terkena antrean kuota menitan (HTTP 429).
     """
     global _MODEL_GEMINI_AKTIF, _LEVEL_PENALARAN_AKTIF
     daftar_model = dapatkan_daftar_model_gemini_aktif()
@@ -639,11 +636,11 @@ def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
             }
         ]
 
-        # Berikan kesempatan coba ulang (2x percobaan) khusus untuk model utama (non-lite) jika server sibuk sesaat
         maks_coba_model = 2 if "lite" not in nama_model.lower() else 1
 
         for percobaan in range(maks_coba_model):
             perlu_coba_ulang_model = False
+            jeda_tunggu_detik = 2.0
             for idx_p, payload_dict in enumerate(daftar_payload):
                 try:
                     body = json.dumps(payload_dict).encode("utf-8")
@@ -656,7 +653,6 @@ def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
                         if not teks and parts:
                             teks = str(parts[-1].get("text", "")).strip().replace("\n", " ")
                         if teks:
-                            # Hanya kunci _MODEL_GEMINI_AKTIF jika bukan model lite!
                             if "lite" not in nama_model.lower():
                                 _MODEL_GEMINI_AKTIF = nama_model
                             _LEVEL_PENALARAN_AKTIF = f"MENENGAH ({budget_pikir} Token)" if idx_p == 0 else "MENENGAH (Default Server)"
@@ -670,6 +666,7 @@ def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
                         continue
                     if e.code in [429, 500, 502, 503, 504] and percobaan == 0 and maks_coba_model > 1:
                         perlu_coba_ulang_model = True
+                        jeda_tunggu_detik = 6.0 if e.code == 429 else 2.0
                         break
                     catatan_err.append(f"{nama_model}->HTTP {e.code}({detail_err})")
                     break
@@ -681,7 +678,7 @@ def panggil_teks_gemini_ai(prompt, timeout_detik=25, mode_penalaran="MENENGAH"):
                     break
 
             if perlu_coba_ulang_model:
-                time.sleep(1.5)
+                time.sleep(jeda_tunggu_detik)
                 continue
             break
 
@@ -1505,14 +1502,22 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     return state, butuh_siaga, alasan_siaga, ada_transaksi_nyata, peta_analisa_pasar
 
 def cek_status_koneksi_gemini_awal():
+    """Memverifikasi API Key & kesiapan model utama tanpa membuang kuota generateContent harian."""
+    global _MODEL_GEMINI_AKTIF
     if not GEMINI_API_KEY:
         print("⚠️ [STATUS GEMINI AI]: BELUM TERHUBUNG (GEMINI_API_KEY kosong / belum terbaca dari Secrets)")
         return
-    teks, err_info = panggil_teks_gemini_ai("Tes koneksi sistem. Jawab singkat dengan 1 kata: SIAP", timeout_detik=25, mode_penalaran="MENENGAH")
-    if teks:
-        print(f"✅ [STATUS GEMINI AI TERHUBUNG | Penalaran: {_LEVEL_PENALARAN_AKTIF}] Respons AI: {teks}")
+    daftar = dapatkan_daftar_model_gemini_aktif()
+    if daftar:
+        model_utama = daftar[0]
+        if "lite" not in model_utama.lower():
+            _MODEL_GEMINI_AKTIF = model_utama
+        print(
+            f"✅ [STATUS GEMINI AI SIAP | Model Utama: {model_utama} | Penalaran: {_LEVEL_PENALARAN_AKTIF}] "
+            f"(100% kuota dihemat khusus untuk analisa Entry, TP & SL)"
+        )
     else:
-        print(f"❌ [STATUS GEMINI AI GAGAL TERHUBUNG] Penyebab: {err_info}")
+        print("❌ [STATUS GEMINI AI GAGAL TERHUBUNG] Tidak dapat memuat daftar model dari Google API.")
 
 if __name__ == "__main__":
     waktu_mulai = time.time()
