@@ -30,6 +30,11 @@
       "until": 1794669248.1130347,
       "last_score": 77.9,
       "reason": "[gemini-3-flash-preview] TUNDA - BTC RSI ekstrem rendah, tunggu stabilisasi pasar demi recovery."
+    },
+    "SUI": {
+      "until": 1794669852.4112144,
+      "last_score": 82.3,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     }
   }
 }
