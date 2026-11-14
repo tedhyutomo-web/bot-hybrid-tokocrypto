@@ -4,5 +4,6 @@
   "completed_trades_today": 7,
   "last_reset_date": "2026-11-14",
   "loss_to_recover_idr": 2802.0,
-  "sl_cooldown_until": {}
+  "sl_cooldown_until": {},
+  "ai_entry_hold_until": {}
 }
