@@ -7,9 +7,9 @@
       "capital_idr": 32921.0,
       "qty": 2.59,
       "entry_price_idr": 12711,
-      "tp_price_idr": 12919,
+      "tp_price_idr": 12919.0,
       "sl_price_idr": 12482.0,
-      "highest_price_idr": 12711.0,
+      "highest_price_idr": 12777.0,
       "rsi_at_entry": 52.2,
       "buy_order_id": "44064482",
       "unverified_by_ai": false,
@@ -17,6 +17,36 @@
       "filled_timestamp": 1794698263.5216343,
       "peak_verified": true,
       "tp_order_id": "44064718"
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 34986.0,
+      "qty": 2.1,
+      "entry_price_idr": 16648.0,
+      "tp_price_idr": 17014.0,
+      "sl_price_idr": 16348.0,
+      "highest_price_idr": 16581,
+      "rsi_at_entry": 42.6,
+      "buy_order_id": "220796046",
+      "unverified_by_ai": false,
+      "timestamp": 1794698498.2077715
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31963.0,
+      "qty": 0.00099,
+      "entry_price_idr": 32286000,
+      "tp_price_idr": 32833000.0,
+      "sl_price_idr": 31705000.0,
+      "highest_price_idr": 32286000,
+      "rsi_at_entry": 41.7,
+      "buy_order_id": "218568914",
+      "unverified_by_ai": false,
+      "timestamp": 1794698426.4634547
     }
   ],
   "realized_profit_today_idr": -1687.0,
@@ -26,9 +56,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
-      "until": 1794697746.3754032,
-      "last_score": 77.7,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.47x dan RSI 5M belum area oversold."
+      "until": 1794698647.2628129,
+      "last_score": 70.5,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume 0.37x terlalu rendah, rawan jebakan turun."
     },
     "ADA": {
       "until": 1794698122.4646156,
