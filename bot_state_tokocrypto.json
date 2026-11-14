@@ -17,36 +17,6 @@
       "filled_timestamp": 1794698263.5216343,
       "peak_verified": true,
       "tp_order_id": "44064718"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 34986.0,
-      "qty": 2.1,
-      "entry_price_idr": 16648.0,
-      "tp_price_idr": 17014.0,
-      "sl_price_idr": 16348.0,
-      "highest_price_idr": 16581,
-      "rsi_at_entry": 42.6,
-      "buy_order_id": "220796046",
-      "unverified_by_ai": false,
-      "timestamp": 1794698498.2077715
-    },
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31963.0,
-      "qty": 0.00099,
-      "entry_price_idr": 32286000,
-      "tp_price_idr": 32833000.0,
-      "sl_price_idr": 31705000.0,
-      "highest_price_idr": 32286000,
-      "rsi_at_entry": 41.7,
-      "buy_order_id": "218568914",
-      "unverified_by_ai": false,
-      "timestamp": 1794698426.4634547
     }
   ],
   "realized_profit_today_idr": -1687.0,
