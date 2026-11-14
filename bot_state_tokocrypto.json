@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37135,
+      "qty": 35,
+      "entry_price_idr": 1061,
+      "tp_price_idr": 1082,
+      "sl_price_idr": 1042,
+      "highest_price_idr": 1061,
+      "rsi_at_entry": 47.0,
+      "buy_order_id": "135787230",
+      "unverified_by_ai": false,
+      "timestamp": 1794689952.4861498
+    }
+  ],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
@@ -15,11 +31,6 @@
       "until": 1794689129.0175865,
       "last_score": 71.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren bearish kuat, volume rendah, RSI belum masuk area oversold."
-    },
-    "DOGE": {
-      "until": 1794689050.9528816,
-      "last_score": 71.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah, spread lebar, risiko slippage tinggi saat tren turun."
     }
   }
 }
