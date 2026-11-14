@@ -199,7 +199,7 @@ def bulatkan_harga_indodax(coin, harga_idr):
 def format_qty_koin(coin, raw_qty):
     decimals = WATCHLIST_COINS[coin]["step_decimals"]
     factor = 10 ** decimals
-    qty = math.floor(raw_qty * factor) / factor
+    qty = math.floor((float(raw_qty) + 1e-9) * factor) / factor
     return int(qty) if decimals == 0 else round(qty, decimals)
 
 def hitung_kuantitas_koin(coin, nominal_idr, harga_idr):
@@ -767,9 +767,11 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                 log_transaksi.append(pesan)
                 continue
 
-            # KUNCI KUANTITAS PER SLOT: Hanya gunakan qty_slot (misal 2.58 atau 4.23), JANGAN total_koin_dimiliki (6.81)!
-            qty_milik_slot = format_qty_koin(coin, min(qty_slot, total_koin_tersisa) if qty_slot > 0 else total_koin_tersisa)
-            sisa_koin_dompet[coin] = max(0.0, total_koin_tersisa - qty_milik_slot)
+            # KUNCI KUANTITAS PER SLOT + SAPU BERSIH DUST KECIL (Misal 0.01 SUI ikut terjual habis)
+            selisih_dust = total_koin_tersisa - qty_slot
+            target_qty_slot = total_koin_tersisa if (qty_slot <= 0 or (0 < selisih_dust <= qty_slot * 0.02)) else min(qty_slot, total_koin_tersisa)
+            qty_milik_slot = format_qty_koin(coin, target_qty_slot)
+            sisa_koin_dompet[coin] = round(max(0.0, total_koin_tersisa - qty_milik_slot), 8)
 
             # Bersihkan otomatis highest_price_idr lama yang sempat tercemar high_2jam_idr sebelum beli
             if not slot.get("peak_verified"):
