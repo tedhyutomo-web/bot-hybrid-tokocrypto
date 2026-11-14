@@ -7,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
-      "until": 1794659647.614821,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview] TUNDA - RSI 5M tinggi saat tren 15M/1H masih turun (DN)."
+      "until": 1794668947.944363,
+      "last_score": 80.4,
+      "reason": "[gemini-3-flash-preview] TUNDA - BTC dump parah, volume rendah, tren masih full bearish."
     },
     "XRP": {
       "until": 1794664450.0633416,
