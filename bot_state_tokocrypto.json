@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "SOL",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31922.0,
+      "qty": 0.0243,
+      "entry_price_idr": 1313669,
+      "tp_price_idr": 1331404.0,
+      "sl_price_idr": 1290023.0,
+      "highest_price_idr": 1313669,
+      "rsi_at_entry": 34.1,
+      "buy_order_id": "116873628",
+      "unverified_by_ai": false,
+      "timestamp": 1794688756.1329868
+    }
+  ],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
@@ -17,14 +33,14 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah, pergerakan harga tidak mendukung scalping agresif."
     },
     "BTC": {
-      "until": 1794688228.6411614,
-      "last_score": 74.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI netral pada tren turun, risiko pelemahan lanjutan tinggi."
+      "until": 1794689129.0175865,
+      "last_score": 71.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren bearish kuat, volume rendah, RSI belum masuk area oversold."
     },
-    "XRP": {
-      "until": 1794688148.1548488,
-      "last_score": 73.7,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah, risiko terseret tren turun tanpa momentum."
+    "DOGE": {
+      "until": 1794689050.9528816,
+      "last_score": 71.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah, spread lebar, risiko slippage tinggi saat tren turun."
     }
   }
 }
