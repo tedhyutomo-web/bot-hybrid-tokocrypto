@@ -5,5 +5,11 @@
   "last_reset_date": "2026-11-14",
   "loss_to_recover_idr": 2802.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {}
+  "ai_entry_hold_until": {
+    "DOGE": {
+      "until": 1794656946.8880541,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview] TUNDA - Tren 15M/1H turun, risiko tinggi saat mode recovery aktif."
+    }
+  }
 }
