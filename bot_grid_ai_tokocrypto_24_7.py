@@ -1330,10 +1330,21 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
 
     return state, butuh_siaga, alasan_siaga, ada_transaksi_nyata, peta_analisa_pasar
 
+def cek_status_koneksi_gemini_awal():
+    if not GEMINI_API_KEY:
+        print("⚠️ [STATUS GEMINI AI]: BELUM TERHUBUNG (GEMINI_API_KEY kosong / belum terbaca dari Secrets)")
+        return
+    teks, err_info = panggil_teks_gemini_ai("Tes koneksi sistem. Jawab singkat dengan 1 kata: SIAP", timeout_detik=10)
+    if teks:
+        print(f"✅ [STATUS GEMINI AI TERHUBUNG] Respons AI: '{teks}' (Siap mengawal Entry, TP & SL Dinamis)")
+    else:
+        print(f"❌ [STATUS GEMINI AI GAGAL TERHUBUNG] Penyebab: {err_info}")
+
 if __name__ == "__main__":
     waktu_mulai = time.time()
     batas_waktu_siaga = waktu_mulai + (ACTIVE_WATCH_MINUTES * 60)
 
+    cek_status_koneksi_gemini_awal()
     state = muat_state_bot()
     state, butuh_siaga, alasan_siaga, _, peta_analisa_terakhir = jalankan_satu_siklus_penuh(
         state, paksa_kirim_sheets=False
