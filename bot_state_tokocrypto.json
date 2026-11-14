@@ -1,19 +1,19 @@
 {
   "active_slots": [
     {
-      "coin": "SOL",
+      "coin": "XRP",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 31922.0,
-      "qty": 0.0243,
-      "entry_price_idr": 1313669,
-      "tp_price_idr": 1331404.0,
-      "sl_price_idr": 1290023.0,
-      "highest_price_idr": 1313669,
-      "rsi_at_entry": 34.1,
-      "buy_order_id": "116873628",
+      "capital_idr": 37888.0,
+      "qty": 2.2,
+      "entry_price_idr": 17222,
+      "tp_price_idr": 17462,
+      "sl_price_idr": 16912,
+      "highest_price_idr": 17222,
+      "rsi_at_entry": 46.1,
+      "buy_order_id": "220768249",
       "unverified_by_ai": false,
-      "timestamp": 1794688756.1329868
+      "timestamp": 1794689051.9170525
     }
   ],
   "realized_profit_today_idr": 420.0,
