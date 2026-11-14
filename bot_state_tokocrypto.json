@@ -18,32 +18,21 @@
       "tp_order_id": "44020862"
     },
     {
-      "coin": "SOL",
+      "coin": "ETH",
       "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31961.0,
-      "qty": 0.024,
-      "entry_price_idr": 1331710,
-      "tp_price_idr": 1357177.0,
-      "sl_price_idr": 1307739.0,
-      "highest_price_idr": 1331710,
-      "rsi_at_entry": 34.6,
-      "buy_order_id": "116843364",
-      "timestamp": 1794676467.4398735
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33929.0,
-      "qty": 1.94,
-      "entry_price_idr": 17489,
-      "tp_price_idr": 17874.0,
-      "sl_price_idr": 17174.0,
-      "highest_price_idr": 17489,
-      "rsi_at_entry": 34.4,
-      "buy_order_id": "220736282",
-      "timestamp": 1794676467.7755692
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 33959.0,
+      "qty": 0.00101,
+      "entry_price_idr": 33623000,
+      "tp_price_idr": 34084000,
+      "sl_price_idr": 33018000.0,
+      "highest_price_idr": 33623000.0,
+      "rsi_at_entry": 51.4,
+      "buy_order_id": "218508702",
+      "timestamp": 1794676825.2771258,
+      "filled_timestamp": 1794676897.6494482,
+      "peak_verified": true,
+      "tp_order_id": "218508888"
     }
   ],
   "realized_profit_today_idr": 0.0,
@@ -61,11 +50,6 @@
       "until": 1794669248.1130347,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
-    },
-    "ETH": {
-      "until": 1794671353.1776252,
-      "last_score": 82.7,
-      "reason": "[gemini-3.5-flash] TUNDA - Kompas BTC dan tren 3TF turun penuh."
     }
   }
 }
