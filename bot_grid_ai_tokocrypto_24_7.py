@@ -480,6 +480,13 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
                 siap_entry = spread_aman
                 faktor_bobot_status = 1.05
+            elif tren_5m_naik and dua_candle_5m_naik and 38.0 <= rsi_5m <= 64.0 and rasio_vol >= 0.85 and not candle_jatuh_beruntun:
+                gaya = "GRID"
+                skor_dasar = 68.0 + min(6.0, (rasio_vol - 0.85) * 6.0) + (2.0 if rsi_15m >= 45.0 else 0.0)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
+                prediksi = "🟢 AWAL KEBANGKITAN TREN 5M (Momentum 5M Naik & RSI Sehat - SIAP ENTRY)"
+                siap_entry = spread_aman
+                faktor_bobot_status = 1.10
             elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
                 gaya = "WAIT_PULLBACK"
                 skor_dasar = 58.0
