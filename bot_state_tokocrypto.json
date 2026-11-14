@@ -1,43 +1,10 @@
 {
-  "active_slots": [
-    {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37887.0,
-      "qty": 2.58,
-      "entry_price_idr": 14685,
-      "tp_price_idr": 14883.0,
-      "sl_price_idr": 14421.0,
-      "highest_price_idr": 14685.0,
-      "rsi_at_entry": 33.3,
-      "buy_order_id": "43894921",
-      "timestamp": 1794602050.7680104,
-      "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43913922",
-      "peak_verified": true
-    },
-    {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62088.0,
-      "qty": 4.23,
-      "entry_price_idr": 14678,
-      "tp_price_idr": 14876.0,
-      "sl_price_idr": 14414.0,
-      "highest_price_idr": 14678.0,
-      "rsi_at_entry": 38.3,
-      "buy_order_id": "43895008",
-      "timestamp": 1794602123.5482962,
-      "filled_timestamp": 1794603749.4986002,
-      "tp_order_id": "43913923",
-      "peak_verified": true
-    }
-  ],
-  "realized_profit_today_idr": -1282.0,
-  "completed_trades_today": 5,
+  "active_slots": [],
+  "realized_profit_today_idr": -4084.0,
+  "completed_trades_today": 7,
   "last_reset_date": "2026-11-14",
-  "loss_to_recover_idr": 0.0,
-  "sl_cooldown_until": {}
+  "loss_to_recover_idr": 2802.0,
+  "sl_cooldown_until": {
+    "SUI": 1794624621.431527
+  }
 }
