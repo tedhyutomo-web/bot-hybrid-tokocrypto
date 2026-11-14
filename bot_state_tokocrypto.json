@@ -20,6 +20,16 @@
       "until": 1794677348.9088006,
       "last_score": 86.5,
       "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.87x dan tren 5M masih kuat turun."
+    },
+    "ETH": {
+      "until": 1794678252.7066967,
+      "last_score": 74.0,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
+    },
+    "BTC": {
+      "until": 1794678252.7066967,
+      "last_score": 68.9,
+      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 429(You exceeded)."
     }
   }
 }
