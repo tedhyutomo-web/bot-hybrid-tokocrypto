@@ -1,32 +1,15 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 34017.0,
-      "qty": 2.55,
-      "entry_price_idr": 13340,
-      "tp_price_idr": 13545.0,
-      "sl_price_idr": 13100.0,
-      "highest_price_idr": 13400.0,
-      "rsi_at_entry": 34.1,
-      "buy_order_id": "44020748",
-      "timestamp": 1794676467.1130247,
-      "filled_timestamp": 1794676540.2243397,
-      "peak_verified": true,
-      "tp_order_id": "44020862"
-    },
-    {
       "coin": "ETH",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
       "capital_idr": 33959.0,
       "qty": 0.00101,
       "entry_price_idr": 33623000,
-      "tp_price_idr": 34084000,
+      "tp_price_idr": 34084000.0,
       "sl_price_idr": 33018000.0,
-      "highest_price_idr": 33623000.0,
+      "highest_price_idr": 33821000.0,
       "rsi_at_entry": 51.4,
       "buy_order_id": "218508702",
       "timestamp": 1794676825.2771258,
@@ -35,10 +18,10 @@
       "tp_order_id": "218508888"
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": 226.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 2802.0,
+  "loss_to_recover_idr": 2576.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
@@ -50,6 +33,11 @@
       "until": 1794669248.1130347,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview] TUNDA - Tren DN, volume rendah, BTC crash, risiko drawdown tinggi."
+    },
+    "XRP": {
+      "until": 1794677348.9088006,
+      "last_score": 86.5,
+      "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.87x dan tren 5M masih kuat turun."
     }
   }
 }
