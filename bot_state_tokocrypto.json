@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31973.0,
+      "qty": 11.27,
+      "entry_price_idr": 2837,
+      "tp_price_idr": 2875.0,
+      "sl_price_idr": 2786.0,
+      "highest_price_idr": 2837,
+      "rsi_at_entry": 47.8,
+      "buy_order_id": "143862859",
+      "unverified_by_ai": false,
+      "timestamp": 1794686653.3762102
+    }
+  ],
   "realized_profit_today_idr": 420.0,
   "completed_trades_today": 2,
   "last_reset_date": "2026-11-15",
@@ -7,9 +23,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
-      "until": 1794683648.7277,
-      "last_score": 70.6,
-      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
+      "until": 1794686948.3023372,
+      "last_score": 73.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah di bawah rata-rata, rawan pelemahan berlanjut."
     },
     "DOGE": {
       "until": 1794685593.3105836,
@@ -17,9 +33,14 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume mati 0.23x, risiko terseret tren turun BTCIDR."
     },
     "ETH": {
-      "until": 1794683648.7277,
-      "last_score": 73.2,
-      "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
+      "until": 1794686948.3023372,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M terlalu tinggi di tengah tren turun kuat."
+    },
+    "BTC": {
+      "until": 1794687024.9684026,
+      "last_score": 70.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M terlalu tinggi untuk entry saat tren turun."
     }
   }
 }
