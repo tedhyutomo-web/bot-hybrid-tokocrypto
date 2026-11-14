@@ -6,11 +6,6 @@
   "loss_to_recover_idr": 2382.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "BTC": {
-      "until": 1794683047.1199915,
-      "last_score": 76.1,
-      "reason": "[gemini-3-flash-preview] TUNDA - Volume rendah 0.44x berisiko terjebak sideway saat pemulihan."
-    },
     "SUI": {
       "until": 1794683648.7277,
       "last_score": 70.6,
@@ -25,6 +20,11 @@
       "until": 1794683648.7277,
       "last_score": 73.2,
       "reason": "Pengaman otomatis aktif (Info AI: gemini-3-flash-preview->HTTP 400(API key not )."
+    },
+    "SOL": {
+      "until": 1794684848.567002,
+      "last_score": 79.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko terseret tren turun."
     }
   }
 }
