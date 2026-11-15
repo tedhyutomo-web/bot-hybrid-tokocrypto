@@ -36,9 +36,7 @@
   "completed_trades_today": 18,
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 4539.0,
-  "sl_cooldown_until": {
-    "ETH": 1794767050.556988
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794750547.617195,
@@ -51,9 +49,14 @@
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume 0.15x terlalu tipis dan tren 1H masih turun."
     },
     "SUI": {
-      "until": 1794756848.7438369,
-      "last_score": 82.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.32x terlalu rendah dan tren 1H masih turun."
+      "until": 1794765186.3299022,
+      "last_score": 81.2,
+      "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
+    },
+    "ETH": {
+      "until": 1794764953.214735,
+      "last_score": 75.6,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC bearish total, tren 1H ETH turun, rawan bull-trap."
     }
   },
   "trade_experience_memory": [
