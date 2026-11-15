@@ -1,49 +1,27 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37108.0,
-      "qty": 3.1e-05,
-      "entry_price_idr": 1197032000,
-      "tp_price_idr": 1213192000.0,
-      "sl_price_idr": 1175485000.0,
-      "highest_price_idr": 1197032000.0,
-      "rsi_at_entry": 24.5,
-      "buy_order_id": "274196858",
-      "unverified_by_ai": false,
-      "timestamp": 1794716721.279504,
-      "filled_timestamp": 1794716792.996122,
-      "peak_verified": true,
-      "tp_order_id": "274196951",
-      "last_sl_eval_ts": 1794723093.2239127,
-      "last_sl_eval_price_idr": 1180500000,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15.3 sangat oversold, tunggu pantulan teknis segera terjadi.",
-      "last_eval_was_hard_sl": false
-    },
-    {
       "coin": "XRP",
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 62753.0,
-      "qty": 3.59,
-      "entry_price_idr": 17480,
-      "tp_price_idr": 17716.0,
-      "sl_price_idr": 17165.0,
+      "qty": 3.57,
+      "entry_price_idr": 17543.0,
+      "tp_price_idr": 17780.0,
+      "sl_price_idr": 17227.0,
       "highest_price_idr": 17480,
       "rsi_at_entry": 13.2,
-      "buy_order_id": "220869687",
+      "buy_order_id": "220870471",
       "unverified_by_ai": false,
-      "timestamp": 1794723098.5111103
+      "timestamp": 1794723617.771133
     }
   ],
-  "realized_profit_today_idr": -323.0,
-  "completed_trades_today": 11,
+  "realized_profit_today_idr": -1011.0,
+  "completed_trades_today": 12,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 3125.0,
+  "loss_to_recover_idr": 3813.0,
   "sl_cooldown_until": {
-    "DOGE": 1794725259.3428628
+    "BTC": 1794726472.4793541
   },
   "ai_entry_hold_until": {}
 }
