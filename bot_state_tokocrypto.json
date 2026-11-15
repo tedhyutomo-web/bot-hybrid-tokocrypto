@@ -1,147 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "ETH",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 36956.0,
-      "qty": 0.0011,
-      "entry_price_idr": 33596000,
-      "tp_price_idr": 34201000.0,
-      "sl_price_idr": 33058000.0,
-      "highest_price_idr": 33596000.0,
-      "rsi_at_entry": 59.8,
-      "buy_order_id": "218673329",
-      "entry_snapshot": {
-        "skor": 78.3,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 59.8,
-        "rsi_15m": 47.3,
-        "rasio_vol": 1.09,
-        "spread_pct": 0.0022,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN (RSI 5M:56.5)",
-        "alasan_ai": "[gemini-3-flash-preview#K3] YA - Tren 5M/15M sinkron, volume naik, memori historis mendukung profit."
-      },
-      "sl_hold_history": [
-        {
-          "ts": 1794757757.5143993,
-          "pnl_bid_pct": -0.016222169305869748,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 46.2,
-          "rsi_15m": 41.9,
-          "rasio_vol": 0.96,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - Memori 72J positif, tren 15M UP, potensi pantulan konsolidasi."
-        },
-        {
-          "ts": 1794758417.270229,
-          "pnl_bid_pct": -0.015150613168234314,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 53.6,
-          "rsi_15m": 35.9,
-          "rasio_vol": 0.16,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold, memori 72J positif, tunggu pantulan teknikal."
-        },
-        {
-          "ts": 1794758715.8762584,
-          "pnl_bid_pct": -0.016222169305869748,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 49.7,
-          "rsi_15m": 35.0,
-          "rasio_vol": 0.03,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, tunggu pantulan 15M."
-        },
-        {
-          "ts": 1794759382.2964222,
-          "pnl_bid_pct": -0.01565662578878438,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 64.2,
-          "rsi_15m": 36.6,
-          "rasio_vol": 0.34,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, memori 72J positif, tunggu pantulan tren 15M."
-        },
-        {
-          "ts": 1794759687.518619,
-          "pnl_bid_pct": -0.017740207167519943,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 44.6,
-          "rsi_15m": 31.4,
-          "rasio_vol": 0.32,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, tren 15M naik, memori 72J dukung pantulan."
-        },
-        {
-          "ts": 1794760447.735213,
-          "pnl_bid_pct": -0.013305155375639957,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 66.1,
-          "rsi_15m": 34.2,
-          "rasio_vol": 0.32,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, 5M memantul, memori 72J dukung pemulihan."
-        },
-        {
-          "ts": 1794761048.979826,
-          "pnl_bid_pct": -0.013156328134301702,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 50.2,
-          "rsi_15m": 35.1,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M rendah, tren 15M naik, memori 72J dukung pantulan."
-        },
-        {
-          "ts": 1794761717.504753,
-          "pnl_bid_pct": -0.014972020478628409,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 48.9,
-          "rsi_15m": 34.8,
-          "rasio_vol": 0.04,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, tren 15M UP, memori 72J positif."
-        },
-        {
-          "ts": 1794762384.5061965,
-          "pnl_bid_pct": -0.01077509227288963,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 57.1,
-          "rsi_15m": 34.3,
-          "rasio_vol": 0.96,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, potensi rebound segera."
-        },
-        {
-          "ts": 1794763146.8867688,
-          "pnl_bid_pct": -0.011697821169186808,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 58.6,
-          "rsi_15m": 40.5,
-          "rasio_vol": 3.37,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, volume tinggi, memori 72J dukung pantulan."
-        },
-        {
-          "ts": 1794763813.5106306,
-          "pnl_bid_pct": -0.010536968686748423,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 61.4,
-          "rsi_15m": 35.8,
-          "rasio_vol": 0.02,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, RSI rendah, memori 72J dukung pantulan."
-        },
-        {
-          "ts": 1794764188.8713088,
-          "pnl_bid_pct": -0.015180378616501965,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 49.3,
-          "rsi_15m": 37.4,
-          "rasio_vol": 0.41,
-          "alasan_ai": "[gemini-3-flash-preview#K3] TAHAN - Memori 72J positif, RSI 15M rendah, tunggu pantulan tren UP."
-        }
-      ],
-      "timestamp": 1794747575.5926223,
-      "filled_timestamp": 1794747648.2050698,
-      "peak_verified": true,
-      "tp_order_id": "218692887",
-      "last_sl_eval_ts": 1794764188.8713088,
-      "last_sl_eval_price_idr": 33086000,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K3] TAHAN - Memori 72J positif, RSI 15M rendah, tunggu pantulan tren UP.",
-      "last_eval_was_hard_sl": false
-    },
-    {
       "coin": "SOL",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -173,11 +32,13 @@
       "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold ekstrem (19.1), potensi rebound lebih tinggi."
     }
   ],
-  "realized_profit_today_idr": -899.0,
-  "completed_trades_today": 17,
+  "realized_profit_today_idr": -1737.0,
+  "completed_trades_today": 18,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 3701.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 4539.0,
+  "sl_cooldown_until": {
+    "ETH": 1794767050.556988
+  },
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794750547.617195,
@@ -287,6 +148,36 @@
       "minus_awal_pct": -1.46,
       "pnl_akhir_pct": -2.24,
       "pnl_idr": -1408.0
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794764350.5569904,
+      "waktu": "16/11 00:39",
+      "coin": "ETH",
+      "style": "SNIPER",
+      "skor": 78.3,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 59.8,
+      "rsi_15m": 47.3,
+      "rasio_vol": 1.09,
+      "pnl_pct": -2.27,
+      "pnl_idr": -838.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794764350.5569904,
+      "waktu": "16/11 00:39",
+      "coin": "ETH",
+      "tren_detail": "5M:DN/15M:UP/1H:DN",
+      "rsi_5m": 49.3,
+      "rsi_15m": 37.4,
+      "rasio_vol": 0.41,
+      "minus_awal_pct": -1.52,
+      "pnl_akhir_pct": -2.27,
+      "pnl_idr": -838.0
     }
   ]
 }
