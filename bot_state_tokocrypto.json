@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37958.0,
+      "qty": 2.88,
+      "entry_price_idr": 13180,
+      "tp_price_idr": 13470,
+      "sl_price_idr": 12943,
+      "highest_price_idr": 13180,
+      "rsi_at_entry": 57.3,
+      "buy_order_id": "44085025",
+      "unverified_by_ai": false,
+      "timestamp": 1794709152.9352098
+    }
+  ],
   "realized_profit_today_idr": 456.0,
   "completed_trades_today": 9,
   "last_reset_date": "2026-11-15",
@@ -25,11 +41,6 @@
       "until": 1794708847.3557127,
       "last_score": 73.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah dan RSI 5M terlalu tinggi saat DN."
-    },
-    "SUI": {
-      "until": 1794709147.6641314,
-      "last_score": 70.0,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume terlalu rendah, risiko slippage tinggi meski 5M UP."
     }
   }
 }
