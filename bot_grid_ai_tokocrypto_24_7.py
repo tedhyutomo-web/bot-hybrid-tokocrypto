@@ -957,8 +957,13 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         # KASUS A: WAITING_BUY
         if slot["status"] == "WAITING_BUY":
             nilai_koin_idr = total_koin_tersisa * harga_sekarang
-            if (dompet["terhubung"] and nilai_koin_idr >= 5000) or (not dompet["terhubung"] and harga_sekarang <= entry_idr):
+            sudah_terbeli_penuh = (
+                (qty_slot > 0 and koin_free >= qty_slot * 0.95)
+                or (nilai_koin_idr >= 15000 and float(dompet.get("idr_locked", 0.0)) < 5000.0)
+            )
+            if (dompet["terhubung"] and sudah_terbeli_penuh) or (not dompet["terhubung"] and harga_sekarang <= entry_idr):
                 slot["status"] = "HOLDING_FOR_TP"
+
                 slot["filled_timestamp"] = now_ts
                 slot["highest_price_idr"] = max(entry_idr, harga_sekarang)
                 slot["peak_verified"] = True
@@ -1061,15 +1066,29 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 log_transaksi.append(pesan)
                 continue
 
-            # 2. Deteksi otomatis jika Open Order TP terhapus/dibatalkan manual di Indodax (koin pindah dari locked ke free)
+            # 2. Deteksi otomatis jika Open Order TP terhapus manual di Indodax (koin pindah dari locked ke free)
             koin_locked_skrg = dompet["coins_locked"].get(coin, 0.0)
             if dompet["terhubung"] and slot.get("tp_order_id") and koin_locked_skrg < (qty_slot * 0.30) and koin_free >= (qty_slot * 0.50):
                 print(f"♻️ [DETEKSI TP TERBATAL MANUAL] Open Order TP {coin} (#{slot.get('tp_order_id')}) sudah tidak aktif di Indodax, siap pasang ulang!")
                 slot["tp_order_id"] = None
 
-            selisih_dust = total_koin_tersisa - qty_slot
-            target_qty_slot = total_koin_tersisa if (qty_slot <= 0 or (0 < selisih_dust <= qty_slot * 0.02)) else min(qty_slot, total_koin_tersisa)
-            qty_milik_slot = format_qty_koin(coin, target_qty_slot)
+            # 3. AUTO-MERGE PARTIAL FILL: Jika di dompet ada sisa koin bebas dari cicilan beli kedua (total > qty_slot + 5%),
+            # batalkan Order TP separuh yang lama dan gabungkan menjadi 1 Order TP utuh (kasus ETH 0.00053 + 0.00057 -> 0.0011 ETH)!
+            jml_slot_koin_sama = sum(1 for s in state["active_slots"] if s.get("coin") == coin and s.get("status") == "HOLDING_FOR_TP")
+            if dompet["terhubung"] and jml_slot_koin_sama == 1 and total_koin_tersisa > (qty_slot * 1.05) and koin_free > 0:
+                qty_gabungan = format_qty_koin(coin, total_koin_tersisa)
+                if qty_gabungan > qty_slot:
+                    print(f"🔗 [AUTO-MERGE PARTIAL FILL {coin}] Menggabungkan pecahan order ({qty_slot} -> {qty_gabungan} {coin})...")
+                    if slot.get("tp_order_id"):
+                        batalkan_order_indodax(coin, slot["tp_order_id"])
+                        slot["tp_order_id"] = None
+                        time.sleep(0.8)
+                    slot["qty"] = qty_gabungan
+                    qty_slot = qty_gabungan
+                    koin_free = qty_gabungan
+
+            qty_milik_slot = format_qty_koin(coin, total_koin_tersisa if jml_slot_koin_sama == 1 else min(qty_slot, total_koin_tersisa))
+            slot["qty"] = qty_milik_slot
             sisa_koin_dompet[coin] = round(max(0.0, total_koin_tersisa - qty_milik_slot), 8)
 
             # Pulihkan otomatis jika SL pernah terkunci naik karena lonjakan Last Price semu padahal Bid asli masih di bawah Entry
