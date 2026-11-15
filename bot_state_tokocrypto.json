@@ -1,5 +1,31 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37963.0,
+      "qty": 0.00114,
+      "entry_price_idr": 33301000,
+      "tp_price_idr": 33751000.0,
+      "sl_price_idr": 32702000.0,
+      "highest_price_idr": 33301000,
+      "rsi_at_entry": 34.5,
+      "buy_order_id": "218730376",
+      "entry_snapshot": {
+        "skor": 83.4,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 34.5,
+        "rsi_15m": 51.0,
+        "rasio_vol": 3.06,
+        "spread_pct": 0.00108,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN (RSI 5M:58.2)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Pullback sehat tren 1H, volume kuat, RSI 5M mendekati oversold."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794779350.6878574
+    }
+  ],
   "realized_profit_today_idr": -1590.0,
   "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
@@ -15,11 +41,6 @@
       "until": 1794765186.3299022,
       "last_score": 81.2,
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
-    },
-    "ETH": {
-      "until": 1794778746.7453945,
-      "last_score": 80.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.28x sangat tipis dan tren 15M masih turun."
     },
     "ADA": {
       "until": 1794774548.5180933,
