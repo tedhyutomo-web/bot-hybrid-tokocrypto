@@ -16,15 +16,20 @@
       "last_score": 91.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 1.81x dan memori historis rawan stop loss."
     },
-    "BTC": {
-      "until": 1794785347.3901641,
-      "last_score": 75.4,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.71x, rawan bull-trap meski tren naik."
-    },
     "SOL": {
       "until": 1794785425.919173,
       "last_score": 76.2,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.18x terlalu rendah, tren 15M:DN berisiko bull-trap."
+    },
+    "XRP": {
+      "until": 1794785648.2267041,
+      "last_score": 81.6,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% dan risiko SL berulang tinggi."
+    },
+    "DOGE": {
+      "until": 1794785648.2267041,
+      "last_score": 75.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.19x dan memori historis rawan SL."
     }
   },
   "trade_experience_memory": [
