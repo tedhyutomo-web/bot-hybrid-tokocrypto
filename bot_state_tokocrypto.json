@@ -1,5 +1,42 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 50964.0,
+      "qty": 3.98,
+      "entry_price_idr": 12805,
+      "tp_price_idr": 13087,
+      "sl_price_idr": 12575.0,
+      "highest_price_idr": 12805.0,
+      "rsi_at_entry": 49.4,
+      "buy_order_id": "44074102",
+      "unverified_by_ai": false,
+      "timestamp": 1794704354.001548,
+      "filled_timestamp": 1794704564.7248464,
+      "peak_verified": true,
+      "tp_order_id": "44074546"
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 48751.0,
+      "qty": 0.00152,
+      "entry_price_idr": 32073000,
+      "tp_price_idr": 32512000,
+      "sl_price_idr": 31496000.0,
+      "highest_price_idr": 32073000.0,
+      "rsi_at_entry": 24.4,
+      "buy_order_id": "218585267",
+      "unverified_by_ai": false,
+      "timestamp": 1794704427.7045026,
+      "filled_timestamp": 1794704564.7248464,
+      "peak_verified": true,
+      "tp_order_id": "218585748"
+    }
+  ],
   "realized_profit_today_idr": -1329.0,
   "completed_trades_today": 6,
   "last_reset_date": "2026-11-15",
