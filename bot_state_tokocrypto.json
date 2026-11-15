@@ -77,16 +77,25 @@
           "rsi_15m": 37.6,
           "rasio_vol": 0.08,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI mendekati oversold dan tren 15M masih mendukung pantulan."
+        },
+        {
+          "ts": 1794754956.269923,
+          "pnl_bid_pct": -0.014616595457611873,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 32.0,
+          "rsi_15m": 26.9,
+          "rasio_vol": 1.34,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold, tunggu pantulan teknis karena tren 15M UP."
         }
       ],
       "timestamp": 1794752421.4545372,
       "filled_timestamp": 1794752647.6367006,
       "peak_verified": true,
       "tp_order_id": "44140969",
-      "last_sl_eval_ts": 1794754354.7468982,
-      "last_sl_eval_price_idr": 13189.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI mendekati oversold dan tren 15M masih mendukung pantulan.",
-      "last_eval_was_hard_sl": false
+      "last_sl_eval_ts": 1794754956.269923,
+      "last_sl_eval_price_idr": 13114.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold, tunggu pantulan teknis karena tren 15M UP.",
+      "last_eval_was_hard_sl": true
     }
   ],
   "realized_profit_today_idr": 509.0,
