@@ -16,35 +16,19 @@
       "timestamp": 1794716721.279504,
       "filled_timestamp": 1794716792.996122,
       "peak_verified": true,
-      "tp_order_id": "274196951"
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62698,
-      "qty": 58,
-      "entry_price_idr": 1081,
-      "tp_price_idr": 1096.0,
-      "sl_price_idr": 1062.0,
-      "highest_price_idr": 1081.0,
-      "rsi_at_entry": 41.4,
-      "buy_order_id": "135830287",
-      "unverified_by_ai": false,
-      "timestamp": 1794718752.1354218,
-      "filled_timestamp": 1794718823.7569175,
-      "peak_verified": true,
-      "tp_order_id": "135830334",
-      "last_sl_eval_ts": 1794722184.070115,
-      "last_sl_eval_price_idr": 1069.0,
-      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - RSI 5M sangat jenuh jual, tunggu pantulan.",
+      "tp_order_id": "274196951",
+      "last_sl_eval_ts": 1794722484.5305686,
+      "last_sl_eval_price_idr": 1181650000.0,
+      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - RSI sangat oversold, tunggu pantulan cepat.",
       "last_eval_was_hard_sl": false
     }
   ],
-  "realized_profit_today_idr": 950.0,
-  "completed_trades_today": 10,
+  "realized_profit_today_idr": -323.0,
+  "completed_trades_today": 11,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 1852.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 3125.0,
+  "sl_cooldown_until": {
+    "DOGE": 1794725259.3428628
+  },
   "ai_entry_hold_until": {}
 }
