@@ -29,29 +29,29 @@
       "tp_order_id": "218673418"
     },
     {
-      "coin": "BTC",
-      "style": "SNIPER",
+      "coin": "ADA",
+      "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 61995.0,
-      "qty": 5.2e-05,
-      "entry_price_idr": 1192211000,
-      "tp_price_idr": 1213671000.0,
-      "sl_price_idr": 1173136000.0,
-      "highest_price_idr": 1192211000,
-      "rsi_at_entry": 45.2,
-      "buy_order_id": "274250722",
+      "capital_idr": 63042.0,
+      "qty": 22.3,
+      "entry_price_idr": 2827,
+      "tp_price_idr": 2865.0,
+      "sl_price_idr": 2776.0,
+      "highest_price_idr": 2827,
+      "rsi_at_entry": 31.0,
+      "buy_order_id": "143962546",
       "entry_snapshot": {
-        "skor": 88.0,
+        "skor": 85.3,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 45.2,
-        "rsi_15m": 56.5,
-        "rasio_vol": 5.01,
-        "spread_pct": 0.00072,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:45.2)",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat 5x, spread tipis, memori historis winrate 100%."
+        "rsi_5m": 31.0,
+        "rsi_15m": 50.0,
+        "rasio_vol": 1.24,
+        "spread_pct": 0.00212,
+        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:47.7)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, volume naik, memori 72J winrate 100%."
       },
       "sl_hold_history": [],
-      "timestamp": 1794751830.1764803
+      "timestamp": 1794752190.7887032
     }
   ],
   "realized_profit_today_idr": 509.0,
@@ -60,11 +60,6 @@
   "loss_to_recover_idr": 2293.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "ADA": {
-      "until": 1794749648.7558103,
-      "last_score": 72.9,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis (0.28x) dan RSI 15M mendekati jenuh."
-    },
     "DOGE": {
       "until": 1794750547.617195,
       "last_score": 73.0,
