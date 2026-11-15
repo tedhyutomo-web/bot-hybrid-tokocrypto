@@ -5,7 +5,7 @@
       "style": "SNIPER",
       "status": "HOLDING_FOR_TP",
       "capital_idr": 36956.0,
-      "qty": 0.00053,
+      "qty": 0.0011,
       "entry_price_idr": 33596000,
       "tp_price_idr": 34201000.0,
       "sl_price_idr": 33058000.0,
@@ -22,11 +22,53 @@
         "kompas_btc": "5M:DN/15M:UP/1H:DN (RSI 5M:56.5)",
         "alasan_ai": "[gemini-3-flash-preview#K3] YA - Tren 5M/15M sinkron, volume naik, memori historis mendukung profit."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794757757.5143993,
+          "pnl_bid_pct": -0.016222169305869748,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 46.2,
+          "rsi_15m": 41.9,
+          "rasio_vol": 0.96,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - Memori 72J positif, tren 15M UP, potensi pantulan konsolidasi."
+        }
+      ],
       "timestamp": 1794747575.5926223,
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
-      "tp_order_id": "218673418"
+      "tp_order_id": "218692887",
+      "last_sl_eval_ts": 1794757757.5143993,
+      "last_sl_eval_price_idr": 33051000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Memori 72J positif, tren 15M UP, potensi pantulan konsolidasi.",
+      "last_eval_was_hard_sl": true
+    },
+    {
+      "coin": "SOL",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 63007.0,
+      "qty": 0.0485,
+      "entry_price_idr": 1299119,
+      "tp_price_idr": 1316657.0,
+      "sl_price_idr": 1275735.0,
+      "highest_price_idr": 1299119.0,
+      "rsi_at_entry": 51.2,
+      "buy_order_id": "117043611",
+      "entry_snapshot": {
+        "skor": 73.8,
+        "tren_detail": "5M:DN/15M:UP/1H:DN",
+        "rsi_5m": 51.2,
+        "rsi_15m": 27.6,
+        "rasio_vol": 2.32,
+        "spread_pct": 0.00167,
+        "kompas_btc": "5M:DN/15M:UP/1H:DN (RSI 5M:52.7)",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold, volume tinggi, memori 72J dukung pantulan."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794757838.38618,
+      "filled_timestamp": 1794757910.7636418,
+      "peak_verified": true,
+      "tp_order_id": "117043695"
     }
   ],
   "realized_profit_today_idr": -899.0,
@@ -49,11 +91,6 @@
       "until": 1794756848.7438369,
       "last_score": 82.1,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.32x terlalu rendah dan tren 1H masih turun."
-    },
-    "SOL": {
-      "until": 1794757148.6446853,
-      "last_score": 81.5,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis, rawan bull-trap saat tren 1H:DN."
     }
   },
   "trade_experience_memory": [
