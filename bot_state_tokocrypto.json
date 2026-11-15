@@ -17,6 +17,24 @@
       "filled_timestamp": 1794716792.996122,
       "peak_verified": true,
       "tp_order_id": "274196951"
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 62698,
+      "qty": 58,
+      "entry_price_idr": 1081,
+      "tp_price_idr": 1096,
+      "sl_price_idr": 1062.0,
+      "highest_price_idr": 1081.0,
+      "rsi_at_entry": 41.4,
+      "buy_order_id": "135830287",
+      "unverified_by_ai": false,
+      "timestamp": 1794718752.1354218,
+      "filled_timestamp": 1794718823.7569175,
+      "peak_verified": true,
+      "tp_order_id": "135830334"
     }
   ],
   "realized_profit_today_idr": 950.0,
@@ -24,11 +42,5 @@
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 1852.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794718748.174916,
-      "last_score": 73.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah 0.49x dan RSI 15M mendekati jenuh beli."
-    }
-  }
+  "ai_entry_hold_until": {}
 }
