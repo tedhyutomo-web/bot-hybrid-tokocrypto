@@ -35,9 +35,9 @@
       "filled_timestamp": 1794718823.7569175,
       "peak_verified": true,
       "tp_order_id": "135830334",
-      "last_sl_eval_ts": 1794721583.8931618,
-      "last_sl_eval_price_idr": 1070,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold (19.0), potensi rebound teknis kurangi minus.",
+      "last_sl_eval_ts": 1794722184.070115,
+      "last_sl_eval_price_idr": 1069.0,
+      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - RSI 5M sangat jenuh jual, tunggu pantulan.",
       "last_eval_was_hard_sl": false
     }
   ],
