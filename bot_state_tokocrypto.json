@@ -17,6 +17,24 @@
       "filled_timestamp": 1794704564.7248464,
       "peak_verified": true,
       "tp_order_id": "218585748"
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 50764.0,
+      "qty": 4.4e-05,
+      "entry_price_idr": 1153732000,
+      "tp_price_idr": 1172436000,
+      "sl_price_idr": 1132965000.0,
+      "highest_price_idr": 1156256000.0,
+      "rsi_at_entry": 9.1,
+      "buy_order_id": "274177158",
+      "unverified_by_ai": false,
+      "timestamp": 1794706451.0951216,
+      "filled_timestamp": 1794706524.3339198,
+      "peak_verified": true,
+      "tp_order_id": "274177396"
     }
   ],
   "realized_profit_today_idr": -487.0,
@@ -34,11 +52,6 @@
       "until": 1794698122.4646156,
       "last_score": 82.5,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
-    },
-    "BTC": {
-      "until": 1794701349.8507705,
-      "last_score": 71.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tinggi, tren DN, volume lemah, risiko rejection."
     }
   }
 }
