@@ -76,15 +76,24 @@
           "rsi_15m": 34.2,
           "rasio_vol": 0.32,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, 5M memantul, memori 72J dukung pemulihan."
+        },
+        {
+          "ts": 1794761048.979826,
+          "pnl_bid_pct": -0.013156328134301702,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 50.2,
+          "rsi_15m": 35.1,
+          "rasio_vol": 0.0,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M rendah, tren 15M naik, memori 72J dukung pantulan."
         }
       ],
       "timestamp": 1794747575.5926223,
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
       "tp_order_id": "218692887",
-      "last_sl_eval_ts": 1794760447.735213,
-      "last_sl_eval_price_idr": 33149000,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, 5M memantul, memori 72J dukung pemulihan.",
+      "last_sl_eval_ts": 1794761048.979826,
+      "last_sl_eval_price_idr": 33152000.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M rendah, tren 15M naik, memori 72J dukung pantulan.",
       "last_eval_was_hard_sl": false
     },
     {
@@ -114,9 +123,9 @@
       "filled_timestamp": 1794757910.7636418,
       "peak_verified": true,
       "tp_order_id": "117043695",
-      "last_tp_eval_ts": 1794760217.9502804,
-      "last_tp_eval_bid_idr": 1310517,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold ekstrem, potensi rebound kuat tren makro."
+      "last_tp_eval_ts": 1794761121.2327921,
+      "last_tp_eval_bid_idr": 1308967,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold ekstrem, potensi rebound ke target penuh."
     }
   ],
   "realized_profit_today_idr": -899.0,
