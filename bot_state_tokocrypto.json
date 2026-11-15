@@ -17,9 +17,9 @@
       "filled_timestamp": 1794709521.7447844,
       "peak_verified": true,
       "tp_order_id": "44085792",
-      "last_sl_eval_ts": 1794710189.0580301,
-      "last_sl_eval_price_idr": 13258,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI netral, tren 5M UP, tunggu pantulan kurangi minus.",
+      "last_sl_eval_ts": 1794710954.2456357,
+      "last_sl_eval_price_idr": 13332,
+      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - Tren 5M naik, tunggu potensi pantulan harga.",
       "last_eval_was_hard_sl": true
     }
   ],
