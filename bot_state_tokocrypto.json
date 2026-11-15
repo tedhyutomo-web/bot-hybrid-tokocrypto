@@ -121,15 +121,24 @@
           "rsi_15m": 35.8,
           "rasio_vol": 0.02,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, RSI rendah, memori 72J dukung pantulan."
+        },
+        {
+          "ts": 1794764188.8713088,
+          "pnl_bid_pct": -0.015180378616501965,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 49.3,
+          "rsi_15m": 37.4,
+          "rasio_vol": 0.41,
+          "alasan_ai": "[gemini-3-flash-preview#K3] TAHAN - Memori 72J positif, RSI 15M rendah, tunggu pantulan tren UP."
         }
       ],
       "timestamp": 1794747575.5926223,
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
       "tp_order_id": "218692887",
-      "last_sl_eval_ts": 1794763813.5106306,
-      "last_sl_eval_price_idr": 33242000.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, RSI rendah, memori 72J dukung pantulan.",
+      "last_sl_eval_ts": 1794764188.8713088,
+      "last_sl_eval_price_idr": 33086000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K3] TAHAN - Memori 72J positif, RSI 15M rendah, tunggu pantulan tren UP.",
       "last_eval_was_hard_sl": false
     },
     {
