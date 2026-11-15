@@ -11,11 +11,6 @@
       "last_score": 73.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 15M jenuh beli dan volume sangat rendah 0.25x."
     },
-    "BTC": {
-      "until": 1794757445.6385262,
-      "last_score": 77.1,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume 0.15x terlalu tipis dan tren 1H masih turun."
-    },
     "SUI": {
       "until": 1794765186.3299022,
       "last_score": 81.2,
@@ -26,10 +21,10 @@
       "last_score": 74.4,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.5x, BTC bearish, memori 72J rawan SL."
     },
-    "XRP": {
-      "until": 1794767947.3010757,
-      "last_score": 76.3,
-      "reason": "[gemini-3-flash-preview#K4] TUNDA - Tren 5M/15M turun, BTC bearish, tunggu RSI 15M <33."
+    "ADA": {
+      "until": 1794774548.5180933,
+      "last_score": 77.5,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah di bawah 1x, rawan stagnasi saat 15M:DN."
     }
   },
   "trade_experience_memory": [
