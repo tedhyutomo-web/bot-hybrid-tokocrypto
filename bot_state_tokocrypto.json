@@ -29,40 +29,12 @@
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold (28.4), potensi rebound di tren 15M:UP."
         }
       ]
-    },
-    {
-      "coin": "SOL",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37154.0,
-      "qty": 0.0282,
-      "entry_price_idr": 1317510,
-      "tp_price_idr": 1341225.0,
-      "sl_price_idr": 1296430.0,
-      "highest_price_idr": 1328839.0,
-      "rsi_at_entry": 56.2,
-      "buy_order_id": "117005273",
-      "entry_snapshot": {
-        "skor": 86.3,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 56.2,
-        "rsi_15m": 64.6,
-        "rasio_vol": 1.86,
-        "spread_pct": 0.00151,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:59.7)",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume 1.86x kuat, RSI sehat, momentum 5M/15M dukung recovery."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794740352.9259872,
-      "filled_timestamp": 1794740496.6001236,
-      "peak_verified": true,
-      "tp_order_id": "117005569"
     }
   ],
-  "realized_profit_today_idr": 183.0,
-  "completed_trades_today": 14,
+  "realized_profit_today_idr": 288.0,
+  "completed_trades_today": 15,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 2619.0,
+  "loss_to_recover_idr": 2514.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {},
   "trade_experience_memory": [
@@ -80,6 +52,22 @@
       "rasio_vol": 1.0,
       "pnl_pct": 2.37,
       "pnl_idr": 880.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794746485.6749973,
+      "waktu": "15/11 19:41",
+      "coin": "SOL",
+      "style": "SNIPER",
+      "skor": 86.3,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 56.2,
+      "rsi_15m": 64.6,
+      "rasio_vol": 1.86,
+      "pnl_pct": 0.28,
+      "pnl_idr": 105.0,
       "sempat_tahan_sl": false
     }
   ]
