@@ -38,15 +38,15 @@
       "qty": 13.56,
       "entry_price_idr": 2742,
       "tp_price_idr": 2779.0,
-      "sl_price_idr": 2693.0,
-      "highest_price_idr": 2755.0,
+      "sl_price_idr": 2761.0,
+      "highest_price_idr": 2782.0,
       "rsi_at_entry": 40.8,
       "buy_order_id": "143940787",
       "unverified_by_ai": false,
       "timestamp": 1794729690.9447458,
       "filled_timestamp": 1794729762.7881215,
       "peak_verified": true,
-      "tp_order_id": "143940875"
+      "tp_order_id": null
     }
   ],
   "realized_profit_today_idr": -697.0,
