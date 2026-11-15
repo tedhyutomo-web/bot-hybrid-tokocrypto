@@ -1041,22 +1041,31 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         # KASUS B: HOLDING_FOR_TP
         if slot["status"] == "HOLDING_FOR_TP":
             batas_habis_slot = max(5000.0 / harga_sekarang, qty_slot * 0.50) if harga_sekarang > 0 else 0.0
-            if dompet["terhubung"] and total_koin_tersisa < batas_habis_slot and slot.get("tp_order_id"):
-                kenaikan_tp_pct = (tp_idr - entry_idr) / entry_idr
+            # 1. Jika koin di dompet sudah habis (< Rp5.000), berarti sudah TERJUAL (baik lewat Limit TP maupun manual/tanpa tp_order_id)
+            if dompet["terhubung"] and total_koin_tersisa < batas_habis_slot:
+                harga_jual_acuan = tp_idr if slot.get("tp_order_id") else max(tp_idr, harga_bid_asli)
+                kenaikan_tp_pct = (harga_jual_acuan - entry_idr) / entry_idr
                 pnl_bersih_tp = kenaikan_tp_pct - FEE_ROUNDTRIP_MAKER_PCT
                 profit_bersih = round(slot["capital_idr"] * pnl_bersih_tp, 0)
                 catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
-                rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
+                if "rekam_pengalaman_transaksi_bot" in globals():
+                    rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
                 ada_eksekusi_penting = True
                 sisa_rec = state.get("loss_to_recover_idr", 0.0)
                 info_rec = f" | Sisa Target Recovery: Rp{sisa_rec:,.0f}" if sisa_rec > 0 else ""
                 pesan = (
-                    f"🎉 [TP TERJUAL OTOMATIS!] {coin} ({mode_slot}) laku di Rp{tp_idr:,.0f} "
+                    f"🎉 [TP TERJUAL & SINKRON DOMPET!] {coin} ({mode_slot}) telah terjual di Rp{harga_jual_acuan:,.0f} "
                     f"(+{kenaikan_tp_pct*100:.2f}%). Profit Bersih: +Rp{profit_bersih:,.0f}!{info_rec}"
                 )
                 log_aksi.append(pesan)
                 log_transaksi.append(pesan)
                 continue
+
+            # 2. Deteksi otomatis jika Open Order TP terhapus/dibatalkan manual di Indodax (koin pindah dari locked ke free)
+            koin_locked_skrg = dompet["coins_locked"].get(coin, 0.0)
+            if dompet["terhubung"] and slot.get("tp_order_id") and koin_locked_skrg < (qty_slot * 0.30) and koin_free >= (qty_slot * 0.50):
+                print(f"♻️ [DETEKSI TP TERBATAL MANUAL] Open Order TP {coin} (#{slot.get('tp_order_id')}) sudah tidak aktif di Indodax, siap pasang ulang!")
+                slot["tp_order_id"] = None
 
             selisih_dust = total_koin_tersisa - qty_slot
             target_qty_slot = total_koin_tersisa if (qty_slot <= 0 or (0 < selisih_dust <= qty_slot * 0.02)) else min(qty_slot, total_koin_tersisa)
