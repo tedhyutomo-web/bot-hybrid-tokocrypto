@@ -29,29 +29,29 @@
       "tp_order_id": "218673418"
     },
     {
-      "coin": "ADA",
-      "style": "GRID",
+      "coin": "SUI",
+      "style": "SNIPER",
       "status": "WAITING_BUY",
-      "capital_idr": 63042.0,
-      "qty": 22.3,
-      "entry_price_idr": 2827,
-      "tp_price_idr": 2865.0,
-      "sl_price_idr": 2776.0,
-      "highest_price_idr": 2827,
-      "rsi_at_entry": 31.0,
-      "buy_order_id": "143962546",
+      "capital_idr": 62970.0,
+      "qty": 4.72,
+      "entry_price_idr": 13341,
+      "tp_price_idr": 13581,
+      "sl_price_idr": 13128,
+      "highest_price_idr": 13341,
+      "rsi_at_entry": 57.7,
+      "buy_order_id": "44140765",
       "entry_snapshot": {
-        "skor": 85.3,
+        "skor": 88.3,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 31.0,
-        "rsi_15m": 50.0,
-        "rasio_vol": 1.24,
-        "spread_pct": 0.00212,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:47.7)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, volume naik, memori 72J winrate 100%."
+        "rsi_5m": 57.7,
+        "rsi_15m": 47.0,
+        "rasio_vol": 5.88,
+        "spread_pct": 0.0021,
+        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:47.5)",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, RSI sehat, entry pullback dukung pemulihan defisit."
       },
       "sl_hold_history": [],
-      "timestamp": 1794752190.7887032
+      "timestamp": 1794752421.4545372
     }
   ],
   "realized_profit_today_idr": 509.0,
