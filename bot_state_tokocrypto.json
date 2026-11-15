@@ -12,9 +12,9 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
     },
     "ETH": {
-      "until": 1794780852.9623067,
-      "last_score": 77.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.79x dan rekor memori 72J tidak stabil."
+      "until": 1794784747.7121098,
+      "last_score": 83.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate rendah (33%) dan BTC 15M tren DOWN."
     },
     "DOGE": {
       "until": 1794782046.7832112,
