@@ -36,10 +36,10 @@
       "filled_timestamp": 1794725717.3354604,
       "peak_verified": true,
       "tp_order_id": "44106266",
-      "last_sl_eval_ts": 1794728787.5859814,
-      "last_sl_eval_price_idr": 13070,
-      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - RSI oversold dan tren 15M masih naik",
-      "last_eval_was_hard_sl": false
+      "last_sl_eval_ts": 1794729152.7832897,
+      "last_sl_eval_price_idr": 13008.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K4] TAHAN - RSI 5M oversold ekstrem, bid di atas SL, potensi rebound.",
+      "last_eval_was_hard_sl": true
     }
   ],
   "realized_profit_today_idr": -1011.0,
