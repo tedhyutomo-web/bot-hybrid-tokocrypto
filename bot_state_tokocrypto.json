@@ -39,6 +39,11 @@
       "until": 1794747548.7389758,
       "last_score": 73.6,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah 0.55x dan BTC 5M/1H masih tren turun."
+    },
+    "ADA": {
+      "until": 1794749648.7558103,
+      "last_score": 72.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis (0.28x) dan RSI 15M mendekati jenuh."
     }
   },
   "trade_experience_memory": [
