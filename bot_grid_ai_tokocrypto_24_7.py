@@ -952,23 +952,32 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             qty_milik_slot = format_qty_koin(coin, target_qty_slot)
             sisa_koin_dompet[coin] = round(max(0.0, total_koin_tersisa - qty_milik_slot), 8)
 
-            if not slot.get("peak_verified"):
-                slot["highest_price_idr"] = max(entry_idr, harga_sekarang)
+            # Pulihkan otomatis jika SL pernah terkunci naik karena lonjakan Last Price semu padahal Bid asli masih di bawah Entry
+            if sl_idr > entry_idr and harga_bid_asli < entry_idr:
+                sl_pct_awal = SL_SNIPER_BASE_PCT if mode_slot == "SNIPER" else SL_GRID_BASE_PCT
+                sl_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 - sl_pct_awal))
+                slot["sl_price_idr"] = sl_idr
+                slot["highest_price_idr"] = entry_idr
+
+            if not slot.get("peak_verified") or float(slot.get("highest_price_idr", entry_idr)) > max(entry_idr, harga_bid_asli * 1.015):
+                slot["highest_price_idr"] = max(entry_idr, harga_bid_asli)
                 slot["peak_verified"] = True
 
-            puncak_tercatat = max(entry_idr, float(slot.get("highest_price_idr", entry_idr)), harga_sekarang)
+            # Gunakan murni harga_bid_asli (penawar beli tertinggi nyata di Order Book Indodax)
+            puncak_tercatat = max(entry_idr, float(slot.get("highest_price_idr", entry_idr)), harga_bid_asli)
             slot["highest_price_idr"] = puncak_tercatat
 
-            harga_eksekusi_jual = bulatkan_harga_indodax(coin, max(harga_bid_asli, harga_sekarang * 0.999))
+            harga_eksekusi_jual = bulatkan_harga_indodax(coin, harga_bid_asli)
             kenaikan_skrg_pct = (harga_sekarang - entry_idr) / entry_idr
             kenaikan_bid_pct = (harga_eksekusi_jual - entry_idr) / entry_idr
             kenaikan_puncak_pct = (puncak_tercatat - entry_idr) / entry_idr
             target_tp_pct = max(0.008, (tp_idr - entry_idr) / entry_idr)
             pencapaian_puncak_ke_tp = kenaikan_puncak_pct / target_tp_pct
+            pencapaian_bid_ke_tp = kenaikan_bid_pct / target_tp_pct
             lama_pegang_jam = (now_ts - float(slot.get("filled_timestamp", slot.get("timestamp", now_ts)))) / 3600.0
             estimasi_nilai_jual_skrg = qty_milik_slot * harga_eksekusi_jual
 
-            # Cek Pemicu Dynamic Technical TP (>= +0.70% Bid)
+            # Cek Pemicu Dynamic Technical TP (>= +0.70% Bid Nyata)
             batas_pemicu_eval_tp_pct = 0.0070
             batas_lantai_eksekusi_pct = 0.0065
             sedang_untung_aman_bid = (kenaikan_bid_pct >= batas_pemicu_eval_tp_pct)
@@ -983,23 +992,25 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             )
             sinyal_koreksi_puncak = (
                 (pencapaian_puncak_ke_tp >= 0.60 or kenaikan_puncak_pct >= 0.0085)
-                and harga_sekarang <= puncak_tercatat * 0.9970
-                and (candle_5m_merah or tren_5m_patah)
+                and harga_bid_asli <= puncak_tercatat * 0.9970
             )
             sinyal_momentum_melambat = (
                 kenaikan_bid_pct >= 0.0090
                 and (tren_sekarang != "UPTREND" or info_pasar.get("gaya", "") not in ["SNIPER", "GRID"])
             ) if info_pasar else False
+            # Pemicu baru: Jika Bid nyata sudah untung besar (>= +1.15% atau >= 75% target TP), wajib tanyakan ke Gemini AI!
+            sinyal_untung_besar_dekat_tp = (kenaikan_bid_pct >= 0.0115 or pencapaian_bid_ke_tp >= 0.75)
 
             waktu_eval_tp_terakhir = float(slot.get("last_tp_eval_ts", 0.0))
             bid_eval_tp_terakhir = float(slot.get("last_tp_eval_bid_idr", harga_eksekusi_jual))
             lewat_jeda_eval_tp = (now_ts - waktu_eval_tp_terakhir) >= 300.0
             profit_terkikis = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) <= -0.0020
+            profit_melonjak_baru = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) >= 0.0030
 
             butuh_evaluasi_tp_dini = (
                 sedang_untung_aman_bid
-                and (sinyal_teknikal_melemah or sinyal_koreksi_puncak or sinyal_momentum_melambat)
-                and (lewat_jeda_eval_tp or profit_terkikis)
+                and (sinyal_teknikal_melemah or sinyal_koreksi_puncak or sinyal_momentum_melambat or sinyal_untung_besar_dekat_tp)
+                and (lewat_jeda_eval_tp or profit_terkikis or profit_melonjak_baru)
             )
 
             # Cek Pemicu Evaluasi Minus Dini (<= -1.00%) & Hard SL
@@ -1415,7 +1426,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 data_koin_terbaru = peta_ticker_terbaru.get(coin, {})
                 bid_detik_ini = float(data_koin_terbaru.get("buy", item["harga_bid_asli"]) or item["harga_bid_asli"])
                 last_detik_ini = float(data_koin_terbaru.get("last", item["harga_sekarang"]) or item["harga_sekarang"])
-                harga_jual_detik_ini = bulatkan_harga_indodax(coin, max(bid_detik_ini, last_detik_ini * 0.999))
+                harga_jual_detik_ini = bulatkan_harga_indodax(coin, bid_detik_ini)
                 pct_untung_detik_ini = (harga_jual_detik_ini - entry_idr) / entry_idr
 
                 if pct_untung_detik_ini >= batas_lantai:
@@ -1517,13 +1528,13 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             log_aksi.append(pesan)
             log_transaksi.append(pesan)
 
-        if item["kenaikan_skrg_pct"] >= 0.0115:
-            sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0068)
-            if sl_kunci_untung > slot["sl_price_idr"]:
-                slot["sl_price_idr"] = sl_kunci_untung
-                log_aksi.append(
-                    f"🔒 [TRAILING PROFIT LOCK] {coin} naik +{item['kenaikan_skrg_pct']*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
-                )
+        if item["kenaikan_bid_pct"] >= 0.0115:
+         sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0068)
+         if sl_kunci_untung > slot["sl_price_idr"]:
+             slot["sl_price_idr"] = sl_kunci_untung
+             log_aksi.append(
+                 f"🔒 [TRAILING PROFIT LOCK] {coin} Bid nyata naik +{item['kenaikan_bid_pct']*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
+             )
 
         status_tp_order = f"OrderTP:#{slot.get('tp_order_id')}" if slot.get("tp_order_id") else "TP-Aktif"
         log_aksi.append(
@@ -1657,7 +1668,8 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
         f"Pasar [{sumber_grafik} 5M+15M+1H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal:{status_rec_str}\n"
-        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (menunggu konfirmasi candle 5M hijau)'}"
+        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): "
+        f"{', '.join(koin_siap_beli) or ('Belum ada (Pasar Overbought RSI ' + str(round(rata_rsi_5m, 1)) + ' > 67, menunggu pullback sehat agar tidak beli di pucuk)' if rata_rsi_5m > 67.0 else 'Belum ada (menunggu konfirmasi candle 5M hijau & skor >= 67.5)')}"
     )
 
     detail_diagnosa_koin = []
