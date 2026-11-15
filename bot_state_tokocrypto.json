@@ -14,10 +14,10 @@
       "timestamp": 1794724741.6045635,
       "tp_order_id": "220872732",
       "peak_verified": true,
-      "last_sl_eval_ts": 1794729321.9037576,
-      "last_sl_eval_price_idr": 17304,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 8.9 ekstrem oversold, tunggu pantulan untuk kurangi defisit.",
-      "last_eval_was_hard_sl": true
+      "last_sl_eval_ts": 1794729985.113606,
+      "last_sl_eval_price_idr": 17407,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold ekstrem, candle hijau muncul, potensi rebound segera.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "ADA",
@@ -26,9 +26,9 @@
       "capital_idr": 37182.0,
       "qty": 13.56,
       "entry_price_idr": 2742,
-      "tp_price_idr": 2779,
+      "tp_price_idr": 2779.0,
       "sl_price_idr": 2693.0,
-      "highest_price_idr": 2742.0,
+      "highest_price_idr": 2746.0,
       "rsi_at_entry": 40.8,
       "buy_order_id": "143940787",
       "unverified_by_ai": false,
