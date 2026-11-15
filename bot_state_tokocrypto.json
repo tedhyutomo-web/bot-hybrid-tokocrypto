@@ -49,6 +49,11 @@
       "until": 1794756848.7438369,
       "last_score": 82.1,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.32x terlalu rendah dan tren 1H masih turun."
+    },
+    "SOL": {
+      "until": 1794757148.6446853,
+      "last_score": 81.5,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis, rawan bull-trap saat tren 1H:DN."
     }
   },
   "trade_experience_memory": [
