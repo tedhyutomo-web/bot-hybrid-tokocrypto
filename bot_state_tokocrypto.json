@@ -1,36 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 62753.0,
-      "qty": 3.56,
-      "entry_price_idr": 17615.0,
-      "tp_price_idr": 17853.0,
-      "sl_price_idr": 17298.0,
-      "highest_price_idr": 17480,
-      "rsi_at_entry": 13.2,
-      "buy_order_id": "220871454",
-      "unverified_by_ai": false,
-      "timestamp": 1794724082.9389737
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37240,
-      "qty": 35,
-      "entry_price_idr": 1064,
-      "tp_price_idr": 1078.0,
-      "sl_price_idr": 1045.0,
-      "highest_price_idr": 1064,
-      "rsi_at_entry": 33.3,
-      "buy_order_id": "135833339",
-      "unverified_by_ai": false,
-      "timestamp": 1794723871.9538085
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -1011.0,
   "completed_trades_today": 12,
   "last_reset_date": "2026-11-15",
