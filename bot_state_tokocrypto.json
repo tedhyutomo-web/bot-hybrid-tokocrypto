@@ -1,5 +1,31 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "BTC",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 31018.0,
+      "qty": 2.6e-05,
+      "entry_price_idr": 1193012000,
+      "tp_price_idr": 1214486000.0,
+      "sl_price_idr": 1173924000.0,
+      "highest_price_idr": 1193012000,
+      "rsi_at_entry": 50.2,
+      "buy_order_id": "274294375",
+      "entry_snapshot": {
+        "skor": 94.5,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 50.2,
+        "rsi_15m": 56.6,
+        "rasio_vol": 5.64,
+        "spread_pct": 0.0014,
+        "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:50.2)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume kuat 5.64x, tren selaras kompas, momentum RSI stabil."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794785952.6156046
+    }
+  ],
   "realized_profit_today_idr": -1590.0,
   "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
@@ -12,24 +38,24 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
     },
     "ETH": {
-      "until": 1794785347.3901641,
-      "last_score": 91.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 1.81x dan memori historis rawan stop loss."
+      "until": 1794786247.371958,
+      "last_score": 94.6,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk (Winrate 33%), risiko SL berulang tinggi."
     },
     "SOL": {
-      "until": 1794785425.919173,
-      "last_score": 76.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.18x terlalu rendah, tren 15M:DN berisiko bull-trap."
+      "until": 1794786247.371958,
+      "last_score": 82.6,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume sangat tipis (0.86x), tidak memenuhi syarat likuiditas scalping."
     },
     "XRP": {
-      "until": 1794785648.2267041,
-      "last_score": 81.6,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% dan risiko SL berulang tinggi."
+      "until": 1794786324.0268896,
+      "last_score": 77.1,
+      "reason": "[gemini-3-flash-preview#K5] TUNDA - Volume 0.28x terlalu rendah, risiko bull-trap sangat tinggi."
     },
     "DOGE": {
-      "until": 1794785648.2267041,
-      "last_score": 75.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.19x dan memori historis rawan SL."
+      "until": 1794786396.9195879,
+      "last_score": 91.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko tinggi meski tren mendukung."
     }
   },
   "trade_experience_memory": [
