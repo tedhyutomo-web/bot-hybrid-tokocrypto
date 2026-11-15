@@ -15,6 +15,11 @@
       "until": 1794780852.9623067,
       "last_score": 77.3,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.79x dan rekor memori 72J tidak stabil."
+    },
+    "DOGE": {
+      "until": 1794781448.0470529,
+      "last_score": 75.0,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume 0.22x sangat rendah dan Memori 72J rawan SL."
     }
   },
   "trade_experience_memory": [
