@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 62802.0,
+      "qty": 3.56,
+      "entry_price_idr": 17641,
+      "tp_price_idr": 17879.0,
+      "sl_price_idr": 17323.0,
+      "highest_price_idr": 17641.0,
+      "filled_timestamp": 1794724741.604563,
+      "timestamp": 1794724741.6045635,
+      "tp_order_id": "220872732",
+      "peak_verified": true
+    }
+  ],
   "realized_profit_today_idr": -1011.0,
   "completed_trades_today": 12,
   "last_reset_date": "2026-11-15",
