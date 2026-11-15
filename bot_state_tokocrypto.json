@@ -27,9 +27,14 @@
       "reason": "[gemini-3-flash-preview#K5] TUNDA - Volume 0.28x terlalu rendah, risiko bull-trap sangat tinggi."
     },
     "DOGE": {
-      "until": 1794786396.9195879,
+      "until": 1794786848.210177,
       "last_score": 91.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko tinggi meski tren mendukung."
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Winrate 72J rendah (33%) dan RSI 15M hampir jenuh."
+    },
+    "BTC": {
+      "until": 1794786848.210177,
+      "last_score": 82.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.81x terlalu lemah untuk konfirmasi momentum sniper."
     }
   },
   "trade_experience_memory": [
