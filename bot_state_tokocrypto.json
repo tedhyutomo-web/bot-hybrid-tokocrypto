@@ -44,6 +44,11 @@
       "until": 1794749648.7558103,
       "last_score": 72.9,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis (0.28x) dan RSI 15M mendekati jenuh."
+    },
+    "DOGE": {
+      "until": 1794750547.617195,
+      "last_score": 73.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 15M jenuh beli dan volume sangat rendah 0.25x."
     }
   },
   "trade_experience_memory": [
