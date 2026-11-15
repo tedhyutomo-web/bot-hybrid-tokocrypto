@@ -41,6 +41,11 @@
       "until": 1794750547.617195,
       "last_score": 73.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 15M jenuh beli dan volume sangat rendah 0.25x."
+    },
+    "BTC": {
+      "until": 1794756247.609632,
+      "last_score": 83.0,
+      "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume rendah, RSI belum oversold ekstrem, tren 1H turun."
     }
   },
   "trade_experience_memory": [
