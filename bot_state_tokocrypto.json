@@ -17,14 +17,19 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
     },
     "SOL": {
-      "until": 1794708847.3557127,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M masih DN, konfirmasi pantulan belum terlihat jelas."
+      "until": 1794709147.6641314,
+      "last_score": 72.5,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren 5M masih DN, konfirmasi rebound belum terlihat jelas."
     },
     "ETH": {
       "until": 1794708847.3557127,
       "last_score": 73.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah dan RSI 5M terlalu tinggi saat DN."
+    },
+    "SUI": {
+      "until": 1794709147.6641314,
+      "last_score": 70.0,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume terlalu rendah, risiko slippage tinggi meski 5M UP."
     }
   }
 }
