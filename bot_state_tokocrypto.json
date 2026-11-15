@@ -12,14 +12,19 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
     },
     "ETH": {
-      "until": 1794784747.7121098,
-      "last_score": 83.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate rendah (33%) dan BTC 15M tren DOWN."
+      "until": 1794785347.3901641,
+      "last_score": 91.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 1.81x dan memori historis rawan stop loss."
     },
-    "DOGE": {
-      "until": 1794782046.7832112,
-      "last_score": 81.8,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 15M/1H DOWN, memori SL serupa, waspada jebakan tren."
+    "BTC": {
+      "until": 1794785347.3901641,
+      "last_score": 75.4,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.71x, rawan bull-trap meski tren naik."
+    },
+    "SOL": {
+      "until": 1794785425.919173,
+      "last_score": 76.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.18x terlalu rendah, tren 15M:DN berisiko bull-trap."
     }
   },
   "trade_experience_memory": [
