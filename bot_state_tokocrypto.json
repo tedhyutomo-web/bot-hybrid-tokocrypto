@@ -12,7 +12,7 @@
       "highest_price_idr": 17745.0,
       "filled_timestamp": 1794724741.604563,
       "timestamp": 1794724741.6045635,
-      "tp_order_id": "220872732",
+      "tp_order_id": "220908662",
       "peak_verified": true,
       "last_sl_eval_ts": 1794732687.5538955,
       "last_sl_eval_price_idr": 17425,
@@ -29,31 +29,36 @@
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold (28.4), potensi rebound di tren 15M:UP."
         }
       ]
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37182.0,
-      "qty": 13.56,
-      "entry_price_idr": 2742,
-      "tp_price_idr": 2779.0,
-      "sl_price_idr": 2761.0,
-      "highest_price_idr": 2822.0,
-      "rsi_at_entry": 40.8,
-      "buy_order_id": "143940787",
-      "unverified_by_ai": false,
-      "timestamp": 1794729690.9447458,
-      "filled_timestamp": 1794729762.7881215,
-      "peak_verified": true,
-      "tp_order_id": null
     }
   ],
-  "realized_profit_today_idr": -697.0,
-  "completed_trades_today": 13,
+  "realized_profit_today_idr": 183.0,
+  "completed_trades_today": 14,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 3499.0,
+  "loss_to_recover_idr": 2619.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {},
-  "trade_experience_memory": []
+  "ai_entry_hold_until": {
+    "SOL": {
+      "until": 1794739824.7957163,
+      "last_score": 77.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah 0.76x dan tren 1H DN rawan bull-trap."
+    }
+  },
+  "trade_experience_memory": [
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794739448.6331396,
+      "waktu": "15/11 17:44",
+      "coin": "ADA",
+      "style": "GRID",
+      "skor": 70.0,
+      "tren_detail": "-",
+      "rsi_5m": 40.8,
+      "rsi_15m": 50.0,
+      "rasio_vol": 1.0,
+      "pnl_pct": 2.37,
+      "pnl_idr": 880.0,
+      "sempat_tahan_sl": false
+    }
+  ]
 }
