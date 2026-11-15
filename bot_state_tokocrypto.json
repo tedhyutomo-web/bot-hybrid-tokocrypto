@@ -31,13 +31,13 @@
     {
       "coin": "SUI",
       "style": "SNIPER",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 62970.0,
       "qty": 4.72,
       "entry_price_idr": 13341,
       "tp_price_idr": 13581,
-      "sl_price_idr": 13128,
-      "highest_price_idr": 13341,
+      "sl_price_idr": 13128.0,
+      "highest_price_idr": 13341.0,
       "rsi_at_entry": 57.7,
       "buy_order_id": "44140765",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, RSI sehat, entry pullback dukung pemulihan defisit."
       },
       "sl_hold_history": [],
-      "timestamp": 1794752421.4545372
+      "timestamp": 1794752421.4545372,
+      "filled_timestamp": 1794752647.6367006,
+      "peak_verified": true,
+      "tp_order_id": "44140969"
     }
   ],
   "realized_profit_today_idr": 509.0,
