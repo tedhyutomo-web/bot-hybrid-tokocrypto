@@ -16,7 +16,11 @@
       "timestamp": 1794704427.7045026,
       "filled_timestamp": 1794704564.7248464,
       "peak_verified": true,
-      "tp_order_id": "218585748"
+      "tp_order_id": "218585748",
+      "last_sl_eval_ts": 1794707117.2761312,
+      "last_sl_eval_price_idr": 31710000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC RSI 10.1 sangat jenuh jual, potensi pantulan teknikal segera.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "BTC",
