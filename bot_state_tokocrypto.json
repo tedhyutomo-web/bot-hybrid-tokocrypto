@@ -50,11 +50,25 @@
         "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:47.5)",
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, RSI sehat, entry pullback dukung pemulihan defisit."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794753254.7997775,
+          "pnl_bid_pct": -0.008919871074132373,
+          "tren_detail": "5M:UP/15M:UP/1H:DN",
+          "rsi_5m": 28.0,
+          "rsi_15m": 48.4,
+          "rasio_vol": 6.15,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M naik, potensi pantulan segera."
+        }
+      ],
       "timestamp": 1794752421.4545372,
       "filled_timestamp": 1794752647.6367006,
       "peak_verified": true,
-      "tp_order_id": "44140969"
+      "tp_order_id": "44140969",
+      "last_sl_eval_ts": 1794753254.7997775,
+      "last_sl_eval_price_idr": 13200.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M naik, potensi pantulan segera.",
+      "last_eval_was_hard_sl": false
     }
   ],
   "realized_profit_today_idr": 509.0,
