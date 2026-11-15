@@ -33,9 +33,7 @@
   "completed_trades_today": 17,
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 3701.0,
-  "sl_cooldown_until": {
-    "SUI": 1794758355.4717722
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794750547.617195,
@@ -46,6 +44,11 @@
       "until": 1794756247.609632,
       "last_score": 83.0,
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume rendah, RSI belum oversold ekstrem, tren 1H turun."
+    },
+    "SUI": {
+      "until": 1794756848.7438369,
+      "last_score": 82.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.32x terlalu rendah dan tren 1H masih turun."
     }
   },
   "trade_experience_memory": [
