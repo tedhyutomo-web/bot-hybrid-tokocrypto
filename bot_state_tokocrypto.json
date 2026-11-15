@@ -35,11 +35,6 @@
   "loss_to_recover_idr": 2293.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "SOL": {
-      "until": 1794750247.6454437,
-      "last_score": 81.4,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - RSI 15M jenuh beli dan tren 1H masih turun."
-    },
     "ADA": {
       "until": 1794749648.7558103,
       "last_score": 72.9,
