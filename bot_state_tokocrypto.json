@@ -43,5 +43,6 @@
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 3499.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {}
+  "ai_entry_hold_until": {},
+  "trade_experience_memory": []
 }
