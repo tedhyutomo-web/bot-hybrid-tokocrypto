@@ -132,14 +132,14 @@
       "filled_timestamp": 1794757910.7636418,
       "peak_verified": true,
       "tp_order_id": "117043695",
-      "last_tp_eval_ts": 1794761121.2327921,
-      "last_tp_eval_bid_idr": 1308967,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold ekstrem, potensi rebound ke target penuh."
+      "last_tp_eval_ts": 1794762087.3256617,
+      "last_tp_eval_bid_idr": 1308418,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold ekstrem (19.1), potensi rebound lebih tinggi."
     }
   ],
   "realized_profit_today_idr": -899.0,
   "completed_trades_today": 17,
-  "last_reset_date": "2026-11-15",
+  "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 3701.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
