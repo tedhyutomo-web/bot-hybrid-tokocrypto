@@ -1,36 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62802.0,
-      "qty": 3.56,
-      "entry_price_idr": 17641,
-      "tp_price_idr": 17879.0,
-      "sl_price_idr": 17323.0,
-      "highest_price_idr": 17747.0,
-      "filled_timestamp": 1794724741.604563,
-      "timestamp": 1794724741.6045635,
-      "tp_order_id": "220908662",
-      "peak_verified": true,
-      "last_sl_eval_ts": 1794732687.5538955,
-      "last_sl_eval_price_idr": 17425,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold (28.4), potensi rebound di tren 15M:UP.",
-      "last_eval_was_hard_sl": false,
-      "sl_hold_history": [
-        {
-          "ts": 1794732687.5538955,
-          "pnl_bid_pct": -0.01224420384331954,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 56.4,
-          "rsi_15m": 28.4,
-          "rasio_vol": 0.62,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold (28.4), potensi rebound di tren 15M:UP."
-        }
-      ]
-    },
-    {
       "coin": "ETH",
       "style": "SNIPER",
       "status": "HOLDING_FOR_TP",
@@ -59,10 +29,10 @@
       "tp_order_id": "218673418"
     }
   ],
-  "realized_profit_today_idr": 288.0,
-  "completed_trades_today": 15,
+  "realized_profit_today_idr": 509.0,
+  "completed_trades_today": 16,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 2514.0,
+  "loss_to_recover_idr": 2293.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SOL": {
@@ -103,6 +73,36 @@
       "pnl_pct": 0.28,
       "pnl_idr": 105.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794748543.4800081,
+      "waktu": "15/11 20:15",
+      "coin": "XRP",
+      "style": "GRID",
+      "skor": 70.0,
+      "tren_detail": "-",
+      "rsi_5m": 50.0,
+      "rsi_15m": 50.0,
+      "rasio_vol": 1.0,
+      "pnl_pct": 0.35,
+      "pnl_idr": 221.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "SUKSES_BANGKIT",
+      "ts": 1794748543.4800081,
+      "waktu": "15/11 20:15",
+      "coin": "XRP",
+      "tren_detail": "5M:DN/15M:UP/1H:DN",
+      "rsi_5m": 56.4,
+      "rsi_15m": 28.4,
+      "rasio_vol": 0.62,
+      "minus_awal_pct": -1.22,
+      "pnl_akhir_pct": 0.35,
+      "pnl_idr": 221.0
     }
   ]
 }
