@@ -17,10 +17,25 @@
       "filled_timestamp": 1794716792.996122,
       "peak_verified": true,
       "tp_order_id": "274196951",
-      "last_sl_eval_ts": 1794722484.5305686,
-      "last_sl_eval_price_idr": 1181650000.0,
-      "last_sl_eval_reason": "[gemini-flash-lite-latest#K1] TAHAN - RSI sangat oversold, tunggu pantulan cepat.",
+      "last_sl_eval_ts": 1794723093.2239127,
+      "last_sl_eval_price_idr": 1180500000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15.3 sangat oversold, tunggu pantulan teknis segera terjadi.",
       "last_eval_was_hard_sl": false
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 62753.0,
+      "qty": 3.59,
+      "entry_price_idr": 17480,
+      "tp_price_idr": 17716.0,
+      "sl_price_idr": 17165.0,
+      "highest_price_idr": 17480,
+      "rsi_at_entry": 13.2,
+      "buy_order_id": "220869687",
+      "unverified_by_ai": false,
+      "timestamp": 1794723098.5111103
     }
   ],
   "realized_profit_today_idr": -323.0,
