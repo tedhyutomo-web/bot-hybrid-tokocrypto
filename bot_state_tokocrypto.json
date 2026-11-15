@@ -9,7 +9,7 @@
       "entry_price_idr": 33596000,
       "tp_price_idr": 34201000.0,
       "sl_price_idr": 33058000.0,
-      "highest_price_idr": 33628000.0,
+      "highest_price_idr": 33596000.0,
       "rsi_at_entry": 59.8,
       "buy_order_id": "218673329",
       "entry_snapshot": {
@@ -59,16 +59,25 @@
           "rsi_15m": 48.4,
           "rasio_vol": 6.15,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M naik, potensi pantulan segera."
+        },
+        {
+          "ts": 1794753685.5288246,
+          "pnl_bid_pct": -0.01798965594783,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 27.1,
+          "rsi_15m": 43.7,
+          "rasio_vol": 1.48,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold ekstrem, tunggu pantulan hijau untuk exit."
         }
       ],
       "timestamp": 1794752421.4545372,
       "filled_timestamp": 1794752647.6367006,
       "peak_verified": true,
       "tp_order_id": "44140969",
-      "last_sl_eval_ts": 1794753254.7997775,
-      "last_sl_eval_price_idr": 13200.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M naik, potensi pantulan segera.",
-      "last_eval_was_hard_sl": false
+      "last_sl_eval_ts": 1794753685.5288246,
+      "last_sl_eval_price_idr": 13101,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold ekstrem, tunggu pantulan hijau untuk exit.",
+      "last_eval_was_hard_sl": true
     }
   ],
   "realized_profit_today_idr": 509.0,
