@@ -1,25 +1,71 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 50627.0,
+      "qty": 17.94,
+      "entry_price_idr": 2822,
+      "tp_price_idr": 2860.0,
+      "sl_price_idr": 2771.0,
+      "highest_price_idr": 2822,
+      "rsi_at_entry": 34.8,
+      "buy_order_id": "143987495",
+      "entry_snapshot": {
+        "skor": 79.3,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 34.8,
+        "rsi_15m": 51.1,
+        "rasio_vol": 5.47,
+        "spread_pct": 0.00284,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN (RSI 5M:49.4)",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume masif 5.47x dan Memori 72J winrate 100% mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794780557.0113952
+    },
+    {
+      "coin": "DOGE",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 48690,
+      "qty": 45,
+      "entry_price_idr": 1082,
+      "tp_price_idr": 1101.0,
+      "sl_price_idr": 1065.0,
+      "highest_price_idr": 1082,
+      "rsi_at_entry": 61.5,
+      "buy_order_id": "135867778",
+      "entry_snapshot": {
+        "skor": 92.1,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 61.5,
+        "rsi_15m": 62.2,
+        "rasio_vol": 8.79,
+        "spread_pct": 0.00277,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN (RSI 5M:50.3)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 3TF UP, volume masif 8.79x, momentum RSI kuat."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794780633.1346548
+    }
+  ],
   "realized_profit_today_idr": -1590.0,
   "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 4392.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794750547.617195,
-      "last_score": 73.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 15M jenuh beli dan volume sangat rendah 0.25x."
-    },
     "SUI": {
       "until": 1794765186.3299022,
       "last_score": 81.2,
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
     },
-    "ADA": {
-      "until": 1794774548.5180933,
-      "last_score": 77.5,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah di bawah 1x, rawan stagnasi saat 15M:DN."
+    "ETH": {
+      "until": 1794780852.9623067,
+      "last_score": 77.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.79x dan rekor memori 72J tidak stabil."
     }
   },
   "trade_experience_memory": [
