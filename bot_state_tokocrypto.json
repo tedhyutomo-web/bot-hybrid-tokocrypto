@@ -3,17 +3,20 @@
     {
       "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 37958.0,
-      "qty": 2.88,
-      "entry_price_idr": 13180,
-      "tp_price_idr": 13470,
-      "sl_price_idr": 12943,
-      "highest_price_idr": 13180,
+      "qty": 2.84,
+      "entry_price_idr": 13336.0,
+      "tp_price_idr": 13629.0,
+      "sl_price_idr": 13096.0,
+      "highest_price_idr": 13336.0,
       "rsi_at_entry": 57.3,
-      "buy_order_id": "44085025",
+      "buy_order_id": "44085649",
       "unverified_by_ai": false,
-      "timestamp": 1794709152.9352098
+      "timestamp": 1794709447.5264459,
+      "filled_timestamp": 1794709521.7447844,
+      "peak_verified": true,
+      "tp_order_id": "44085792"
     }
   ],
   "realized_profit_today_idr": 456.0,
@@ -31,11 +34,6 @@
       "until": 1794698122.4646156,
       "last_score": 82.5,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
-    },
-    "SOL": {
-      "until": 1794709147.6641314,
-      "last_score": 72.5,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren 5M masih DN, konfirmasi rebound belum terlihat jelas."
     },
     "ETH": {
       "until": 1794708847.3557127,
