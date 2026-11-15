@@ -103,15 +103,24 @@
           "rsi_15m": 34.3,
           "rasio_vol": 0.96,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, potensi rebound segera."
+        },
+        {
+          "ts": 1794763146.8867688,
+          "pnl_bid_pct": -0.011697821169186808,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 58.6,
+          "rsi_15m": 40.5,
+          "rasio_vol": 3.37,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, volume tinggi, memori 72J dukung pantulan."
         }
       ],
       "timestamp": 1794747575.5926223,
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
       "tp_order_id": "218692887",
-      "last_sl_eval_ts": 1794762384.5061965,
-      "last_sl_eval_price_idr": 33231000.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, potensi rebound segera.",
+      "last_sl_eval_ts": 1794763146.8867688,
+      "last_sl_eval_price_idr": 33203000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, volume tinggi, memori 72J dukung pantulan.",
       "last_eval_was_hard_sl": false
     },
     {
