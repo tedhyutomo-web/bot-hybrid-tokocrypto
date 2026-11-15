@@ -18,17 +18,20 @@
     {
       "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 37131.0,
       "qty": 2.8,
       "entry_price_idr": 13261,
-      "tp_price_idr": 13446.0,
+      "tp_price_idr": 13446,
       "sl_price_idr": 13022.0,
-      "highest_price_idr": 13261,
+      "highest_price_idr": 13261.0,
       "rsi_at_entry": 36.3,
       "buy_order_id": "44106074",
       "unverified_by_ai": false,
-      "timestamp": 1794725496.7090368
+      "timestamp": 1794725496.7090368,
+      "filled_timestamp": 1794725717.3354604,
+      "peak_verified": true,
+      "tp_order_id": "44106266"
     }
   ],
   "realized_profit_today_idr": -1011.0,
