@@ -27,82 +27,15 @@
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
       "tp_order_id": "218673418"
-    },
-    {
-      "coin": "SUI",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62970.0,
-      "qty": 4.72,
-      "entry_price_idr": 13341,
-      "tp_price_idr": 13581.0,
-      "sl_price_idr": 13128.0,
-      "highest_price_idr": 13341.0,
-      "rsi_at_entry": 57.7,
-      "buy_order_id": "44140765",
-      "entry_snapshot": {
-        "skor": 88.3,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 57.7,
-        "rsi_15m": 47.0,
-        "rasio_vol": 5.88,
-        "spread_pct": 0.0021,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN (RSI 5M:47.5)",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, RSI sehat, entry pullback dukung pemulihan defisit."
-      },
-      "sl_hold_history": [
-        {
-          "ts": 1794753254.7997775,
-          "pnl_bid_pct": -0.008919871074132373,
-          "tren_detail": "5M:UP/15M:UP/1H:DN",
-          "rsi_5m": 28.0,
-          "rsi_15m": 48.4,
-          "rasio_vol": 6.15,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M naik, potensi pantulan segera."
-        },
-        {
-          "ts": 1794753685.5288246,
-          "pnl_bid_pct": -0.01798965594783,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 27.1,
-          "rsi_15m": 43.7,
-          "rasio_vol": 1.48,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold ekstrem, tunggu pantulan hijau untuk exit."
-        },
-        {
-          "ts": 1794754354.7468982,
-          "pnl_bid_pct": -0.011393448766958999,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 34.8,
-          "rsi_15m": 37.6,
-          "rasio_vol": 0.08,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI mendekati oversold dan tren 15M masih mendukung pantulan."
-        },
-        {
-          "ts": 1794754956.269923,
-          "pnl_bid_pct": -0.014616595457611873,
-          "tren_detail": "5M:DN/15M:UP/1H:DN",
-          "rsi_5m": 32.0,
-          "rsi_15m": 26.9,
-          "rasio_vol": 1.34,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold, tunggu pantulan teknis karena tren 15M UP."
-        }
-      ],
-      "timestamp": 1794752421.4545372,
-      "filled_timestamp": 1794752647.6367006,
-      "peak_verified": true,
-      "tp_order_id": "44140969",
-      "last_sl_eval_ts": 1794754956.269923,
-      "last_sl_eval_price_idr": 13114.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold, tunggu pantulan teknis karena tren 15M UP.",
-      "last_eval_was_hard_sl": true
     }
   ],
-  "realized_profit_today_idr": 509.0,
-  "completed_trades_today": 16,
+  "realized_profit_today_idr": -899.0,
+  "completed_trades_today": 17,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 2293.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 3701.0,
+  "sl_cooldown_until": {
+    "SUI": 1794758355.4717722
+  },
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794750547.617195,
@@ -172,6 +105,36 @@
       "minus_awal_pct": -1.22,
       "pnl_akhir_pct": 0.35,
       "pnl_idr": 221.0
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794755655.4717758,
+      "waktu": "15/11 22:14",
+      "coin": "SUI",
+      "style": "SNIPER",
+      "skor": 88.3,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 57.7,
+      "rsi_15m": 47.0,
+      "rasio_vol": 5.88,
+      "pnl_pct": -2.24,
+      "pnl_idr": -1408.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794755655.4717758,
+      "waktu": "15/11 22:14",
+      "coin": "SUI",
+      "tren_detail": "5M:DN/15M:UP/1H:DN",
+      "rsi_5m": 32.0,
+      "rsi_15m": 26.9,
+      "rasio_vol": 1.34,
+      "minus_awal_pct": -1.46,
+      "pnl_akhir_pct": -2.24,
+      "pnl_idr": -1408.0
     }
   ]
 }
