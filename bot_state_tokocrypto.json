@@ -36,7 +36,13 @@
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 2514.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {},
+  "ai_entry_hold_until": {
+    "SOL": {
+      "until": 1794747247.8287551,
+      "last_score": 72.6,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.37x rawan bull-trap saat tren 1H turun."
+    }
+  },
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
