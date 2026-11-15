@@ -1,19 +1,34 @@
 {
   "active_slots": [
     {
-      "coin": "ADA",
+      "coin": "BTC",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 50663.0,
-      "qty": 18.27,
-      "entry_price_idr": 2773,
-      "tp_price_idr": 2834.0,
-      "sl_price_idr": 2723.0,
-      "highest_price_idr": 2773,
-      "rsi_at_entry": 53.5,
-      "buy_order_id": "143915250",
+      "capital_idr": 36983.0,
+      "qty": 3.1e-05,
+      "entry_price_idr": 1193006000,
+      "tp_price_idr": 1219252000.0,
+      "sl_price_idr": 1171532000.0,
+      "highest_price_idr": 1193006000,
+      "rsi_at_entry": 52.1,
+      "buy_order_id": "274193539",
       "unverified_by_ai": false,
-      "timestamp": 1794714552.3191159
+      "timestamp": 1794714921.6266813
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 62872,
+      "qty": 58,
+      "entry_price_idr": 1084,
+      "tp_price_idr": 1099.0,
+      "sl_price_idr": 1064.0,
+      "highest_price_idr": 1084,
+      "rsi_at_entry": 58.3,
+      "buy_order_id": "135827533",
+      "unverified_by_ai": false,
+      "timestamp": 1794714998.1737833
     }
   ],
   "realized_profit_today_idr": 950.0,
@@ -22,11 +37,6 @@
   "loss_to_recover_idr": 1852.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794698647.2628129,
-      "last_score": 70.5,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume 0.37x terlalu rendah, rawan jebakan turun."
-    },
     "ETH": {
       "until": 1794708847.3557127,
       "last_score": 73.0,
@@ -36,11 +46,6 @@
       "until": 1794710347.904237,
       "last_score": 74.5,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren DN, BTC overbought, RSI 59 belum area pantulan."
-    },
-    "BTC": {
-      "until": 1794714847.74345,
-      "last_score": 75.9,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume tipis, konfirmasi pantulan 5M belum cukup kuat melawan 15M."
     }
   }
 }
