@@ -20,19 +20,22 @@
       "last_eval_was_hard_sl": true
     },
     {
-      "coin": "SOL",
+      "coin": "ADA",
       "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37081.0,
-      "qty": 0.029,
-      "entry_price_idr": 1278666,
-      "tp_price_idr": 1295928.0,
-      "sl_price_idr": 1255650.0,
-      "highest_price_idr": 1278666,
-      "rsi_at_entry": 25.0,
-      "buy_order_id": "116978845",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 37182.0,
+      "qty": 13.56,
+      "entry_price_idr": 2742,
+      "tp_price_idr": 2779,
+      "sl_price_idr": 2693.0,
+      "highest_price_idr": 2742.0,
+      "rsi_at_entry": 40.8,
+      "buy_order_id": "143940787",
       "unverified_by_ai": false,
-      "timestamp": 1794729326.5163898
+      "timestamp": 1794729690.9447458,
+      "filled_timestamp": 1794729762.7881215,
+      "peak_verified": true,
+      "tp_order_id": "143940875"
     }
   ],
   "realized_profit_today_idr": -697.0,
