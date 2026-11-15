@@ -36,9 +36,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SOL": {
-      "until": 1794747548.7389758,
-      "last_score": 73.6,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah 0.55x dan BTC 5M/1H masih tren turun."
+      "until": 1794750247.6454437,
+      "last_score": 81.4,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - RSI 15M jenuh beli dan tren 1H masih turun."
     },
     "ADA": {
       "until": 1794749648.7558103,
