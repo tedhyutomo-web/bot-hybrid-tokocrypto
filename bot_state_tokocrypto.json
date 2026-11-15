@@ -1,31 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "BTC",
-      "style": "SNIPER",
-      "status": "WAITING_BUY",
-      "capital_idr": 31018.0,
-      "qty": 2.6e-05,
-      "entry_price_idr": 1193012000,
-      "tp_price_idr": 1214486000.0,
-      "sl_price_idr": 1173924000.0,
-      "highest_price_idr": 1193012000,
-      "rsi_at_entry": 50.2,
-      "buy_order_id": "274294375",
-      "entry_snapshot": {
-        "skor": 94.5,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 50.2,
-        "rsi_15m": 56.6,
-        "rasio_vol": 5.64,
-        "spread_pct": 0.0014,
-        "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:50.2)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume kuat 5.64x, tren selaras kompas, momentum RSI stabil."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794785952.6156046
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -1590.0,
   "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
@@ -33,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
-      "until": 1794765186.3299022,
-      "last_score": 81.2,
-      "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
+      "until": 1794786545.9541485,
+      "last_score": 91.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko bull-trap meski volume tinggi."
     },
     "ETH": {
       "until": 1794786247.371958,
