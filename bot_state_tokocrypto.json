@@ -1,34 +1,22 @@
 {
   "active_slots": [
     {
-      "coin": "DOGE",
+      "coin": "BTC",
       "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 62930,
-      "qty": 58,
-      "entry_price_idr": 1085,
-      "tp_price_idr": 1100.0,
-      "sl_price_idr": 1065.0,
-      "highest_price_idr": 1085,
-      "rsi_at_entry": 51.6,
-      "buy_order_id": "135828475",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 37108.0,
+      "qty": 3.1e-05,
+      "entry_price_idr": 1197032000,
+      "tp_price_idr": 1213192000,
+      "sl_price_idr": 1175485000.0,
+      "highest_price_idr": 1197032000.0,
+      "rsi_at_entry": 24.5,
+      "buy_order_id": "274196858",
       "unverified_by_ai": false,
-      "timestamp": 1794716350.7171745
-    },
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 36898.0,
-      "qty": 0.0011,
-      "entry_price_idr": 33544000,
-      "tp_price_idr": 33997000.0,
-      "sl_price_idr": 32940000.0,
-      "highest_price_idr": 33544000,
-      "rsi_at_entry": 46.6,
-      "buy_order_id": "218617685",
-      "unverified_by_ai": false,
-      "timestamp": 1794716424.0676074
+      "timestamp": 1794716721.279504,
+      "filled_timestamp": 1794716792.996122,
+      "peak_verified": true,
+      "tp_order_id": "274196951"
     }
   ],
   "realized_profit_today_idr": 950.0,
