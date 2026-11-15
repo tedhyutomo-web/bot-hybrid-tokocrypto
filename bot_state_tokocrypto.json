@@ -9,7 +9,7 @@
       "entry_price_idr": 17641,
       "tp_price_idr": 17879.0,
       "sl_price_idr": 17323.0,
-      "highest_price_idr": 17641.0,
+      "highest_price_idr": 17660.0,
       "filled_timestamp": 1794724741.604563,
       "timestamp": 1794724741.6045635,
       "tp_order_id": "220872732",
@@ -23,5 +23,11 @@
   "sl_cooldown_until": {
     "BTC": 1794726472.4793541
   },
-  "ai_entry_hold_until": {}
+  "ai_entry_hold_until": {
+    "SUI": {
+      "until": 1794725348.452875,
+      "last_score": 72.7,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.35x terlalu rendah dan RSI 5M belum jenuh."
+    }
+  }
 }
