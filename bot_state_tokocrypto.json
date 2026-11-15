@@ -9,11 +9,15 @@
       "entry_price_idr": 17641,
       "tp_price_idr": 17879.0,
       "sl_price_idr": 17323.0,
-      "highest_price_idr": 17711.0,
+      "highest_price_idr": 17641.0,
       "filled_timestamp": 1794724741.604563,
       "timestamp": 1794724741.6045635,
       "tp_order_id": "220872732",
-      "peak_verified": true
+      "peak_verified": true,
+      "last_sl_eval_ts": 1794728195.1141534,
+      "last_sl_eval_price_idr": 17400,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K5] TAHAN - RSI 5M sangat oversold, potensi rebound teknikal segera terjadi.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "SUI",
@@ -31,7 +35,11 @@
       "timestamp": 1794725496.7090368,
       "filled_timestamp": 1794725717.3354604,
       "peak_verified": true,
-      "tp_order_id": "44106266"
+      "tp_order_id": "44106266",
+      "last_sl_eval_ts": 1794728195.1141534,
+      "last_sl_eval_price_idr": 13126,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K5] TAHAN - Volume tinggi mendukung penyerapan harga, tunggu konfirmasi pantulan 5M.",
+      "last_eval_was_hard_sl": false
     }
   ],
   "realized_profit_today_idr": -1011.0,
