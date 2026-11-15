@@ -49,16 +49,25 @@
           "rsi_15m": 35.0,
           "rasio_vol": 0.03,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, tunggu pantulan 15M."
+        },
+        {
+          "ts": 1794759382.2964222,
+          "pnl_bid_pct": -0.01565662578878438,
+          "tren_detail": "5M:DN/15M:UP/1H:DN",
+          "rsi_5m": 64.2,
+          "rsi_15m": 36.6,
+          "rasio_vol": 0.34,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, memori 72J positif, tunggu pantulan tren 15M."
         }
       ],
       "timestamp": 1794747575.5926223,
       "filled_timestamp": 1794747648.2050698,
       "peak_verified": true,
       "tp_order_id": "218692887",
-      "last_sl_eval_ts": 1794758715.8762584,
-      "last_sl_eval_price_idr": 33051000,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, Memori 72J positif, tunggu pantulan 15M.",
-      "last_eval_was_hard_sl": true
+      "last_sl_eval_ts": 1794759382.2964222,
+      "last_sl_eval_price_idr": 33070000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold, memori 72J positif, tunggu pantulan tren 15M.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "SOL",
