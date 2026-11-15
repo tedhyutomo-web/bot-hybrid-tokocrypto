@@ -9,7 +9,7 @@
       "entry_price_idr": 32073000,
       "tp_price_idr": 32512000.0,
       "sl_price_idr": 31496000.0,
-      "highest_price_idr": 32073000.0,
+      "highest_price_idr": 32116000.0,
       "rsi_at_entry": 24.4,
       "buy_order_id": "218585267",
       "unverified_by_ai": false,
@@ -21,30 +21,12 @@
       "last_sl_eval_price_idr": 31710000,
       "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC RSI 10.1 sangat jenuh jual, potensi pantulan teknikal segera.",
       "last_eval_was_hard_sl": false
-    },
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 50764.0,
-      "qty": 4.4e-05,
-      "entry_price_idr": 1153732000,
-      "tp_price_idr": 1172436000.0,
-      "sl_price_idr": 1132965000.0,
-      "highest_price_idr": 1158308000.0,
-      "rsi_at_entry": 9.1,
-      "buy_order_id": "274177158",
-      "unverified_by_ai": false,
-      "timestamp": 1794706451.0951216,
-      "filled_timestamp": 1794706524.3339198,
-      "peak_verified": true,
-      "tp_order_id": "274177396"
     }
   ],
-  "realized_profit_today_idr": -487.0,
-  "completed_trades_today": 7,
+  "realized_profit_today_idr": 57.0,
+  "completed_trades_today": 8,
   "last_reset_date": "2026-11-15",
-  "loss_to_recover_idr": 3289.0,
+  "loss_to_recover_idr": 2745.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
