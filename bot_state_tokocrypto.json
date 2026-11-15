@@ -1,5 +1,21 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 50663.0,
+      "qty": 18.27,
+      "entry_price_idr": 2773,
+      "tp_price_idr": 2834.0,
+      "sl_price_idr": 2723.0,
+      "highest_price_idr": 2773,
+      "rsi_at_entry": 53.5,
+      "buy_order_id": "143915250",
+      "unverified_by_ai": false,
+      "timestamp": 1794714552.3191159
+    }
+  ],
   "realized_profit_today_idr": 950.0,
   "completed_trades_today": 10,
   "last_reset_date": "2026-11-15",
@@ -11,11 +27,6 @@
       "last_score": 70.5,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume 0.37x terlalu rendah, rawan jebakan turun."
     },
-    "ADA": {
-      "until": 1794698122.4646156,
-      "last_score": 82.5,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
-    },
     "ETH": {
       "until": 1794708847.3557127,
       "last_score": 73.0,
@@ -25,6 +36,11 @@
       "until": 1794710347.904237,
       "last_score": 74.5,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren DN, BTC overbought, RSI 59 belum area pantulan."
+    },
+    "BTC": {
+      "until": 1794714847.74345,
+      "last_score": 75.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume tipis, konfirmasi pantulan 5M belum cukup kuat melawan 15M."
     }
   }
 }
