@@ -9,25 +9,32 @@
       "entry_price_idr": 17641,
       "tp_price_idr": 17879.0,
       "sl_price_idr": 17323.0,
-      "highest_price_idr": 17660.0,
+      "highest_price_idr": 17711.0,
       "filled_timestamp": 1794724741.604563,
       "timestamp": 1794724741.6045635,
       "tp_order_id": "220872732",
       "peak_verified": true
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37131.0,
+      "qty": 2.8,
+      "entry_price_idr": 13261,
+      "tp_price_idr": 13446.0,
+      "sl_price_idr": 13022.0,
+      "highest_price_idr": 13261,
+      "rsi_at_entry": 36.3,
+      "buy_order_id": "44106074",
+      "unverified_by_ai": false,
+      "timestamp": 1794725496.7090368
     }
   ],
   "realized_profit_today_idr": -1011.0,
   "completed_trades_today": 12,
   "last_reset_date": "2026-11-15",
   "loss_to_recover_idr": 3813.0,
-  "sl_cooldown_until": {
-    "BTC": 1794726472.4793541
-  },
-  "ai_entry_hold_until": {
-    "SUI": {
-      "until": 1794725348.452875,
-      "last_score": 72.7,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.35x terlalu rendah dan RSI 5M belum jenuh."
-    }
-  }
+  "sl_cooldown_until": {},
+  "ai_entry_hold_until": {}
 }
