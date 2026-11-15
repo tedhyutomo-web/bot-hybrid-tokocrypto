@@ -1,66 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 63007.0,
-      "qty": 0.0485,
-      "entry_price_idr": 1299119,
-      "tp_price_idr": 1316657.0,
-      "sl_price_idr": 1275735.0,
-      "highest_price_idr": 1310517.0,
-      "rsi_at_entry": 51.2,
-      "buy_order_id": "117043611",
-      "entry_snapshot": {
-        "skor": 73.8,
-        "tren_detail": "5M:DN/15M:UP/1H:DN",
-        "rsi_5m": 51.2,
-        "rsi_15m": 27.6,
-        "rasio_vol": 2.32,
-        "spread_pct": 0.00167,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN (RSI 5M:52.7)",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold, volume tinggi, memori 72J dukung pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794757838.38618,
-      "filled_timestamp": 1794757910.7636418,
-      "peak_verified": true,
-      "tp_order_id": "117043695",
-      "last_tp_eval_ts": 1794762087.3256617,
-      "last_tp_eval_bid_idr": 1308418,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold ekstrem (19.1), potensi rebound lebih tinggi."
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 36970.0,
-      "qty": 13.27,
-      "entry_price_idr": 2786,
-      "tp_price_idr": 2824.0,
-      "sl_price_idr": 2736.0,
-      "highest_price_idr": 2786,
-      "rsi_at_entry": 50.0,
-      "buy_order_id": "143976467",
-      "entry_snapshot": {
-        "skor": 74.9,
-        "tren_detail": "5M:DN/15M:UP/1H:DN",
-        "rsi_5m": 50.0,
-        "rsi_15m": 26.3,
-        "rasio_vol": 3.08,
-        "spread_pct": 0.00322,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN (RSI 5M:36.4)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 15M oversold ekstrem, volume kuat, potensi pantulan teknikal."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794765089.052899
-    }
-  ],
-  "realized_profit_today_idr": -1737.0,
-  "completed_trades_today": 18,
+  "active_slots": [],
+  "realized_profit_today_idr": -1590.0,
+  "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4539.0,
+  "loss_to_recover_idr": 4392.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
@@ -79,9 +22,14 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.24x terlalu rendah dan BTC tren turun dominan."
     },
     "ETH": {
-      "until": 1794764953.214735,
-      "last_score": 75.6,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC bearish total, tren 1H ETH turun, rawan bull-trap."
+      "until": 1794765994.7303867,
+      "last_score": 69.8,
+      "reason": "[gemini-3-flash-preview#K4] TUNDA - Volume 0.17x lemah, BTC bearish, memori 72J rawan SL."
+    },
+    "XRP": {
+      "until": 1794765917.576897,
+      "last_score": 79.2,
+      "reason": "[gemini-3-flash-preview#K4] TUNDA - Volume rendah 0.35x dan tren 15M masih turun (DN)."
     }
   },
   "trade_experience_memory": [
@@ -206,6 +154,22 @@
       "minus_awal_pct": -1.52,
       "pnl_akhir_pct": -2.27,
       "pnl_idr": -838.0
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794765773.399269,
+      "waktu": "16/11 01:02",
+      "coin": "SOL",
+      "style": "GRID",
+      "skor": 73.8,
+      "tren_detail": "5M:DN/15M:UP/1H:DN",
+      "rsi_5m": 51.2,
+      "rsi_15m": 27.6,
+      "rasio_vol": 2.32,
+      "pnl_pct": 0.23,
+      "pnl_idr": 147.0,
+      "sempat_tahan_sl": false
     }
   ]
 }
