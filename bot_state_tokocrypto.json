@@ -38,9 +38,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SOL": {
-      "until": 1794739824.7957163,
-      "last_score": 77.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah 0.76x dan tren 1H DN rawan bull-trap."
+      "until": 1794740269.8273242,
+      "last_score": 71.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.16x terlalu tipis, rawan bull-trap saat tren 1H:DN."
     }
   },
   "trade_experience_memory": [
