@@ -15,6 +15,11 @@
       "until": 1794698122.4646156,
       "last_score": 82.5,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tanggung, volume rendah, risiko kelanjutan tren turun."
+    },
+    "BTC": {
+      "until": 1794701349.8507705,
+      "last_score": 71.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - RSI 5M tinggi, tren DN, volume lemah, risiko rejection."
     }
   }
 }
