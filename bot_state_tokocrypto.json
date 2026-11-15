@@ -87,7 +87,7 @@
       "entry_price_idr": 1299119,
       "tp_price_idr": 1316657.0,
       "sl_price_idr": 1275735.0,
-      "highest_price_idr": 1303245.0,
+      "highest_price_idr": 1310517.0,
       "rsi_at_entry": 51.2,
       "buy_order_id": "117043611",
       "entry_snapshot": {
@@ -104,7 +104,10 @@
       "timestamp": 1794757838.38618,
       "filled_timestamp": 1794757910.7636418,
       "peak_verified": true,
-      "tp_order_id": "117043695"
+      "tp_order_id": "117043695",
+      "last_tp_eval_ts": 1794760217.9502804,
+      "last_tp_eval_bid_idr": 1310517,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 15M oversold ekstrem, potensi rebound kuat tren makro."
     }
   ],
   "realized_profit_today_idr": -899.0,
