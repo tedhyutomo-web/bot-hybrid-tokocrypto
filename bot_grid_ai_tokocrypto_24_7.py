@@ -85,6 +85,9 @@ def tanggal_wib_hari_ini():
     tz_wib = timezone(timedelta(hours=7))
     return datetime.now(tz_wib).strftime("%Y-%m-%d")
 
+MEMORY_RETENTION_HOURS = 72.0          # Durasi simpan memori pengalaman: 72 Jam (3 Hari)
+MAX_EPISODIC_MEMORY_ITEMS = 60         # Maksimal menyimpan 60 transaksi selesai terakhir (Menang & Kalah)
+
 def muat_state_bot():
     tgl_skrg = tanggal_wib_hari_ini()
     if os.path.exists(STATE_FILE):
@@ -97,6 +100,7 @@ def muat_state_bot():
                 state["last_reset_date"] = tgl_skrg
             state.setdefault("loss_to_recover_idr", 0.0)
             state.setdefault("sl_cooldown_until", {})
+            state.setdefault("trade_experience_memory", [])
             return state
         except Exception:
             pass
@@ -106,6 +110,7 @@ def muat_state_bot():
         "completed_trades_today": 0,
         "loss_to_recover_idr": 0.0,
         "sl_cooldown_until": {},
+        "trade_experience_memory": [],
         "last_reset_date": tgl_skrg
     }
 
@@ -125,6 +130,143 @@ def catat_hasil_transaksi_ke_recovery(state, pnl_bersih_idr, coin=None):
             state.setdefault("sl_cooldown_until", {})[coin] = time.time() + (SL_COOLDOWN_MINUTES * 60)
     else:
         state["loss_to_recover_idr"] = round(max(0.0, defisit_lama - pnl_bersih_idr), 0)
+
+def rekam_pengalaman_transaksi_bot(state, slot, pnl_bersih_idr, pnl_exit_pct):
+    """
+    Merekam seluruh pengalaman transaksi selesai (baik MENANG TP maupun KALAH SL, serta hasil keputusan TAHAN SL)
+    selama 72 jam terakhir (MEMORY_RETENTION_HOURS) agar Gemini AI memiliki statistik Win-Rate pola yang seimbang.
+    """
+    now_ts = time.time()
+    batas_kadaluarsa = now_ts - (MEMORY_RETENTION_HOURS * 3600.0)
+    memori_lama = state.get("trade_experience_memory", [])
+    memori_aktif = [m for m in memori_lama if float(m.get("ts", now_ts)) >= batas_kadaluarsa]
+
+    tz_wib = timezone(timedelta(hours=7))
+    waktu_str = datetime.now(tz_wib).strftime("%d/%m %H:%M")
+    snap_entry = slot.get("entry_snapshot", {})
+    riwayat_tahan_sl = slot.get("sl_hold_history", [])
+    is_menang = pnl_bersih_idr >= 0
+
+    memori_aktif.append({
+        "kategori": "EVAL_ENTRY",
+        "hasil": "MENANG" if is_menang else "KALAH",
+        "ts": now_ts,
+        "waktu": waktu_str,
+        "coin": slot.get("coin", "?"),
+        "style": slot.get("style", "GRID"),
+        "skor": float(snap_entry.get("skor", 70.0)),
+        "tren_detail": str(snap_entry.get("tren_detail", "-")),
+        "rsi_5m": float(snap_entry.get("rsi_5m", slot.get("rsi_at_entry", 50.0))),
+        "rsi_15m": float(snap_entry.get("rsi_15m", 50.0)),
+        "rasio_vol": float(snap_entry.get("rasio_vol", 1.0)),
+        "pnl_pct": round(pnl_exit_pct * 100.0, 2),
+        "pnl_idr": round(pnl_bersih_idr, 0),
+        "sempat_tahan_sl": len(riwayat_tahan_sl) > 0
+    })
+
+    if riwayat_tahan_sl:
+        tahan_terakhir = riwayat_tahan_sl[-1]
+        memori_aktif.append({
+            "kategori": "EVAL_TAHAN_SL",
+            "hasil": "SUKSES_BANGKIT" if is_menang else "GAGAL_PANTUL",
+            "ts": now_ts,
+            "waktu": waktu_str,
+            "coin": slot.get("coin", "?"),
+            "tren_detail": str(tahan_terakhir.get("tren_detail", "-")),
+            "rsi_5m": float(tahan_terakhir.get("rsi_5m", 40.0)),
+            "rsi_15m": float(tahan_terakhir.get("rsi_15m", 40.0)),
+            "rasio_vol": float(tahan_terakhir.get("rasio_vol", 1.0)),
+            "minus_awal_pct": round(float(tahan_terakhir.get("pnl_bid_pct", -0.011)) * 100.0, 2),
+            "pnl_akhir_pct": round(pnl_exit_pct * 100.0, 2),
+            "pnl_idr": round(pnl_bersih_idr, 0)
+        })
+
+    state["trade_experience_memory"] = memori_aktif[-MAX_EPISODIC_MEMORY_ITEMS:]
+
+def tarik_konteks_memori_pola_mirip(state, kategori_cari, coin, tren_detail, rsi_5m, rsi_15m, rasio_vol):
+    """
+    Mencocokkan kondisi teknikal koin saat ini dengan memori 72 jam terakhir (Menang vs Kalah)
+    dan menghasilkan ringkasan statistik objektif untuk dimasukkan ke dalam Batch Prompt Gemini AI.
+    """
+    now_ts = time.time()
+    batas_kadaluarsa = now_ts - (MEMORY_RETENTION_HOURS * 3600.0)
+    memori_list = [
+        m for m in state.get("trade_experience_memory", [])
+        if float(m.get("ts", now_ts)) >= batas_kadaluarsa and m.get("kategori") == kategori_cari
+    ]
+    if not memori_list:
+        return ""
+
+    cocok_list = []
+    for m in reversed(memori_list):
+        poin_mirip = 0.0
+        if m.get("coin") == coin:
+            poin_mirip += 2.0
+        if m.get("tren_detail") == tren_detail:
+            poin_mirip += 3.0
+        elif str(m.get("tren_detail", ""))[:5] == str(tren_detail)[:5]:
+            poin_mirip += 1.5
+
+        if abs(float(m.get("rsi_5m", 50.0)) - float(rsi_5m)) <= 7.0:
+            poin_mirip += 2.5
+        elif abs(float(m.get("rsi_5m", 50.0)) - float(rsi_5m)) <= 12.0:
+            poin_mirip += 1.0
+
+        if abs(float(m.get("rasio_vol", 1.0)) - float(rasio_vol)) <= 0.35 or (
+            float(m.get("rasio_vol", 1.0)) < 0.60 and float(rasio_vol) < 0.60
+        ):
+            poin_mirip += 1.5
+
+        if poin_mirip >= 4.0:
+            cocok_list.append((poin_mirip, m))
+
+    if not cocok_list:
+        return ""
+
+    if kategori_cari == "EVAL_ENTRY":
+        jml_menang = sum(1 for _, m in cocok_list if m.get("hasil") == "MENANG")
+        jml_kalah = sum(1 for _, m in cocok_list if m.get("hasil") == "KALAH")
+        total = jml_menang + jml_kalah
+        winrate = round((jml_menang / float(total)) * 100.0, 0) if total > 0 else 50.0
+
+        kalah_terbaru = next((m for _, m in cocok_list if m.get("hasil") == "KALAH"), None)
+        menang_terbaru = next((m for _, m in cocok_list if m.get("hasil") == "MENANG"), None)
+
+        if jml_kalah > jml_menang and jml_kalah >= 2:
+            info_k = f"{kalah_terbaru['coin']} {kalah_terbaru['pnl_pct']}% pada {kalah_terbaru['waktu']}" if kalah_terbaru else "-"
+            return (
+                f" | ⚠️ MEMORI 72J (POLA RAWAN SL - Winrate {winrate:.0f}%: {jml_menang}x TP vs {jml_kalah}x SL, "
+                f"terakhir kalah {info_k}): Seleksi ekstra ketat, jawab TUNDA jika volume/momentum lemah!"
+            )
+        elif jml_menang > jml_kalah:
+            info_m = f"{menang_terbaru['coin']} +{menang_terbaru['pnl_pct']}% pada {menang_terbaru['waktu']}" if menang_terbaru else "-"
+            return (
+                f" | ✅ MEMORI 72J (POLA TERBUKTI PROFIT - Winrate {winrate:.0f}%: {jml_menang}x TP vs {jml_kalah}x SL, "
+                f"terakhir untung {info_m}): Pola historis mendukung YA jika struktur saat ini valid."
+            )
+        else:
+            info_k = f"{kalah_terbaru['coin']} ({kalah_terbaru['pnl_pct']}% di RSI:{kalah_terbaru['rsi_5m']}, Vol:{kalah_terbaru['rasio_vol']}x)" if kalah_terbaru else "-"
+            return (
+                f" | ℹ️ MEMORI 72J (Rekor Pola Seimbang {jml_menang}x TP vs {jml_kalah}x SL, "
+                f"catatan SL: {info_k}): Pastikan volume & RSI mendukung sebelum jawab YA."
+            )
+    else:
+        jml_bangkit = sum(1 for _, m in cocok_list if m.get("hasil") == "SUKSES_BANGKIT")
+        jml_gagal = sum(1 for _, m in cocok_list if m.get("hasil") == "GAGAL_PANTUL")
+        gagal_terbaru = next((m for _, m in cocok_list if m.get("hasil") == "GAGAL_PANTUL"), None)
+
+        if jml_gagal > jml_bangkit and gagal_terbaru:
+            return (
+                f" | ⚠️ MEMORI TAHAN SL (72J: {jml_bangkit}x Bangkit vs {jml_gagal}x Gagal Pantul; "
+                f"terakhir {gagal_terbaru['coin']} ditahan saat {gagal_terbaru['minus_awal_pct']}% malah jatuh ke {gagal_terbaru['pnl_akhir_pct']}%): "
+                f"Jangan paksakan TAHAN jika tren 5M/15M sudah patah deras!"
+            )
+        elif jml_bangkit > 0:
+            return (
+                f" | ✅ MEMORI TAHAN SL (72J: {jml_bangkit}x Berhasil Bangkit jadi TP vs {jml_gagal}x Gagal pada pola serupa): "
+                f"Jika indikator oversold & mulai ada pantulan, aman jawab TAHAN."
+            )
+        return ""
 
 # ==============================================================================
 # BAGIAN 3: KONEKSI RESMI INDODAX TRADE API V2 & CEK SPREAD ORDER BOOK
@@ -450,70 +592,62 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 rasio_high_2jam = max(highs[-24:]) / closes[-1] if closes[-1] > 0 else 1.0
                 high_2jam_idr = round(harga_idr * max(1.0, rasio_high_2jam), 0)
 
-            # Ambil volume terbaik antara candle berjalan (vols[-1]) dan candle 5M utuh terakhir (vols[-2])
-            # agar saat bot jalan di awal menit kelipatan 5, volume tidak terbaca 0.0x
+            # Gunakan volume terbaik antara candle berjalan (vols[-1]) dan candle 5M utuh terakhir (vols[-2])
             vol_acuan = max(vols[-1], vols[-2]) if len(vols) >= 2 else (vols[-1] if vols else 1.0)
             vol_rata = (sum(vols[-21:-2]) / 19.0) if len(vols) >= 21 else (vol_acuan or 1.0)
             rasio_vol = vol_acuan / (vol_rata or 1.0)
 
-            ema8_5m = sum(closes[-8:]) / len(closes[-8:])
-            vol_aktif = rasio_vol >= 0.20
+            vol_aktif = rasio_vol >= 0.15
             candle_5m_hijau = (closes[-1] > closes[-2]) or (closes[-1] == closes[-2] and closes[-2] > closes[-3] and vol_aktif)
             dua_candle_5m_naik = (closes[-1] > closes[-3]) and (closes[-1] >= closes[-2] >= closes[-3]) and vol_aktif
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
-            momentum_mikro_5m_naik = (closes[-1] >= ema8_5m) or dua_candle_5m_naik
             spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
 
-            if tren_5m_naik and tren_15m_naik and 40.0 <= rsi_5m <= 67.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+            # ATURAN EMAS 3 PINTU DISIPLIN SCALPING PRO (WIN-RATE TINGGI - BEBAS JEBAKAN COUNTER-TREND):
+            # Pintu 1: SNIPER BREAKOUT (5M & 15M Sama-sama Uptrend + RSI Sehat 42-65 + Candle 5M Hijau)
+            if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "SNIPER"
                 bonus_1h = 5.0 if tren_1h_naik else 0.0
                 skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
-                diskon_entry_pct = min(max(atr_5m_pct * 0.35, 0.0015), 0.0045)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.40, 0.0015), 0.0045)
                 prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Indodax Naik - SIAP ENTRY)"
                 teknikal_valid = True
                 faktor_bobot_status = 1.30
-            elif (tren_15m_naik or tren_1h_naik) and 25.0 <= rsi_5m <= 52.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+            # Pintu 2: GRID PULLBACK DI TREN NAIK (15M atau 1H Uptrend + RSI 5M Diskon 28-48 + Candle 5M Hijau)
+            elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 72.0 + max(0.0, (50.0 - rsi_5m) * 0.50) + (3.5 if dua_candle_5m_naik else 0.0)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
+                skor_dasar = 72.0 + (48.0 - rsi_5m) * 0.55 + (4.0 if dua_candle_5m_naik else 0.0)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.65, 0.0020), 0.0075)
                 prediksi = "🟢 POTENSI REBOUND KUAT (Pullback 5M di Tren Naik - SIAP ENTRY)"
                 teknikal_valid = True
                 faktor_bobot_status = 1.15
-            elif (rsi_5m <= 36.0 or (rsi_15m <= 38.0 and rsi_5m <= 48.0)) and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+            # Pintu 3: GRID OVERSOLD REBOUND EKSTREM (RSI 5M <= 33 atau RSI 15M <= 35 + Wajib 2 Candle 5M Naik Beruntun)
+            elif (rsi_5m <= 33.0 or rsi_15m <= 35.0) and dua_candle_5m_naik and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 69.0 + max(0.0, (38.0 - min(rsi_5m, rsi_15m)) * 0.75) + (3.0 if dua_candle_5m_naik else 0.0)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
-                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Memantul Hijau - SIAP ENTRY)"
+                skor_dasar = 67.5 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
+                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
                 teknikal_valid = True
-                faktor_bobot_status = 1.10
-            elif (tren_5m_naik or momentum_mikro_5m_naik) and candle_5m_hijau and 34.0 <= rsi_5m <= 64.0 and rasio_vol >= 0.25 and not candle_jatuh_beruntun:
-                gaya = "GRID"
-                bonus_tren5m = 2.0 if tren_5m_naik else 0.0
-                bonus_2c = 2.0 if dua_candle_5m_naik else 0.0
-                skor_dasar = 68.0 + bonus_tren5m + bonus_2c + min(6.0, max(0.0, rasio_vol - 0.25) * 4.5)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.50, 0.0018), 0.0060)
-                prediksi = "🟢 EARLY 5M SCALP (Momentum Mikro 5M Bangkit Hijau - SIAP ENTRY)"
-                teknikal_valid = True
-                faktor_bobot_status = 1.10
-            elif (tren_15m_naik or tren_1h_naik or tren_5m_naik) and not candle_jatuh_beruntun:
+                faktor_bobot_status = 1.05
+            elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
                 gaya = "WAIT_PULLBACK"
                 skor_dasar = 58.0
                 diskon_entry_pct = 0.005
-                prediksi = "🟢 PANTAU REBOUND (Menunggu candle 5M berbalik hijau aktif)"
+                prediksi = "🟢 POTENSI REBOUND (Tren makro naik, menunggu candle 5M memantul hijau)"
                 teknikal_valid = False
                 faktor_bobot_status = 0.0
-            elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and not candle_5m_hijau)):
+            elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and rasio_vol >= 1.25)):
                 gaya = "WAIT_DOWNTREND"
                 skor_dasar = 25.0
                 diskon_entry_pct = 0.012
-                prediksi = "🔴 BAHAYA JATUH LEBIH DALAM (Candle 5M masih merah turun - JANGAN BELI)"
+                prediksi = "🔴 BAHAYA JATUH LEBIH DALAM (Tekanan jual 5M & 15M deras - JANGAN BELI)"
                 teknikal_valid = False
                 faktor_bobot_status = 0.0
             else:
                 gaya = "WAIT_SIDEWAYS"
                 skor_dasar = 45.0
                 diskon_entry_pct = 0.008
-                prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi 5M/15M normal, menunggu candle hijau & volume)"
+                prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi 5M/15M normal, aman ditahan / jangan beli dulu)"
                 teknikal_valid = False
                 faktor_bobot_status = 0.0
 
@@ -527,7 +661,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 coin, entry_ideal_idr, gaya if gaya in ["SNIPER", "GRID"] else "GRID", atr_5m_pct
             )
 
-            uptrend_nyata = (tren_5m_naik and closes[-1] >= ema8_5m and rsi_5m >= 42.0) or (tren_15m_naik and rsi_5m >= 40.0)
+            uptrend_nyata = (tren_5m_naik and rsi_5m >= 42.0) or (tren_15m_naik and rsi_5m >= 40.0)
 
             peta_analisa[coin] = {
                 "coin": coin,
@@ -712,12 +846,11 @@ def konsultasi_batch_semua_keputusan_gemini(daftar_tugas_ai, status_kompas_btc, 
         baris_tugas.append(f"[{t['id']}] {t['deskripsi']}")
 
     prompt_batch = (
-        f"Anda adalah Chief Quant Micro-Scalper 5M Indodax. Evaluasi paket data real-time berikut sekaligus.\n"
-        f"Konteks Pasar: Kompas BTCIDR={status_kompas_btc} | Status Bot={konteks_mode}.\n"
-        f"PRINSIP MICRO-SCALPING BOT: Bot ini dilengkapi fitur Dynamic Technical TP / Scratch Profit (+0.65% s/d +1.35%) & Anti-Slippage Guard. "
-        f"Untuk tugas BELI_BARU, meskipun tren 15M/1H masih DN (turun), jika momentum 5M, RSI, dan volume mendukung peluang pantulan cepat "
-        f"(rebound/micro-scalp) minimal +0.75% s/d +1.35%, jawab YA agar bot bisa memanen profit cepat. "
-        f"Jawab TUNDA hanya jika tekanan jual 5M masih berbahaya, pucuk overbought, atau volume terlalu mati.\n"
+        f"Anda adalah Chief Quant Scalper 5M Indodax ({konteks_mode}). Evaluasi paket data real-time berikut sekaligus.\n"
+        f"Konteks Pasar: Kompas BTCIDR={status_kompas_btc}.\n"
+        f"PRINSIP KEPUTUSAN DISIPLIN: Setiap kandidat BELI_BARU di bawah ini sudah lolos Filter Kuantitatif 3 Pintu Emas (Breakout 5M+15M, "
+        f"Pullback di Tren Naik 15M/1H, atau Oversold Ekstrem <=33). Tugas Anda adalah memvalidasi kualitasnya: jawab YA jika struktur tren, "
+        f"RSI, volume, dan Memori 72J mendukung kenaikan sehat; jawab TUNDA jika volume terlalu tipis, rawan bull-trap, atau '⚠️ MEMORI 72J POLA RAWAN SL'.\n"
         f"Daftar Tugas Evaluasi ({len(daftar_tugas_ai)} item):\n"
         + "\n".join(baris_tugas) + "\n\n"
         f"INSTRUKSI JAWABAN:\n"
@@ -870,31 +1003,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 log_transaksi.append(pesan)
                 continue
 
-	    # Jika antrean beli ini kemarin dipasang oleh Sistem Cadangan (saat AI limit),
-            # minta Gemini AI mengaudit ulang kelayakannya begitu Gemini kembali aktif!
-            if slot.get("unverified_by_ai"):
-                tid = f"AUDIT_{coin}_{idx_s}"
-                daftar_tugas_ai.append({
-                    "id": tid,
-                    "jenis": "BELI_BARU",
-                    "default_jika_error": True,
-                    "alasan_fallback": "Pertahankan antrean cadangan (masih lolos filter kuantitatif).",
-                    "deskripsi": (
-                        f"TIPE: BELI_BARU (AUDIT ANTREAN CADANGAN) | Koin {coin} ({mode_slot}) sedang antre beli di Rp{entry_idr:,.0f} "
-                        f"(Harga skrg Rp{harga_sekarang:,.0f}, Skor:{info_pasar.get('skor')}, Tren:{tren_detail}, RSI 5M:{rsi_sekarang}, "
-                        f"Vol:{info_pasar.get('rasio_vol', 1.0)}x). Apakah antrean beli ini layak DIPERTAHANKAN (jawab YA) "
-                        f"atau BATALKAN sekarang untuk realokasi modal (jawab TUNDA)?"
-                    )
-                })
-                slot_menunggu_eksekusi.append({
-                    "slot": slot,
-                    "aksi": "TUNGGU_AI_AUDIT_ENTRY",
-                    "task_id": tid,
-                    "umur_antre_menit": umur_antre_menit,
-                    "harga_sekarang": harga_sekarang
-                })
-                continue
-
             entry_ideal_baru = float(info_pasar["entry_ideal_idr"])
             selisih_entry_pct = abs(entry_ideal_baru - entry_idr) / entry_idr
             if selisih_entry_pct >= DYNAMIC_ENTRY_SHIFT_PCT:
@@ -904,6 +1012,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     "id": tid,
                     "jenis": "GESER_ENTRY",
                     "default_jika_error": (entry_ideal_baru < entry_idr) or (umur_antre_menit >= 5.0),
+                    "alasan_fallback": f"Geser otomatis {arah_geser} sesuai rumus Dynamic Entry Indodax.",
                     "deskripsi": (
                         f"TIPE: GESER_ENTRY | Koin {coin} ({mode_slot}) antre beli di Rp{entry_idr:,.0f} ({umur_antre_menit:.1f}m). "
                         f"Harga skrg Rp{harga_sekarang:,.0f}, entry ideal bergeser {selisih_entry_pct*100:.2f}% untuk {arah_geser} ke Rp{entry_ideal_baru:,.0f} "
@@ -934,8 +1043,10 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             batas_habis_slot = max(5000.0 / harga_sekarang, qty_slot * 0.50) if harga_sekarang > 0 else 0.0
             if dompet["terhubung"] and total_koin_tersisa < batas_habis_slot and slot.get("tp_order_id"):
                 kenaikan_tp_pct = (tp_idr - entry_idr) / entry_idr
-                profit_bersih = round(slot["capital_idr"] * (kenaikan_tp_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                pnl_bersih_tp = kenaikan_tp_pct - FEE_ROUNDTRIP_MAKER_PCT
+                profit_bersih = round(slot["capital_idr"] * pnl_bersih_tp, 0)
                 catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
+                rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
                 ada_eksekusi_penting = True
                 sisa_rec = state.get("loss_to_recover_idr", 0.0)
                 info_rec = f" | Sisa Target Recovery: Rp{sisa_rec:,.0f}" if sisa_rec > 0 else ""
@@ -963,7 +1074,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 slot["highest_price_idr"] = max(entry_idr, harga_bid_asli)
                 slot["peak_verified"] = True
 
-            # Gunakan murni harga_bid_asli (penawar beli tertinggi nyata di Order Book Indodax)
             puncak_tercatat = max(entry_idr, float(slot.get("highest_price_idr", entry_idr)), harga_bid_asli)
             slot["highest_price_idr"] = puncak_tercatat
 
@@ -998,7 +1108,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 kenaikan_bid_pct >= 0.0090
                 and (tren_sekarang != "UPTREND" or info_pasar.get("gaya", "") not in ["SNIPER", "GRID"])
             ) if info_pasar else False
-            # Pemicu baru: Jika Bid nyata sudah untung besar (>= +1.15% atau >= 75% target TP), wajib tanyakan ke Gemini AI!
             sinyal_untung_besar_dekat_tp = (kenaikan_bid_pct >= 0.0115 or pencapaian_bid_ke_tp >= 0.75)
 
             waktu_eval_tp_terakhir = float(slot.get("last_tp_eval_ts", 0.0))
@@ -1035,17 +1144,14 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             if butuh_evaluasi_tp_dini and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
                 if sinyal_koreksi_puncak:
                     label_exit = f"DYNAMIC TP: KOREKSI DARI PUNCAK ({pencapaian_puncak_ke_tp*100:.0f}% TARGET TP)"
+                elif sinyal_untung_besar_dekat_tp and not (sinyal_momentum_melambat or sinyal_teknikal_melemah):
+                    label_exit = f"DYNAMIC TP: ZONA PROFIT TINGGI ({pencapaian_bid_ke_tp*100:.0f}% TARGET TP)"
                 elif sinyal_momentum_melambat:
                     label_exit = "DYNAMIC TP: MOMENTUM MELAMBAT"
                 else:
                     label_exit = "DYNAMIC TP: SINYAL REVERSAL / TREN 5M MELEMAH"
 
                 estimasi_untung_bersih_pct = (kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT) * 100.0
-                # KEPUTUSAN CADANGAN TP (JIKA GEMINI HABIS KUOTA):
-                # Langsung amankan profit jika:
-                # 1) Harga sudah terkoreksi dari puncak (sinyal_koreksi_puncak), ATAU
-                # 2) Untung kotor Bid >= +0.85% dan candle 5M mulai merah / tren 5M patah, ATAU
-                # 3) Untung kotor Bid sudah tinggi (>= +1.00%) namun momentum melambat (kasus ETH +1.14%!)
                 tp_cadangan_setuju = bool(
                     sinyal_koreksi_puncak
                     or (kenaikan_bid_pct >= 0.0085 and (candle_5m_merah or tren_5m_patah or candle_jatuh))
@@ -1090,10 +1196,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
 
             if butuh_sl and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
                 label_sl = "HARD STOP LOSS" if kena_hard_sl else "EVALUASI CUT LOSS DINI (MINUS >1%)"
-                # KEPUTUSAN CADANGAN SL (JIKA GEMINI HABIS KUOTA):
-                # Wajib Cut Loss jika:
-                # 1) Sudah menyentuh batas Hard SL, ATAU
-                # 2) Minus >= -1.15% disertai candle jatuh beruntun & tren 5M patah (cegah kerugian makin dalam!)
                 sl_dini_bahaya_kuantitatif = (
                     kenaikan_bid_pct <= -0.0115
                     and tren_5m_patah
@@ -1106,6 +1208,14 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     f"TAHAN - Kuota AI limit, minus dini ({kenaikan_bid_pct*100:+.2f}%) masih di atas Hard SL & berpeluang pantul."
                 )
 
+                konteks_memori_sl = tarik_konteks_memori_pola_mirip(
+                    state, "EVAL_TAHAN_SL", coin, tren_detail, rsi_sekarang, rsi_15m_k, vol_k
+                )
+                info_sudah_ditahan = (
+                    f" [Posisi ini sudah ditahan {len(slot.get('sl_hold_history', []))}x]"
+                    if slot.get("sl_hold_history") else ""
+                )
+
                 tid = f"SL_{coin}_{idx_s}"
                 daftar_tugas_ai.append({
                     "id": tid,
@@ -1114,9 +1224,9 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     "alasan_fallback": alasan_sl_cadangan,
                     "deskripsi": (
                         f"TIPE: EVALUASI_SL | Koin {coin} ({mode_slot}) Beli:Rp{entry_idr:,.0f}, sedang minus {kenaikan_bid_pct*100:+.2f}% "
-                        f"di harga Bid [{label_sl}] (Last:Rp{harga_sekarang:,.0f}, Bid:Rp{harga_eksekusi_jual:,.0f}, Hard SL:Rp{sl_idr:,.0f}). "
+                        f"di harga Bid [{label_sl}]{info_sudah_ditahan} (Last:Rp{harga_sekarang:,.0f}, Bid:Rp{harga_eksekusi_jual:,.0f}, Hard SL:Rp{sl_idr:,.0f}). "
                         f"Tren:{tren_detail}, RSI 5M:{rsi_sekarang}, RSI 15M:{rsi_15m_k}, Candle 5M:{arah_candle}, Vol:{vol_k}x, "
-                        f"Diagnosa:{prediksi_koin}. Jawab YA (Cut Loss sekarang untuk perkecil rugi) atau TAHAN (tunggu pantulan)."
+                        f"Diagnosa:{prediksi_koin}{konteks_memori_sl}. Jawab YA (Cut Loss sekarang untuk perkecil rugi) atau TAHAN (tunggu pantulan)."
                     )
                 })
                 slot_menunggu_eksekusi.append({
@@ -1132,7 +1242,8 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     "kenaikan_bid_pct": kenaikan_bid_pct,
                     "qty_milik_slot": qty_milik_slot,
                     "koin_free": koin_free,
-                    "lama_pegang_jam": lama_pegang_jam
+                    "lama_pegang_jam": lama_pegang_jam,
+                    "info_pasar": info_pasar
                 })
                 continue
 
@@ -1152,7 +1263,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             })
 
     # --------------------------------------------------------------------------
-    # TAHAP 1B: SIAPKAN KANDIDAT BELI BARU (DIMASUKKAN KE ANTREAN BATCH YANG SAMA)
+    # TAHAP 1B: SIAPKAN KANDIDAT BELI BARU (3 PINTU EMAS + FILTER KOMPAS BTC)
     # --------------------------------------------------------------------------
     slot_aktif_sementara = [item["slot"] for item in slot_menunggu_eksekusi]
     modal_aktif_state = sum(float(s.get("capital_idr", 0)) for s in slot_aktif_sementara)
@@ -1223,6 +1334,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     and v["coin"] not in koin_masih_cooldown
                     and (v.get("siap_entry") is True or v["coin"] in [kc.split("(")[0] for kc in koin_tembus_cooldown])
                     and v["skor"] >= skor_minimal_sesi
+                    and (not btc_sedang_dump or v["coin"] == "BTC" or v["skor"] >= 82.0)
                     and (
                         now_ts >= float(ai_hold_map.get(v["coin"], {}).get("until", 0.0))
                         or v["skor"] >= float(ai_hold_map.get(v["coin"], {}).get("last_score", 0.0)) + 3.0
@@ -1238,10 +1350,16 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 k for k, v in ai_hold_map.items()
                 if now_ts < float(v.get("until", 0.0)) and peta_analisa.get(k, {}).get("siap_entry")
             ]
+            rata_rsi_pasar = (sum(v.get("rsi", 50.0) for v in peta_analisa.values()) / len(peta_analisa)) if peta_analisa else 50.0
             info_cd = f", Cooldown SL: {list(koin_masih_cooldown.keys())}" if koin_masih_cooldown else ""
             info_ai_hold = f", Ditahan AI <5m: {koin_tertahan_ai}" if koin_tertahan_ai else ""
             info_rec = f" [Mode Recovery Defisit Rp{defisit_recovery:,.0f}]" if defisit_recovery > 0 else ""
-            alasan_tahan = f"Belum ada koin memantul hijau 5M (Skor >= {skor_minimal_sesi}{info_cd}{info_ai_hold})"
+            if btc_sedang_dump:
+                alasan_tahan = f"Kompas BTCIDR sedang dump tajam{info_cd}"
+            elif rata_rsi_pasar > 65.0:
+                alasan_tahan = f"Pasar Overbought RSI 5M {rata_rsi_pasar:.1f} > 65, menunggu pullback sehat{info_cd}{info_ai_hold}"
+            else:
+                alasan_tahan = f"Belum ada koin lolos 3 Pintu Emas (Skor >= {skor_minimal_sesi}{info_cd}{info_ai_hold})"
             pesan_status_anggaran = f"⏸️ [AI WAIT / CASH IS KING]{info_rec} Dana Rp{saldo_idr_tersedia:,.0f} aman di Rupiah ({alasan_tahan})."
         else:
             jumlah_siap = len(kandidat_siap_entry)
@@ -1291,36 +1409,25 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 is_tembus_cd = coin in [kc.split("(")[0] for kc in koin_tembus_cooldown]
                 info_rev = " [V-Shape Reversal pasca SL]" if is_tembus_cd else ""
 
-                # KEPUTUSAN CADANGAN ENTRY (HIGH-CONVICTION QUANT FALLBACK SAAT GEMINI HABIS KUOTA):
-                # Hanya setujui beli tanpa AI jika bukan falling knife:
-                # Skor >= 72.5, candle hijau & tidak jatuh beruntun, volume aktif >= 0.40x, RSI 28-60, spread <= 0.30%, & BTC tidak crash.
-                entry_cadangan_aman = bool(
-                    kandidat["skor"] >= max(72.5, skor_minimal_sesi + 3.0)
-                    and kandidat.get("candle_5m_hijau") is True
-                    and not kandidat.get("candle_jatuh_beruntun")
-                    and kandidat.get("rasio_vol", 0.0) >= 0.40
-                    and 28.0 <= kandidat.get("rsi", 50.0) <= 60.0
-                    and kandidat.get("spread_pct", 1.0) <= 0.0030
-                    and not btc_sedang_dump
-                )
-                alasan_entry_cadangan = (
-                    f"YA - Kuota AI limit, lolos High-Conviction Quant Filter (Skor:{kandidat['skor']}, RSI:{kandidat['rsi']}, Vol:{kandidat['rasio_vol']}x)."
-                    if entry_cadangan_aman else
-                    f"TUNDA - Kuota AI limit & belum memenuhi syarat High-Conviction Quant (Skor:{kandidat['skor']}<72.5 atau Vol:{kandidat['rasio_vol']}x<0.40x)."
+                konteks_memori_entry = tarik_konteks_memori_pola_mirip(
+                    state, "EVAL_ENTRY", coin, kandidat["tren_detail"],
+                    kandidat["rsi"], kandidat["rsi_15m"], kandidat["rasio_vol"]
                 )
 
+                # Karena koin ini sudah lolos Filter Kuantitatif 3 Pintu Emas (seperti Kode Bot Cadangan Non AI),
+                # jika Gemini sedang tidak bisa diakses (error/limit), langsung setujui (default_jika_error: True)!
                 tid = f"BELI_{coin}"
                 daftar_tugas_ai.append({
                     "id": tid,
                     "jenis": "BELI_BARU",
-                    "default_jika_error": entry_cadangan_aman,
-                    "alasan_fallback": alasan_entry_cadangan,
+                    "default_jika_error": True,
+                    "alasan_fallback": f"YA - Lolos Filter Kuantitatif 3 Pintu Emas Indodax ({kandidat['gaya']}, Skor:{kandidat['skor']}).",
                     "deskripsi": (
                         f"TIPE: BELI_BARU | Koin {coin} ({kandidat['gaya']}, Skor:{kandidat['skor']}){info_rev}, "
                         f"Harga Skrg:Rp{kandidat['harga_idr']:,.0f}, Rencana Limit Buy:Rp{entry_idr:,.0f}, "
                         f"TP Dinamis:+{kandidat['tp_target_pct']}% (Alokasi:Rp{nilai_efektif_idr:,.0f}). "
                         f"Tren:{kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
-                        f"Vol:{kandidat['rasio_vol']}x, Spread:{kandidat['spread_pct']*100:.2f}%. "
+                        f"Vol:{kandidat['rasio_vol']}x, Spread:{kandidat['spread_pct']*100:.2f}%{konteks_memori_entry}. "
                         f"Jawab YA (eksekusi beli) atau TUNDA (jangan beli)."
                     )
                 })
@@ -1354,27 +1461,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         tp_idr = float(slot["tp_price_idr"])
 
         if aksi == "TETAP":
-            slot_tetap_aktif.append(slot)
-            continue
-
-        if aksi == "TUNGGU_AI_AUDIT_ENTRY":
-            tetap_lanjut, alasan_audit, dari_fb = hasil_batch_ai.get(item["task_id"], (True, "Pertahankan.", True))
-            if not dari_fb:
-                slot["unverified_by_ai"] = False
-            if not tetap_lanjut:
-                batalkan_order_indodax(coin, slot.get("buy_order_id"))
-                dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
-                ada_eksekusi_penting = True
-                pesan = (
-                    f"🔄 [AUDIT GEMINI: BATAL & REALOKASI] Antrean cadangan {coin} @ Rp{entry_idr:,.0f} dibatalkan oleh Gemini AI "
-                    f"({alasan_audit}). Modal Rp{slot.get('capital_idr', 0):,.0f} dibebaskan!"
-                )
-                log_aksi.append(pesan)
-                log_transaksi.append(pesan)
-                continue
-            log_aksi.append(
-                f"✅ [AUDIT GEMINI: PERTAHANKAN ANTREAN] {coin} @ Rp{entry_idr:,.0f} disetujui lanjut antre ({alasan_audit})."
-            )
             slot_tetap_aktif.append(slot)
             continue
 
@@ -1425,7 +1511,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 peta_ticker_terbaru = ambil_harga_idr_semua_koin()
                 data_koin_terbaru = peta_ticker_terbaru.get(coin, {})
                 bid_detik_ini = float(data_koin_terbaru.get("buy", item["harga_bid_asli"]) or item["harga_bid_asli"])
-                last_detik_ini = float(data_koin_terbaru.get("last", item["harga_sekarang"]) or item["harga_sekarang"])
                 harga_jual_detik_ini = bulatkan_harga_indodax(coin, bid_detik_ini)
                 pct_untung_detik_ini = (harga_jual_detik_ini - entry_idr) / entry_idr
 
@@ -1441,8 +1526,10 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
 
                     res_jual = eksekusi_order_indodax(coin, "SELL", harga_eksekusi_final, qty_koin=qty_milik_slot)
                     if apakah_order_sukses(res_jual):
-                        profit_bersih = round(slot["capital_idr"] * (pct_final - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                        pnl_bersih_tp = pct_final - FEE_ROUNDTRIP_MAKER_PCT
+                        profit_bersih = round(slot["capital_idr"] * pnl_bersih_tp, 0)
                         catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
+                        rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
                         ada_eksekusi_penting = True
                         pesan = (
                             f"⚡ [{label_exit} DIEKSEKUSI] {coin} (Qty:{qty_milik_slot}) dijual di Rp{harga_eksekusi_final:,.0f} "
@@ -1461,8 +1548,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                         f"saat evaluasi (di bawah batas aman +{batas_lantai*100:.2f}%). Antrean TP Rp{tp_idr:,.0f} tetap dijaga!"
                     )
             else:
-                # JANGAN kunci cooldown 5 menit jika penahanan terjadi gara-gara kuota AI habis (dari_fallback=True)
-                # agar pada menit berikutnya jika harga naik ke +1.14% langsung dievaluasi lagi!
                 if not dari_fallback:
                     slot["last_tp_eval_ts"] = now_ts
                     slot["last_tp_eval_bid_idr"] = item["harga_eksekusi_jual"]
@@ -1487,8 +1572,10 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 harga_jual_sl = bulatkan_harga_indodax(coin, min(item["harga_bid_asli"], item["harga_sekarang"] * 0.998))
                 res_sl = eksekusi_order_indodax(coin, "SELL", harga_jual_sl, qty_koin=qty_milik_slot)
                 if apakah_order_sukses(res_sl):
-                    pnl_bersih = round(slot["capital_idr"] * (((harga_jual_sl - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT), 0)
+                    pnl_exit_pct = ((harga_jual_sl - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT
+                    pnl_bersih = round(slot["capital_idr"] * pnl_exit_pct, 0)
                     catat_hasil_transaksi_ke_recovery(state, pnl_bersih, coin)
+                    rekam_pengalaman_transaksi_bot(state, slot, pnl_bersih, pnl_exit_pct)
                     ada_eksekusi_penting = True
                     pesan = (
                         f"🛡️ [{label_sl} DIEKSEKUSI] {coin} (Qty:{qty_milik_slot}) dijual di Rp{harga_jual_sl:,.0f} "
@@ -1505,6 +1592,16 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     slot["last_sl_eval_price_idr"] = item["acuan_harga_eval_skrg"]
                     slot["last_sl_eval_reason"] = alasan_sl_ai
                     slot["last_eval_was_hard_sl"] = item["kena_hard_sl"]
+                    info_p = item.get("info_pasar") or {}
+                    slot.setdefault("sl_hold_history", []).append({
+                        "ts": now_ts,
+                        "pnl_bid_pct": item["kenaikan_bid_pct"],
+                        "tren_detail": info_p.get("tren_detail", "-"),
+                        "rsi_5m": info_p.get("rsi", 50.0),
+                        "rsi_15m": info_p.get("rsi_15m", 50.0),
+                        "rasio_vol": info_p.get("rasio_vol", 1.0),
+                        "alasan_ai": alasan_sl_ai
+                    })
                 log_aksi.append(
                     f"🛑 [{label_sl} -> DITAHAN] {coin} (Bid:{item['kenaikan_bid_pct']*100:+.2f}%) ditahan menunggu pantulan | Info: {alasan_sl_ai}"
                 )
@@ -1529,12 +1626,12 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             log_transaksi.append(pesan)
 
         if item["kenaikan_bid_pct"] >= 0.0115:
-         sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0068)
-         if sl_kunci_untung > slot["sl_price_idr"]:
-             slot["sl_price_idr"] = sl_kunci_untung
-             log_aksi.append(
-                 f"🔒 [TRAILING PROFIT LOCK] {coin} Bid nyata naik +{item['kenaikan_bid_pct']*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
-             )
+            sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0068)
+            if sl_kunci_untung > slot["sl_price_idr"]:
+                slot["sl_price_idr"] = sl_kunci_untung
+                log_aksi.append(
+                    f"🔒 [TRAILING PROFIT LOCK] {coin} Bid nyata naik +{item['kenaikan_bid_pct']*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
+                )
 
         status_tp_order = f"OrderTP:#{slot.get('tp_order_id')}" if slot.get("tp_order_id") else "TP-Aktif"
         log_aksi.append(
@@ -1544,7 +1641,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         slot_tetap_aktif.append(slot)
 
     # --------------------------------------------------------------------------
-    # TAHAP 3B: EKSEKUSI KEPUTUSAN GEMINI / CADANGAN UNTUK KANDIDAT BELI BARU
+    # TAHAP 3B: EKSEKUSI KEPUTUSAN GEMINI / OTOMATIS 3 PINTU EMAS UNTUK BELI BARU
     # --------------------------------------------------------------------------
     if pesan_status_anggaran:
         log_aksi.append(pesan_status_anggaran)
@@ -1559,19 +1656,16 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             is_tembus_cd = rb["is_tembus_cd"]
 
             setuju_beli, alasan_gemini, dari_fallback = hasil_batch_ai.get(
-                rb["task_id"], (False, "TUNDA - Menunggu konfirmasi Batch AI.", True)
+                rb["task_id"], (True, "Lolos Filter Kuantitatif 3 Pintu Emas.", True)
             )
             if not setuju_beli:
-                # Jangan kunci tahan 5m jika gagal karena kuota AI limit (dari_fallback=True)
                 if not dari_fallback:
                     state.setdefault("ai_entry_hold_until", {})[coin] = {
                         "until": now_ts + 300.0,
                         "last_score": kandidat["skor"],
                         "reason": alasan_gemini
                     }
-                    log_aksi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin} (Tahan 5m)] Setup ditunda AI: {alasan_gemini}")
-                else:
-                    log_aksi.append(f"⏸️ [QUANT FALLBACK HOLD ENTRY {coin}] {alasan_gemini}")
+                log_aksi.append(f"⏸️ [GEMINI AI HOLD ENTRY {coin} (Tahan 5m)] Setup ditunda AI: {alasan_gemini}")
                 continue
             state.setdefault("ai_entry_hold_until", {}).pop(coin, None)
 
@@ -1595,7 +1689,17 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     "highest_price_idr": entry_idr,
                     "rsi_at_entry": kandidat["rsi"],
                     "buy_order_id": order_id,
-                    "unverified_by_ai": bool(dari_fallback),
+                    "entry_snapshot": {
+                        "skor": kandidat["skor"],
+                        "tren_detail": kandidat["tren_detail"],
+                        "rsi_5m": kandidat["rsi"],
+                        "rsi_15m": kandidat["rsi_15m"],
+                        "rasio_vol": kandidat["rasio_vol"],
+                        "spread_pct": kandidat["spread_pct"],
+                        "kompas_btc": status_kompas_btc,
+                        "alasan_ai": alasan_gemini
+                    },
+                    "sl_hold_history": [],
                     "timestamp": time.time()
                 })
                 ada_eksekusi_penting = True
@@ -1664,12 +1768,19 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
     defisit_rec = float(state.get("loss_to_recover_idr", 0.0))
     status_rec_str = f"AKTIF (Target Pulihkan Rp{defisit_rec:,.0f})" if defisit_rec > 0 else " Aman (0 Defisit)"
 
+    ket_siap_entry = (
+        ", ".join(koin_siap_beli)
+        if koin_siap_beli else
+        (f"Belum ada (Pasar Overbought RSI 5M {rata_rsi_5m:.1f} > 65, menunggu pullback sehat)" if rata_rsi_5m > 65.0 else "Belum ada (menunggu setup 3 Pintu Emas & candle 5M hijau)")
+    )
+    mem_72j = [m for m in state.get("trade_experience_memory", []) if m.get("kategori") == "EVAL_ENTRY"]
+    jml_win_72j = sum(1 for m in mem_72j if m.get("hasil") == "MENANG")
+    jml_loss_72j = sum(1 for m in mem_72j if m.get("hasil") == "KALAH")
     ringkasan_pasar = (
         f"Pasar [{sumber_grafik} 5M+15M+1H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
-        f"   -> Mode Recovery Balik Modal:{status_rec_str}\n"
-        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): "
-        f"{', '.join(koin_siap_beli) or ('Belum ada (Pasar Overbought RSI ' + str(round(rata_rsi_5m, 1)) + ' > 67, menunggu pullback sehat agar tidak beli di pucuk)' if rata_rsi_5m > 67.0 else 'Belum ada (menunggu konfirmasi candle 5M hijau & skor >= 67.5)')}"
+        f"   -> Mode Recovery Balik Modal:{status_rec_str} | Memori Pengalaman 72J: {jml_win_72j} Menang vs {jml_loss_72j} Kalah\n"
+        f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {ket_siap_entry}"
     )
 
     detail_diagnosa_koin = []
