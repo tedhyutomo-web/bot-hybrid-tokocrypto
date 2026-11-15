@@ -30,6 +30,31 @@
       "last_tp_eval_ts": 1794762087.3256617,
       "last_tp_eval_bid_idr": 1308418,
       "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 15M oversold ekstrem (19.1), potensi rebound lebih tinggi."
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 36970.0,
+      "qty": 13.27,
+      "entry_price_idr": 2786,
+      "tp_price_idr": 2824.0,
+      "sl_price_idr": 2736.0,
+      "highest_price_idr": 2786,
+      "rsi_at_entry": 50.0,
+      "buy_order_id": "143976467",
+      "entry_snapshot": {
+        "skor": 74.9,
+        "tren_detail": "5M:DN/15M:UP/1H:DN",
+        "rsi_5m": 50.0,
+        "rsi_15m": 26.3,
+        "rasio_vol": 3.08,
+        "spread_pct": 0.00322,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN (RSI 5M:36.4)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 15M oversold ekstrem, volume kuat, potensi pantulan teknikal."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794765089.052899
     }
   ],
   "realized_profit_today_idr": -1737.0,
