@@ -15,6 +15,11 @@
       "until": 1794830055.1361895,
       "last_score": 75.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah (0.26x)."
+    },
+    "SOL": {
+      "until": 1794842946.8180904,
+      "last_score": 79.2,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC jatuh beruntun, risiko terseret arus bawah tinggi."
     }
   },
   "trade_experience_memory": [
