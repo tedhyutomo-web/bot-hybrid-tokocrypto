@@ -52,31 +52,6 @@
       },
       "sl_hold_history": [],
       "timestamp": 1794810852.1728985
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31001,
-      "qty": 29,
-      "entry_price_idr": 1069,
-      "tp_price_idr": 1083.0,
-      "sl_price_idr": 1050.0,
-      "highest_price_idr": 1069,
-      "rsi_at_entry": 20.0,
-      "buy_order_id": "135886743",
-      "entry_snapshot": {
-        "skor": 85.5,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 20.0,
-        "rsi_15m": 30.0,
-        "rasio_vol": 4.39,
-        "spread_pct": 0.00187,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:35.6 | Vol:0.3x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold ekstrem, volume tinggi, status Lapis-1 Emas lengkap."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794811078.9390454
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -84,7 +59,23 @@
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 5087.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {},
+  "ai_entry_hold_until": {
+    "SOL": {
+      "until": 1794811817.9257343,
+      "last_score": 82.3,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun, volume SOL rendah tanpa konfirmasi pantulan."
+    },
+    "XRP": {
+      "until": 1794811894.9513798,
+      "last_score": 72.8,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC tren turun, volume XRP rendah, momentum belum muncul."
+    },
+    "SUI": {
+      "until": 1794811968.4064212,
+      "last_score": 76.7,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah."
+    }
+  },
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
