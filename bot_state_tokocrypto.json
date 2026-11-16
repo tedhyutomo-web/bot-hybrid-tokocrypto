@@ -40,15 +40,15 @@
       "last_score": 73.1,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume lemah dan winrate historis rendah."
     },
-    "BTC": {
-      "until": 1794812349.6320412,
-      "last_score": 76.2,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume rendah, tren dominan DN, konfirmasi reversal belum kuat."
-    },
     "SUI": {
       "until": 1794816247.2133152,
       "last_score": 73.1,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Momentum lemah, struktur buruk, memori rawan SL."
+    },
+    "XRP": {
+      "until": 1794817147.0184858,
+      "last_score": 72.4,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.78x) di bawah ambang batas aman scalping."
     }
   },
   "trade_experience_memory": [
