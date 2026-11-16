@@ -27,31 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 32019.0,
-      "qty": 11.53,
-      "entry_price_idr": 2777,
-      "tp_price_idr": 2814.0,
-      "sl_price_idr": 2727.0,
-      "highest_price_idr": 2777,
-      "rsi_at_entry": 13.2,
-      "buy_order_id": "144015741",
-      "entry_snapshot": {
-        "skor": 90.6,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 13.2,
-        "rsi_15m": 25.6,
-        "rasio_vol": 0.45,
-        "spread_pct": 0.00072,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:41.3 | Vol:0.38x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI ekstrem oversold, BTC 5M hijau dukung pantulan teknikal."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794810852.1728985
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -61,19 +36,24 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SOL": {
-      "until": 1794811817.9257343,
-      "last_score": 82.3,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun, volume SOL rendah tanpa konfirmasi pantulan."
+      "until": 1794812122.2358215,
+      "last_score": 76.7,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun beruntun, 5M & 15M melemah."
     },
     "XRP": {
-      "until": 1794811894.9513798,
-      "last_score": 72.8,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC tren turun, volume XRP rendah, momentum belum muncul."
+      "until": 1794812122.2358215,
+      "last_score": 82.4,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun beruntun, tren mayor bearish."
     },
     "SUI": {
       "until": 1794811968.4064212,
       "last_score": 76.7,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah."
+    },
+    "DOGE": {
+      "until": 1794812048.724673,
+      "last_score": 77.4,
+      "reason": "[gemini-3-flash-preview#K4] TUNDA - BTC jatuh beruntun, tren 5M/15M DOGE masih turun deras."
     }
   },
   "trade_experience_memory": [
