@@ -1,31 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37566.0,
-      "qty": 3.2e-05,
-      "entry_price_idr": 1167732000.0,
-      "tp_price_idr": 1187133000,
-      "sl_price_idr": 1146713000,
-      "highest_price_idr": 1173926000,
-      "rsi_at_entry": 42.3,
-      "buy_order_id": "274382490",
-      "entry_snapshot": {
-        "skor": 75.9,
-        "tren_detail": "5M:DN/15M:UP/1H:DN",
-        "rsi_5m": 42.3,
-        "rsi_15m": 42.2,
-        "rasio_vol": 0.44,
-        "spread_pct": 0.00088,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:42.3 | Vol:0.44x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lengkap, RSI oversold, 5M hijau, histori winrate 100%."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794843031.4160874
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -982.0,
   "completed_trades_today": 27,
   "last_reset_date": "2026-11-16",
@@ -43,9 +17,9 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah (0.26x)."
     },
     "SOL": {
-      "until": 1794843331.4160874,
-      "last_score": 81.5,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 15M/1H DN, struktur 5M lemah, butuh konfirmasi pantulan."
+      "until": 1794843847.6024342,
+      "last_score": 80.2,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC jatuh beruntun, risiko terseret penurunan lebih dalam."
     }
   },
   "trade_experience_memory": [
