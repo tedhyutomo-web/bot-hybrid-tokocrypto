@@ -9,7 +9,7 @@
       "entry_price_idr": 33173000,
       "tp_price_idr": 33621000.0,
       "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33183000.0,
+      "highest_price_idr": 33206000.0,
       "rsi_at_entry": 32.6,
       "buy_order_id": "218754771",
       "entry_snapshot": {
@@ -48,9 +48,9 @@
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis (0.34x), rawan tidak bergerak."
     },
     "SOL": {
-      "until": 1794794648.8500733,
-      "last_score": 81.0,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis, rawan bull-trap."
+      "until": 1794794949.9294217,
+      "last_score": 83.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume tipis 0.23x dan BTC 5M masih tren turun."
     }
   },
   "trade_experience_memory": [
