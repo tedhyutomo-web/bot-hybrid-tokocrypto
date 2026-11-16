@@ -27,56 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 32033.0,
-      "qty": 0.0247,
-      "entry_price_idr": 1296886,
-      "tp_price_idr": 1314394.0,
-      "sl_price_idr": 1273542.0,
-      "highest_price_idr": 1296886,
-      "rsi_at_entry": 51.1,
-      "buy_order_id": "117161711",
-      "entry_snapshot": {
-        "skor": 72.0,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 51.1,
-        "rsi_15m": 30.1,
-        "rasio_vol": 9.43,
-        "spread_pct": 0.00159,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:68.4 | Vol:1.16x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lengkap, BTC 5M hijau, volume tinggi, tren 1H UP."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794813853.105444
-    },
-    {
-      "coin": "XRP",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 31924.0,
-      "qty": 1.83,
-      "entry_price_idr": 17445,
-      "tp_price_idr": 17637,
-      "sl_price_idr": 17183,
-      "highest_price_idr": 17445,
-      "rsi_at_entry": 62.8,
-      "buy_order_id": "221065607",
-      "entry_snapshot": {
-        "skor": 75.7,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 62.8,
-        "rsi_15m": 38.4,
-        "rasio_vol": 1.52,
-        "spread_pct": 0.00137,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:67.0 | Vol:1.14x",
-        "alasan_ai": "[gemini-3-flash-preview#K3] YA - BTC 5M hijau, struktur Higher-Low valid, momentum mikro kuat."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794814068.305083
     }
   ],
   "realized_profit_today_idr": -2285.0,
