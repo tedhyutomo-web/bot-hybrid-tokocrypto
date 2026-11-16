@@ -29,29 +29,29 @@
       "tp_order_id": "218777214"
     },
     {
-      "coin": "SOL",
+      "coin": "ADA",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32057.0,
-      "qty": 0.0247,
-      "entry_price_idr": 1297854,
-      "tp_price_idr": 1315375.0,
-      "sl_price_idr": 1274493.0,
-      "highest_price_idr": 1297854,
-      "rsi_at_entry": 41.0,
-      "buy_order_id": "117179297",
+      "capital_idr": 37975.0,
+      "qty": 13.67,
+      "entry_price_idr": 2778,
+      "tp_price_idr": 2816.0,
+      "sl_price_idr": 2728.0,
+      "highest_price_idr": 2778,
+      "rsi_at_entry": 35.3,
+      "buy_order_id": "144027528",
       "entry_snapshot": {
-        "skor": 80.0,
+        "skor": 82.9,
         "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 41.0,
-        "rsi_15m": 51.2,
-        "rasio_vol": 0.29,
-        "spread_pct": 0.00028,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:28.5 | Vol:1.37x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M rebound oversold, SOL lolos Lapis-1 memori profit."
+        "rsi_5m": 35.3,
+        "rsi_15m": 49.0,
+        "rasio_vol": 0.63,
+        "spread_pct": 0.00036,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:31.1 | Vol:0.08x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M oversold stabil, status Emas lengkap, histori winrate 100%."
       },
       "sl_hold_history": [],
-      "timestamp": 1794822922.1680984
+      "timestamp": 1794823532.7578905
     }
   ],
   "realized_profit_today_idr": -2285.0,
