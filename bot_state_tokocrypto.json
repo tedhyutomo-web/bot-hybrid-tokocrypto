@@ -9,7 +9,7 @@
       "entry_price_idr": 33173000,
       "tp_price_idr": 33621000.0,
       "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33285000.0,
+      "highest_price_idr": 33349000.0,
       "rsi_at_entry": 32.6,
       "buy_order_id": "218754771",
       "entry_snapshot": {
@@ -27,31 +27,6 @@
       "filled_timestamp": 1794791946.6631227,
       "peak_verified": true,
       "tp_order_id": "218755595"
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 61218,
-      "qty": 56,
-      "entry_price_idr": 1080.0,
-      "tp_price_idr": 1095.0,
-      "sl_price_idr": 1061.0,
-      "highest_price_idr": 1074,
-      "rsi_at_entry": 32.1,
-      "buy_order_id": "135877426",
-      "entry_snapshot": {
-        "skor": 84.7,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 32.1,
-        "rsi_15m": 36.7,
-        "rasio_vol": 0.52,
-        "spread_pct": 0.00278,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:48.6)",
-        "alasan_ai": "[gemini-3-flash-preview#K4] YA - RSI 5M oversold, tren besar naik, limit buy di support."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794795316.4131
     }
   ],
   "realized_profit_today_idr": -1953.0,
