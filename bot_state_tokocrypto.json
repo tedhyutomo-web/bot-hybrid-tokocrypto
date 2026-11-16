@@ -1,24 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 31760.0,
-      "qty": 0.0243,
-      "entry_price_idr": 1307002,
-      "tp_price_idr": 1324647,
-      "sl_price_idr": 1315890,
-      "highest_price_idr": 1324632.0,
-      "filled_timestamp": 1794831101.6258154,
-      "timestamp": 1794831101.6258156,
-      "peak_verified": true
-    }
-  ],
-  "realized_profit_today_idr": -1368.0,
-  "completed_trades_today": 26,
+  "active_slots": [],
+  "realized_profit_today_idr": -982.0,
+  "completed_trades_today": 27,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4170.0,
+  "loss_to_recover_idr": 3784.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -323,6 +308,22 @@
       "rasio_vol": 1.0,
       "pnl_pct": 0.8,
       "pnl_idr": 293.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794839949.0280342,
+      "waktu": "16/11 21:39",
+      "coin": "SOL",
+      "style": "GRID",
+      "skor": 70.0,
+      "tren_detail": "-",
+      "rsi_5m": 50.0,
+      "rsi_15m": 50.0,
+      "rasio_vol": 1.0,
+      "pnl_pct": 1.21,
+      "pnl_idr": 386.0,
       "sempat_tahan_sl": false
     }
   ]
