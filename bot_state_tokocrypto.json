@@ -1,5 +1,34 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "SNIPER",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 44608,
+      "qty": 41,
+      "entry_price_idr": 1088,
+      "tp_price_idr": 1108,
+      "sl_price_idr": 1071.0,
+      "highest_price_idr": 1088.0,
+      "rsi_at_entry": 64.0,
+      "buy_order_id": "135915104",
+      "entry_snapshot": {
+        "skor": 70.7,
+        "tren_detail": "5M:UP/15M:UP/1H:DN",
+        "rsi_5m": 64.0,
+        "rsi_15m": 56.6,
+        "rasio_vol": 0.39,
+        "spread_pct": 0.00184,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:66.5 | Vol:0.43x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau, tren DOGE selaras, Lapis-1 lolos penuh."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794851054.4772468,
+      "filled_timestamp": 1794851126.5426204,
+      "peak_verified": true,
+      "tp_order_id": "135915132"
+    }
+  ],
   "realized_profit_today_idr": 72.0,
   "completed_trades_today": 1,
   "last_reset_date": "2026-11-17",
