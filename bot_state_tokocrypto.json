@@ -41,9 +41,9 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah tertahan dan BodyCandle DOGE 0% nihil momentum."
     },
     "XRP": {
-      "until": 1794817147.0184858,
-      "last_score": 72.4,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.78x) di bawah ambang batas aman scalping."
+      "until": 1794819847.0750542,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah, konfirmasi dua candle naik belum terbentuk."
     }
   },
   "trade_experience_memory": [
