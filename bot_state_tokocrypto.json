@@ -17,9 +17,9 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.26x terlalu rendah, rawan bull-trap tanpa dorongan likuiditas."
     },
     "BTC": {
-      "until": 1794789248.0680594,
-      "last_score": 79.4,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.58x dan memori 72J rawan stop loss."
+      "until": 1794789548.984867,
+      "last_score": 78.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis (0.27x), rawan stagnan meski tren mendukung."
     },
     "ADA": {
       "until": 1794787446.198891,
