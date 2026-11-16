@@ -35,8 +35,8 @@
       "capital_idr": 31916.0,
       "qty": 2.43,
       "entry_price_idr": 13134,
-      "tp_price_idr": 13311,
-      "sl_price_idr": 12898,
+      "tp_price_idr": 13311.0,
+      "sl_price_idr": 12898.0,
       "highest_price_idr": 13134,
       "rsi_at_entry": 32.6,
       "buy_order_id": "44227458",
@@ -54,29 +54,29 @@
       "timestamp": 1794822773.5069602
     },
     {
-      "coin": "DOGE",
+      "coin": "SOL",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32070,
-      "qty": 30,
-      "entry_price_idr": 1069,
-      "tp_price_idr": 1083,
-      "sl_price_idr": 1050,
-      "highest_price_idr": 1069,
-      "rsi_at_entry": 23.1,
-      "buy_order_id": "135893991",
+      "capital_idr": 32057.0,
+      "qty": 0.0247,
+      "entry_price_idr": 1297854,
+      "tp_price_idr": 1315375.0,
+      "sl_price_idr": 1274493.0,
+      "highest_price_idr": 1297854,
+      "rsi_at_entry": 41.0,
+      "buy_order_id": "117179297",
       "entry_snapshot": {
-        "skor": 80.2,
+        "skor": 80.0,
         "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 23.1,
+        "rsi_5m": 41.0,
         "rsi_15m": 51.2,
-        "rasio_vol": 0.56,
-        "spread_pct": 0.00187,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:32.8 | Vol:0.37x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 23.1 sangat rendah, pola historis 100% profit mendukung."
+        "rasio_vol": 0.29,
+        "spread_pct": 0.00028,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:28.5 | Vol:1.37x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M rebound oversold, SOL lolos Lapis-1 memori profit."
       },
       "sl_hold_history": [],
-      "timestamp": 1794822773.8775933
+      "timestamp": 1794822922.1680984
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -84,13 +84,7 @@
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 5087.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {
-    "SOL": {
-      "until": 1794822248.6283445,
-      "last_score": 69.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M turun dan body candle nol (momentum nihil)."
-    }
-  },
+  "ai_entry_hold_until": {},
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
