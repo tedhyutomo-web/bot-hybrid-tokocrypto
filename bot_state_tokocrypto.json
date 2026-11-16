@@ -27,31 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37953.0,
-      "qty": 2.19,
-      "entry_price_idr": 17330,
-      "tp_price_idr": 17564.0,
-      "sl_price_idr": 17018.0,
-      "highest_price_idr": 17330,
-      "rsi_at_entry": 33.8,
-      "buy_order_id": "221058116",
-      "entry_snapshot": {
-        "skor": 80.1,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 33.8,
-        "rsi_15m": 27.3,
-        "rasio_vol": 0.38,
-        "spread_pct": 0.00115,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:34.8 | Vol:0.11x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau, RSI 15M oversold, Lapis-1 lengkap."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794809760.4672782
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -66,9 +41,9 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.83x) dan Memori 72J rawan SL (Winrate 33%)."
     },
     "SUI": {
-      "until": 1794809648.507075,
-      "last_score": 83.8,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC tren turun, volume rendah dan body candle nihil."
+      "until": 1794810314.0992246,
+      "last_score": 85.0,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun & volume SUI sangat tipis"
     }
   },
   "trade_experience_memory": [
