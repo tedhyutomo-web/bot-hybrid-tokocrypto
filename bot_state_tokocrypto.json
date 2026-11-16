@@ -27,6 +27,56 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31916.0,
+      "qty": 2.43,
+      "entry_price_idr": 13134,
+      "tp_price_idr": 13311,
+      "sl_price_idr": 12898,
+      "highest_price_idr": 13134,
+      "rsi_at_entry": 32.6,
+      "buy_order_id": "44227458",
+      "entry_snapshot": {
+        "skor": 80.7,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 32.6,
+        "rsi_15m": 54.6,
+        "rasio_vol": 0.85,
+        "spread_pct": 0.00266,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:32.8 | Vol:0.37x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, BTC tertahan, volume dukung pantulan mikro."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794822773.5069602
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 32070,
+      "qty": 30,
+      "entry_price_idr": 1069,
+      "tp_price_idr": 1083,
+      "sl_price_idr": 1050,
+      "highest_price_idr": 1069,
+      "rsi_at_entry": 23.1,
+      "buy_order_id": "135893991",
+      "entry_snapshot": {
+        "skor": 80.2,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 23.1,
+        "rsi_15m": 51.2,
+        "rasio_vol": 0.56,
+        "spread_pct": 0.00187,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:32.8 | Vol:0.37x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 23.1 sangat rendah, pola historis 100% profit mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794822773.8775933
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -35,20 +85,10 @@
   "loss_to_recover_idr": 5087.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794819399.6498725,
-      "last_score": 77.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah tertahan dan BodyCandle DOGE 0% nihil momentum."
-    },
     "SOL": {
       "until": 1794822248.6283445,
       "last_score": 69.2,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M turun dan body candle nol (momentum nihil)."
-    },
-    "BTC": {
-      "until": 1794822248.6283445,
-      "last_score": 71.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah dan memori 72J buruk (Winrate 0%)."
     }
   },
   "trade_experience_memory": [
