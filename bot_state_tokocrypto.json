@@ -7,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
-      "until": 1794793748.6464143,
-      "last_score": 83.0,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis (0.34x), rawan tidak bergerak."
+      "until": 1794800347.4485383,
+      "last_score": 80.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.83x) dan Memori 72J rawan SL (Winrate 33%)."
     },
     "SOL": {
       "until": 1794794949.9294217,
