@@ -27,55 +27,15 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "SOL",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 33071.0,
-      "qty": 0.0251,
-      "entry_price_idr": 1317566,
-      "tp_price_idr": 1341282.0,
-      "sl_price_idr": 1296485.0,
-      "highest_price_idr": 1317566.0,
-      "rsi_at_entry": 50.7,
-      "buy_order_id": "117136096",
-      "entry_snapshot": {
-        "skor": 85.3,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 50.7,
-        "rsi_15m": 45.2,
-        "rasio_vol": 1.1,
-        "spread_pct": 0.00156,
-        "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:48.4)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Winrate historis 67% mendukung struktur tren naik yang valid."
-      },
-      "sl_hold_history": [
-        {
-          "ts": 1794805447.9749358,
-          "pnl_bid_pct": -0.010136873598741923,
-          "tren_detail": "5M:DN/15M:UP/1H:UP",
-          "rsi_5m": 27.9,
-          "rsi_15m": 50.6,
-          "rasio_vol": 0.08,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M/1H UP, tunggu pantulan teknikal."
-        }
-      ],
-      "timestamp": 1794801621.7636368,
-      "filled_timestamp": 1794801851.8875825,
-      "peak_verified": true,
-      "tp_order_id": "117136667",
-      "last_sl_eval_ts": 1794805447.9749358,
-      "last_sl_eval_price_idr": 1304210.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M/1H UP, tunggu pantulan teknikal.",
-      "last_eval_was_hard_sl": false
     }
   ],
-  "realized_profit_today_idr": -1732.0,
-  "completed_trades_today": 22,
+  "realized_profit_today_idr": -2285.0,
+  "completed_trades_today": 23,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4534.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 5087.0,
+  "sl_cooldown_until": {
+    "SOL": 1794808775.0780423
+  },
   "ai_entry_hold_until": {
     "ADA": {
       "until": 1794800347.4485383,
@@ -293,6 +253,36 @@
       "pnl_pct": 0.58,
       "pnl_idr": 221.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794806075.0780447,
+      "waktu": "16/11 12:14",
+      "coin": "SOL",
+      "style": "SNIPER",
+      "skor": 85.3,
+      "tren_detail": "5M:UP/15M:UP/1H:UP",
+      "rsi_5m": 50.7,
+      "rsi_15m": 45.2,
+      "rasio_vol": 1.1,
+      "pnl_pct": -1.67,
+      "pnl_idr": -553.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794806075.0780447,
+      "waktu": "16/11 12:14",
+      "coin": "SOL",
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 27.9,
+      "rsi_15m": 50.6,
+      "rasio_vol": 0.08,
+      "minus_awal_pct": -1.01,
+      "pnl_akhir_pct": -1.67,
+      "pnl_idr": -553.0
     }
   ]
 }
