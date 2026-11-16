@@ -33,13 +33,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 37975.0,
-      "qty": 13.57,
-      "entry_price_idr": 2797.0,
-      "tp_price_idr": 2828.0,
-      "sl_price_idr": 2755.0,
+      "qty": 13.63,
+      "entry_price_idr": 2785.0,
+      "tp_price_idr": 2823.0,
+      "sl_price_idr": 2735.0,
       "highest_price_idr": 2778,
       "rsi_at_entry": 35.3,
-      "buy_order_id": "144028164",
+      "buy_order_id": "144028756",
       "entry_snapshot": {
         "skor": 82.9,
         "tren_detail": "5M:DN/15M:DN/1H:UP",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M oversold stabil, status Emas lengkap, histori winrate 100%."
       },
       "sl_hold_history": [],
-      "timestamp": 1794824204.760576
+      "timestamp": 1794824951.6557763
     }
   ],
   "realized_profit_today_idr": -2285.0,
