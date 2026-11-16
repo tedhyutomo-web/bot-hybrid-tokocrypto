@@ -29,31 +29,6 @@
       "tp_order_id": "135910511"
     },
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31980.0,
-      "qty": 2.45,
-      "entry_price_idr": 13037.0,
-      "tp_price_idr": 13213.0,
-      "sl_price_idr": 12802.0,
-      "highest_price_idr": 13053,
-      "rsi_at_entry": 30.8,
-      "buy_order_id": "44268396",
-      "entry_snapshot": {
-        "skor": 77.4,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 30.8,
-        "rsi_15m": 37.9,
-        "rasio_vol": 0.7,
-        "spread_pct": 0.00238,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI oversold, body candle penuh, manfaatkan pantulan mikro 5M."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794844217.3664405
-    },
-    {
       "coin": "BTC",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
