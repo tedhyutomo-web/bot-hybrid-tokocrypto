@@ -31,13 +31,13 @@
     {
       "coin": "ETH",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 37817.0,
       "qty": 0.00114,
       "entry_price_idr": 33173000,
-      "tp_price_idr": 33621000.0,
+      "tp_price_idr": 33621000,
       "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33173000,
+      "highest_price_idr": 33182000.0,
       "rsi_at_entry": 32.6,
       "buy_order_id": "218754771",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, tren 15M/1H naik, limit buy dukung pullback."
       },
       "sl_hold_history": [],
-      "timestamp": 1794791656.819747
+      "timestamp": 1794791656.819747,
+      "filled_timestamp": 1794791946.6631227,
+      "peak_verified": true,
+      "tp_order_id": "218755595"
     }
   ],
   "realized_profit_today_idr": -1590.0,
