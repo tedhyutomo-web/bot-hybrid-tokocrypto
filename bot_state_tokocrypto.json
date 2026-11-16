@@ -1,5 +1,84 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 34240,
+      "qty": 32,
+      "entry_price_idr": 1070,
+      "tp_price_idr": 1084.0,
+      "sl_price_idr": 1051.0,
+      "highest_price_idr": 1070,
+      "rsi_at_entry": 34.5,
+      "buy_order_id": "135909714",
+      "entry_snapshot": {
+        "skor": 79.7,
+        "tren_detail": "5M:UP/15M:UP/1H:DN",
+        "rsi_5m": 34.5,
+        "rsi_15m": 37.5,
+        "rasio_vol": 0.7,
+        "spread_pct": 0.00093,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M naik, body candle kuat, BTC 5M mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794843854.1472392
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31980.0,
+      "qty": 2.44,
+      "entry_price_idr": 13100.0,
+      "tp_price_idr": 13277,
+      "sl_price_idr": 12864,
+      "highest_price_idr": 13053,
+      "rsi_at_entry": 30.8,
+      "buy_order_id": "44268102",
+      "entry_snapshot": {
+        "skor": 77.4,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 30.8,
+        "rsi_15m": 37.9,
+        "rasio_vol": 0.7,
+        "spread_pct": 0.00238,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI oversold, body candle penuh, manfaatkan pantulan mikro 5M."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794844087.8359575
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 32933.0,
+      "qty": 2.7e-05,
+      "entry_price_idr": 1180175000.0,
+      "tp_price_idr": 1196575000,
+      "sl_price_idr": 1158932000.0,
+      "highest_price_idr": 1180175000.0,
+      "rsi_at_entry": 29.2,
+      "buy_order_id": "274384821",
+      "entry_snapshot": {
+        "skor": 75.6,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 29.2,
+        "rsi_15m": 42.0,
+        "rasio_vol": 0.82,
+        "spread_pct": 0.00067,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M sangat oversold, momentum pemulihan harga mulai terlihat."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794844009.4846466,
+      "filled_timestamp": 1794844087.8359575,
+      "peak_verified": true,
+      "tp_order_id": "274385019"
+    }
+  ],
   "realized_profit_today_idr": -982.0,
   "completed_trades_today": 27,
   "last_reset_date": "2026-11-16",
@@ -10,11 +89,6 @@
       "until": 1794830649.4162705,
       "last_score": 74.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
-    },
-    "SUI": {
-      "until": 1794830055.1361895,
-      "last_score": 75.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah (0.26x)."
     },
     "SOL": {
       "until": 1794843847.6024342,
