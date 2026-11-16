@@ -22,11 +22,25 @@
         "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:37.7)",
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold dalam tren naik, spread sangat rendah."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794832219.8666577,
+          "pnl_bid_pct": -0.011774246838674797,
+          "tren_detail": "5M:UP/15M:DN/1H:UP",
+          "rsi_5m": 31.6,
+          "rsi_15m": 39.6,
+          "rasio_vol": 1.89,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - BTC oversold, ETH 5M hijau, volume tinggi, potensi rebound makro."
+        }
+      ],
       "timestamp": 1794800654.7977066,
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
-      "tp_order_id": "218777214"
+      "tp_order_id": "218777214",
+      "last_sl_eval_ts": 1794832219.8666577,
+      "last_sl_eval_price_idr": 32901000,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC oversold, ETH 5M hijau, volume tinggi, potensi rebound makro.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "SOL",
@@ -49,9 +63,9 @@
       "capital_idr": 31839.0,
       "qty": 2.7e-05,
       "entry_price_idr": 1178882000.0,
-      "tp_price_idr": 1194797000,
+      "tp_price_idr": 1194797000.0,
       "sl_price_idr": 1157662000.0,
-      "highest_price_idr": 1180399000.0,
+      "highest_price_idr": 1180619000.0,
       "rsi_at_entry": 20.3,
       "buy_order_id": "274361673",
       "entry_snapshot": {
