@@ -27,26 +27,12 @@
       "filled_timestamp": 1794791946.6631227,
       "peak_verified": true,
       "tp_order_id": "218755595"
-    },
-    {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 21810.0,
-      "qty": 1.65,
-      "entry_price_idr": 13218,
-      "tp_price_idr": 13396.0,
-      "sl_price_idr": 12980.0,
-      "highest_price_idr": 13218.0,
-      "filled_timestamp": 1794793139.9061606,
-      "timestamp": 1794793139.9061608,
-      "peak_verified": true
     }
   ],
-  "realized_profit_today_idr": -2127.0,
-  "completed_trades_today": 20,
+  "realized_profit_today_idr": -1953.0,
+  "completed_trades_today": 21,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4929.0,
+  "loss_to_recover_idr": 4755.0,
   "sl_cooldown_until": {
     "SUI": 1794795622.6166584
   },
@@ -60,11 +46,6 @@
       "until": 1794793748.6464143,
       "last_score": 83.0,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis (0.34x), rawan tidak bergerak."
-    },
-    "SOL": {
-      "until": 1794790830.4496684,
-      "last_score": 80.2,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis 0.27x, rawan bull-trap."
     }
   },
   "trade_experience_memory": [
@@ -235,6 +216,22 @@
       "minus_awal_pct": -1.06,
       "pnl_akhir_pct": -1.62,
       "pnl_idr": -537.0
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794793747.388143,
+      "waktu": "16/11 08:49",
+      "coin": "SUI",
+      "style": "GRID",
+      "skor": 70.0,
+      "tren_detail": "-",
+      "rsi_5m": 50.0,
+      "rsi_15m": 50.0,
+      "rasio_vol": 1.0,
+      "pnl_pct": 0.8,
+      "pnl_idr": 174.0,
+      "sempat_tahan_sl": false
     }
   ]
 }
