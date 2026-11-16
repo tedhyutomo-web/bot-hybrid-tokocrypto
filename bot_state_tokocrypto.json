@@ -9,7 +9,7 @@
       "entry_price_idr": 33173000,
       "tp_price_idr": 33621000.0,
       "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33278000.0,
+      "highest_price_idr": 33285000.0,
       "rsi_at_entry": 32.6,
       "buy_order_id": "218754771",
       "entry_snapshot": {
@@ -33,13 +33,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 61218,
-      "qty": 57,
-      "entry_price_idr": 1074,
-      "tp_price_idr": 1088.0,
-      "sl_price_idr": 1055.0,
+      "qty": 56,
+      "entry_price_idr": 1080.0,
+      "tp_price_idr": 1095.0,
+      "sl_price_idr": 1061.0,
       "highest_price_idr": 1074,
       "rsi_at_entry": 32.1,
-      "buy_order_id": "135877134",
+      "buy_order_id": "135877426",
       "entry_snapshot": {
         "skor": 84.7,
         "tren_detail": "5M:DN/15M:UP/1H:UP",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K4] YA - RSI 5M oversold, tren besar naik, limit buy di support."
       },
       "sl_hold_history": [],
-      "timestamp": 1794794954.2190783
+      "timestamp": 1794795316.4131
     }
   ],
   "realized_profit_today_idr": -1953.0,
