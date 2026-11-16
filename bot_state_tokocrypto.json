@@ -27,6 +27,56 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31942.0,
+      "qty": 2.42,
+      "entry_price_idr": 13199,
+      "tp_price_idr": 13377.0,
+      "sl_price_idr": 12961.0,
+      "highest_price_idr": 13199,
+      "rsi_at_entry": 50.0,
+      "buy_order_id": "44212463",
+      "entry_snapshot": {
+        "skor": 75.5,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 50.0,
+        "rsi_15m": 31.8,
+        "rasio_vol": 22.09,
+        "spread_pct": 0.00174,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:45.2 | Vol:0.39x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume masif, RSI 15M oversold, tren 1H UP kuat."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794812054.6485646
+    },
+    {
+      "coin": "XRP",
+      "style": "EARLY_EMAS",
+      "status": "WAITING_BUY",
+      "capital_idr": 32042.0,
+      "qty": 1.84,
+      "entry_price_idr": 17414,
+      "tp_price_idr": 17606.0,
+      "sl_price_idr": 17153.0,
+      "highest_price_idr": 17414,
+      "rsi_at_entry": 58.5,
+      "buy_order_id": "221062585",
+      "entry_snapshot": {
+        "skor": 76.0,
+        "tren_detail": "5M:DN/15M:DN/1H:DN",
+        "rsi_5m": 58.5,
+        "rsi_15m": 26.2,
+        "rasio_vol": 2.63,
+        "spread_pct": 0.00161,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:53.2 | Vol:0.4x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M hijau, XRP oversold 15M, volume tinggi, Higher-Low valid."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794812131.1717463
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -40,20 +90,15 @@
       "last_score": 76.7,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun beruntun, 5M & 15M melemah."
     },
-    "XRP": {
-      "until": 1794812122.2358215,
-      "last_score": 82.4,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun beruntun, tren mayor bearish."
-    },
-    "SUI": {
-      "until": 1794811968.4064212,
-      "last_score": 76.7,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah."
-    },
     "DOGE": {
       "until": 1794812048.724673,
       "last_score": 77.4,
       "reason": "[gemini-3-flash-preview#K4] TUNDA - BTC jatuh beruntun, tren 5M/15M DOGE masih turun deras."
+    },
+    "BTC": {
+      "until": 1794812349.6320412,
+      "last_score": 76.2,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume rendah, tren dominan DN, konfirmasi reversal belum kuat."
     }
   },
   "trade_experience_memory": [
