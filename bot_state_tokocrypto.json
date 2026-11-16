@@ -36,14 +36,19 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
-      "until": 1794812048.724673,
-      "last_score": 77.4,
-      "reason": "[gemini-3-flash-preview#K4] TUNDA - BTC jatuh beruntun, tren 5M/15M DOGE masih turun deras."
+      "until": 1794816323.8156788,
+      "last_score": 73.1,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume lemah dan winrate historis rendah."
     },
     "BTC": {
       "until": 1794812349.6320412,
       "last_score": 76.2,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume rendah, tren dominan DN, konfirmasi reversal belum kuat."
+    },
+    "SUI": {
+      "until": 1794816247.2133152,
+      "last_score": 73.1,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Momentum lemah, struktur buruk, memori rawan SL."
     }
   },
   "trade_experience_memory": [
