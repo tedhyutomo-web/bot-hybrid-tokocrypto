@@ -22,11 +22,25 @@
         "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:31.7)",
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren selaras, volume masif, SUI kuat saat BTC koreksi."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794792250.9164426,
+          "pnl_bid_pct": -0.010627947009954345,
+          "tren_detail": "5M:DN/15M:UP/1H:UP",
+          "rsi_5m": 21.6,
+          "rsi_15m": 49.8,
+          "rasio_vol": 0.01,
+          "alasan_ai": "[gemini-3-flash-preview#K5] TAHAN - RSI 5M oversold ekstrem, tren 15M/1H UP, potensi pantulan."
+        }
+      ],
       "timestamp": 1794790304.6505244,
       "filled_timestamp": 1794790530.4496684,
       "peak_verified": true,
-      "tp_order_id": "44184196"
+      "tp_order_id": "44184196",
+      "last_sl_eval_ts": 1794792250.9164426,
+      "last_sl_eval_price_idr": 13219,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K5] TAHAN - RSI 5M oversold ekstrem, tren 15M/1H UP, potensi pantulan.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "ETH",
@@ -35,7 +49,7 @@
       "capital_idr": 37817.0,
       "qty": 0.00114,
       "entry_price_idr": 33173000,
-      "tp_price_idr": 33621000,
+      "tp_price_idr": 33621000.0,
       "sl_price_idr": 32576000.0,
       "highest_price_idr": 33182000.0,
       "rsi_at_entry": 32.6,
