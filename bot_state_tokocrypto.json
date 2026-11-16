@@ -1,37 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 34240,
-      "qty": 31,
-      "entry_price_idr": 1076.0,
-      "tp_price_idr": 1091.0,
-      "sl_price_idr": 1057.0,
-      "highest_price_idr": 1086.0,
-      "rsi_at_entry": 34.5,
-      "buy_order_id": "135910443",
-      "entry_snapshot": {
-        "skor": 79.7,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 34.5,
-        "rsi_15m": 37.5,
-        "rasio_vol": 0.7,
-        "spread_pct": 0.00093,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M naik, body candle kuat, BTC 5M mendukung."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794844666.2422252,
-      "filled_timestamp": 1794844748.2983017,
-      "peak_verified": true,
-      "tp_order_id": "135910511",
-      "last_tp_eval_ts": 1794848056.4113276,
-      "last_tp_eval_bid_idr": 1084,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M UP, potensi rebound, kawal target Rp1,091."
-    },
-    {
       "coin": "BTC",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -40,7 +9,7 @@
       "entry_price_idr": 1180175000.0,
       "tp_price_idr": 1196575000.0,
       "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1185211000.0,
+      "highest_price_idr": 1186349000.0,
       "rsi_at_entry": 29.2,
       "buy_order_id": "274384821",
       "entry_snapshot": {
@@ -60,10 +29,10 @@
       "tp_order_id": "274385019"
     }
   ],
-  "realized_profit_today_idr": -982.0,
-  "completed_trades_today": 27,
+  "realized_profit_today_idr": -757.0,
+  "completed_trades_today": 28,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 3784.0,
+  "loss_to_recover_idr": 3559.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -389,6 +358,22 @@
       "rasio_vol": 1.0,
       "pnl_pct": 1.21,
       "pnl_idr": 386.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794848363.6472073,
+      "waktu": "16/11 23:59",
+      "coin": "DOGE",
+      "style": "GRID",
+      "skor": 79.7,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 34.5,
+      "rsi_15m": 37.5,
+      "rasio_vol": 0.7,
+      "pnl_pct": 0.66,
+      "pnl_idr": 225.0,
       "sempat_tahan_sl": false
     }
   ]
