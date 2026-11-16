@@ -890,10 +890,10 @@ def konsultasi_batch_semua_keputusan_gemini(daftar_tugas_ai, status_kompas_btc, 
         f"Anda adalah Chief Quant Scalper 5M Indodax ({konteks_mode}). Evaluasi paket data real-time berikut sekaligus.\n"
         f"Konteks Pasar: Kompas BTCIDR={status_kompas_btc}.\n"
         f"SISTEM SELEKSI 2 LAPIS:\n"
-        f"- [LAPIS-1 EMAS]: Kandidat yang sudah lolos penuh 3 Pintu Aturan Emas. Prioritaskan jawab YA kecuali ada bahaya ekstrem.\n"
-        f"- [LAPIS-2 EARLY_EMAS]: Kandidat pantulan 5M di pasar bearish/sideways yang kurang 1 poin dari Aturan Emas (misal 15M/1H masih DN), "
-        f"namun sudah lolos Sensor Anti-Falling Knife (Higher-Low valid & Body Candle Kuat). Karena bot punya Dynamic Scratch Profit (+0.65% s/d +1.10%), "
-        f"jawab YA jika Anda yakin pantulan 5M ini sanggup naik minimal +0.75% s/d +1.10%; jawab TUNDA jika masih berisiko jatuh.\n"
+        f"- [LAPIS-1 EMAS]: Kandidat yang sudah lolos penuh 3 Pintu Aturan Emas. Prioritaskan jawab YA kecuali Kompas BTC sedang jatuh beruntun.\n"
+        f"- [LAPIS-2 EARLY_EMAS (Early 5M Scalp)]: Kandidat momentum mikro 5M hijau untuk memanen profit cepat (+0.65% Scratch s/d +1.10% TP). "
+        f"Jawab YA jika momentum 5M koin kuat DAN Kompas BTCIDR mendukung (Candle 5M BTC Hijau atau stabil/oversold). "
+        f"Jawab TUNDA jika Candle 5M BTC sedang merah turun deras disertai struktur koin yang lemah (Higher-Low=BELUM & BodyCandle tipis).\n"
         f"Daftar Tugas Evaluasi ({len(daftar_tugas_ai)} item):\n"
         + "\n".join(baris_tugas) + "\n\n"
         f"INSTRUKSI JAWABAN:\n"
@@ -1380,8 +1380,18 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
     state["sl_cooldown_until"] = koin_masih_cooldown
 
     info_btc = peta_analisa.get("BTC", {})
+    info_btc = peta_analisa.get("BTC", {})
     btc_sedang_dump = str(info_btc.get("prediksi", "")).startswith("🔴 BAHAYA") and info_btc.get("rsi", 50.0) < 36.0
-    status_kompas_btc = f"{info_btc.get('tren_detail', 'N/A')} (RSI 5M:{info_btc.get('rsi', '-')})"
+    btc_jatuh_beruntun_5m = bool(info_btc.get("candle_jatuh_beruntun", False))
+    btc_candle_hijau_5m = bool(info_btc.get("candle_5m_hijau", False))
+    arah_candle_btc = (
+        "⚠️ MERAH-JATUH-BERUNTUN" if btc_jatuh_beruntun_5m
+        else ("HIJAU-NAIK" if btc_candle_hijau_5m else "MERAH-TERTAHAN")
+    )
+    status_kompas_btc = (
+        f"{info_btc.get('tren_detail', 'N/A')} | Candle5M:{arah_candle_btc} | "
+        f"RSI 5M:{info_btc.get('rsi', '-')} | Vol:{info_btc.get('rasio_vol', '-')}x"
+    )
 
     rencana_beli_baru = []
     pesan_status_anggaran = None
@@ -1403,6 +1413,8 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     and (v.get("siap_entry") is True or v["coin"] in [kc.split("(")[0] for kc in koin_tembus_cooldown])
                     and v["skor"] >= skor_minimal_sesi
                     and (not btc_sedang_dump or v["coin"] == "BTC" or v["skor"] >= 82.0)
+                    # Perisai Bantingan 5M BTC: Jika BTC sedang jatuh 2 candle merah beruntun, tahan dulu Lapis-2 Early 5M (kecuali Skor >= 74)
+                    and (not btc_jatuh_beruntun_5m or int(v.get("lapis_entry", 1)) == 1 or v["skor"] >= 74.0)
                     and (
                         now_ts >= float(ai_hold_map.get(v["coin"], {}).get("until", 0.0))
                         or v["skor"] >= float(ai_hold_map.get(v["coin"], {}).get("last_score", 0.0)) + 3.0
@@ -1422,12 +1434,12 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             info_cd = f", Cooldown SL: {list(koin_masih_cooldown.keys())}" if koin_masih_cooldown else ""
             info_ai_hold = f", Ditahan AI <5m: {koin_tertahan_ai}" if koin_tertahan_ai else ""
             info_rec = f" [Mode Recovery Defisit Rp{defisit_recovery:,.0f}]" if defisit_recovery > 0 else ""
-            if btc_sedang_dump:
-                alasan_tahan = f"Kompas BTCIDR sedang dump tajam{info_cd}"
+            if btc_sedang_dump or btc_jatuh_beruntun_5m:
+                alasan_tahan = f"Kompas BTCIDR sedang turun beruntun 5M ({arah_candle_btc}), tunggu 1 candle BTC reda{info_cd}"
             elif rata_rsi_pasar > 65.0:
                 alasan_tahan = f"Pasar Overbought RSI 5M {rata_rsi_pasar:.1f} > 65, menunggu pullback sehat{info_cd}{info_ai_hold}"
             else:
-                alasan_tahan = f"Belum ada koin lolos 3 Pintu Emas (Skor >= {skor_minimal_sesi}{info_cd}{info_ai_hold})"
+                alasan_tahan = f"Belum ada koin lolos Lapis-1 Emas / Lapis-2 Early 5M (Skor >= {skor_minimal_sesi}{info_cd}{info_ai_hold})"
             pesan_status_anggaran = f"⏸️ [AI WAIT / CASH IS KING]{info_rec} Dana Rp{saldo_idr_tersedia:,.0f} aman di Rupiah ({alasan_tahan})."
         else:
             jumlah_siap = len(kandidat_siap_entry)
