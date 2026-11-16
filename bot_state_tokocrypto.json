@@ -27,31 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31915.0,
-      "qty": 1.84,
-      "entry_price_idr": 17345,
-      "tp_price_idr": 17579.0,
-      "sl_price_idr": 17033.0,
-      "highest_price_idr": 17345,
-      "rsi_at_entry": 27.1,
-      "buy_order_id": "221079030",
-      "entry_snapshot": {
-        "skor": 80.2,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 27.1,
-        "rsi_15m": 47.2,
-        "rasio_vol": 0.22,
-        "spread_pct": 6e-05,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:34.8 | Vol:0.08x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold ekstrem, BTC 5M UP mendukung pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794821422.8392022
     }
   ],
   "realized_profit_today_idr": -2285.0,
