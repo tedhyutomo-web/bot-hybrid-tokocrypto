@@ -1,39 +1,12 @@
 {
-  "active_slots": [
-    {
-      "coin": "DOGE",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 44608,
-      "qty": 41,
-      "entry_price_idr": 1088,
-      "tp_price_idr": 1108.0,
-      "sl_price_idr": 1071.0,
-      "highest_price_idr": 1091.0,
-      "rsi_at_entry": 64.0,
-      "buy_order_id": "135915104",
-      "entry_snapshot": {
-        "skor": 70.7,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 64.0,
-        "rsi_15m": 56.6,
-        "rasio_vol": 0.39,
-        "spread_pct": 0.00184,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:66.5 | Vol:0.43x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau, tren DOGE selaras, Lapis-1 lolos penuh."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794851054.4772468,
-      "filled_timestamp": 1794851126.5426204,
-      "peak_verified": true,
-      "tp_order_id": "135915132"
-    }
-  ],
-  "realized_profit_today_idr": 134.0,
-  "completed_trades_today": 2,
+  "active_slots": [],
+  "realized_profit_today_idr": -644.0,
+  "completed_trades_today": 3,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 3425.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 4203.0,
+  "sl_cooldown_until": {
+    "DOGE": 1794874753.3765903
+  },
   "ai_entry_hold_until": {
     "ADA": {
       "until": 1794830649.4162705,
@@ -411,6 +384,22 @@
       "rasio_vol": 1.57,
       "pnl_pct": 0.11,
       "pnl_idr": 62.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794872053.3765934,
+      "waktu": "17/11 06:34",
+      "coin": "DOGE",
+      "style": "SNIPER",
+      "skor": 70.7,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 64.0,
+      "rsi_15m": 56.6,
+      "rasio_vol": 0.39,
+      "pnl_pct": -1.74,
+      "pnl_idr": -778.0,
       "sempat_tahan_sl": false
     }
   ]
