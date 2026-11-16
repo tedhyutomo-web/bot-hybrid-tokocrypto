@@ -45,13 +45,13 @@
     {
       "coin": "BTC",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 31839.0,
       "qty": 2.7e-05,
       "entry_price_idr": 1178882000.0,
       "tp_price_idr": 1194797000,
-      "sl_price_idr": 1157662000,
-      "highest_price_idr": 1179221000,
+      "sl_price_idr": 1157662000.0,
+      "highest_price_idr": 1180399000.0,
       "rsi_at_entry": 20.3,
       "buy_order_id": "274361673",
       "entry_snapshot": {
@@ -65,7 +65,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold ekstrem, volume tinggi, momentum mikro 5M naik."
       },
       "sl_hold_history": [],
-      "timestamp": 1794831710.0093198
+      "timestamp": 1794831710.0093198,
+      "filled_timestamp": 1794831853.2409902,
+      "peak_verified": true,
+      "tp_order_id": "274361905"
     }
   ],
   "realized_profit_today_idr": -2285.0,
