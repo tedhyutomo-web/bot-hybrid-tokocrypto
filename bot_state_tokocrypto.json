@@ -27,56 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "SUI",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 31967.0,
-      "qty": 2.41,
-      "entry_price_idr": 13224.0,
-      "tp_price_idr": 13369.0,
-      "sl_price_idr": 13026.0,
-      "highest_price_idr": 13155,
-      "rsi_at_entry": 52.7,
-      "buy_order_id": "44220420",
-      "entry_snapshot": {
-        "skor": 72.3,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 52.7,
-        "rsi_15m": 46.1,
-        "rasio_vol": 0.77,
-        "spread_pct": 8e-05,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:58.6 | Vol:3.14x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Struktur Higher-Low valid dan memori historis profit 60%."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794818495.0204747
-    },
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31980.0,
-      "qty": 0.0246,
-      "entry_price_idr": 1299994,
-      "tp_price_idr": 1317544.0,
-      "sl_price_idr": 1276594.0,
-      "highest_price_idr": 1299994,
-      "rsi_at_entry": 48.1,
-      "buy_order_id": "117169973",
-      "entry_snapshot": {
-        "skor": 76.5,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 48.1,
-        "rsi_15m": 43.0,
-        "rasio_vol": 1.39,
-        "spread_pct": 0.0016,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:47.9 | Vol:0.33x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, volume kuat 1.39x, limit buy antisipasi pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794818203.9703524
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -86,9 +36,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "DOGE": {
-      "until": 1794816323.8156788,
-      "last_score": 73.1,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume lemah dan winrate historis rendah."
+      "until": 1794819017.9710705,
+      "last_score": 76.4,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC merah tertahan, volume rendah, body candle 0% stagnan."
     },
     "XRP": {
       "until": 1794817147.0184858,
