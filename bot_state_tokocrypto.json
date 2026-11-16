@@ -31,13 +31,13 @@
     {
       "coin": "ETH",
       "style": "SNIPER",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 55368.0,
       "qty": 0.00166,
       "entry_price_idr": 33354000,
-      "tp_price_idr": 33954000.0,
+      "tp_price_idr": 33954000,
       "sl_price_idr": 32820000.0,
-      "highest_price_idr": 33354000,
+      "highest_price_idr": 33354000.0,
       "rsi_at_entry": 52.4,
       "buy_order_id": "218879330",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau, ETH Vol tinggi & tren 5M/15M selaras UP."
       },
       "sl_hold_history": [],
-      "timestamp": 1794851653.1586938
+      "timestamp": 1794851653.1586938,
+      "filled_timestamp": 1794851947.636433,
+      "peak_verified": true,
+      "tp_order_id": "218879808"
     }
   ],
   "realized_profit_today_idr": 72.0,
