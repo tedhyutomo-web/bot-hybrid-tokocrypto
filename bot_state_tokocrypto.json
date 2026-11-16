@@ -5,13 +5,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 34240,
-      "qty": 32,
-      "entry_price_idr": 1070,
-      "tp_price_idr": 1084.0,
-      "sl_price_idr": 1051.0,
+      "qty": 31,
+      "entry_price_idr": 1076.0,
+      "tp_price_idr": 1091,
+      "sl_price_idr": 1057,
       "highest_price_idr": 1070,
       "rsi_at_entry": 34.5,
-      "buy_order_id": "135909714",
+      "buy_order_id": "135910239",
       "entry_snapshot": {
         "skor": 79.7,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
@@ -23,20 +23,20 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M naik, body candle kuat, BTC 5M mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1794843854.1472392
+      "timestamp": 1794844362.3577929
     },
     {
       "coin": "SUI",
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 31980.0,
-      "qty": 2.44,
-      "entry_price_idr": 13100.0,
-      "tp_price_idr": 13277,
-      "sl_price_idr": 12864,
+      "qty": 2.45,
+      "entry_price_idr": 13037.0,
+      "tp_price_idr": 13213.0,
+      "sl_price_idr": 12802.0,
       "highest_price_idr": 13053,
       "rsi_at_entry": 30.8,
-      "buy_order_id": "44268102",
+      "buy_order_id": "44268396",
       "entry_snapshot": {
         "skor": 77.4,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
@@ -48,7 +48,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI oversold, body candle penuh, manfaatkan pantulan mikro 5M."
       },
       "sl_hold_history": [],
-      "timestamp": 1794844087.8359575
+      "timestamp": 1794844217.3664405
     },
     {
       "coin": "BTC",
@@ -57,9 +57,9 @@
       "capital_idr": 32933.0,
       "qty": 2.7e-05,
       "entry_price_idr": 1180175000.0,
-      "tp_price_idr": 1196575000,
+      "tp_price_idr": 1196575000.0,
       "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1180175000.0,
+      "highest_price_idr": 1181799000.0,
       "rsi_at_entry": 29.2,
       "buy_order_id": "274384821",
       "entry_snapshot": {
