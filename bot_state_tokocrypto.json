@@ -9,7 +9,7 @@
       "entry_price_idr": 33293000,
       "tp_price_idr": 33892000.0,
       "sl_price_idr": 32760000.0,
-      "highest_price_idr": 33293000.0,
+      "highest_price_idr": 33394000.0,
       "rsi_at_entry": 44.4,
       "buy_order_id": "218776714",
       "entry_snapshot": {
@@ -27,6 +27,31 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37660,
+      "qty": 35,
+      "entry_price_idr": 1076,
+      "tp_price_idr": 1091.0,
+      "sl_price_idr": 1057.0,
+      "highest_price_idr": 1076,
+      "rsi_at_entry": 26.3,
+      "buy_order_id": "135881380",
+      "entry_snapshot": {
+        "skor": 74.9,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 26.3,
+        "rsi_15m": 36.0,
+        "rasio_vol": 2.29,
+        "spread_pct": 0.00093,
+        "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:31.3)",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold ekstrem, volume kuat, tren besar naik."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794801330.9833784
     }
   ],
   "realized_profit_today_idr": -1732.0,
@@ -40,20 +65,15 @@
       "last_score": 80.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.83x) dan Memori 72J rawan SL (Winrate 33%)."
     },
-    "SOL": {
-      "until": 1794801025.260703,
-      "last_score": 75.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.21x sangat rendah, rawan jebakan tanpa momentum kenaikan."
-    },
     "SUI": {
       "until": 1794800950.3462126,
       "last_score": 78.6,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M turun dan volume sangat rendah, rawan koreksi."
     },
     "XRP": {
-      "until": 1794801025.260703,
-      "last_score": 83.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.25x tipis, risiko stagnasi tinggi meski RSI mendekati oversold."
+      "until": 1794801551.6300771,
+      "last_score": 78.3,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume 0.22x terlalu tipis, risiko bull-trap tinggi saat pemulihan."
     }
   },
   "trade_experience_memory": [
