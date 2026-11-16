@@ -27,6 +27,34 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "SOL",
+      "style": "EARLY_EMAS",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 31972.0,
+      "qty": 0.0243,
+      "entry_price_idr": 1315709,
+      "tp_price_idr": 1330182,
+      "sl_price_idr": 1295973.0,
+      "highest_price_idr": 1315709.0,
+      "rsi_at_entry": 53.4,
+      "buy_order_id": "117192341",
+      "entry_snapshot": {
+        "skor": 74.6,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 53.4,
+        "rsi_15m": 68.2,
+        "rasio_vol": 0.83,
+        "spread_pct": 0.0002,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:45.2 | Vol:1.55x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M hijau, spread tipis, memori historis mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794830363.2159061,
+      "filled_timestamp": 1794830435.7087636,
+      "peak_verified": true,
+      "tp_order_id": "117192500"
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -40,15 +68,10 @@
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Higher-Low belum terbentuk, body tipis, tren 15M-1H masih turun."
     },
-    "SOL": {
-      "until": 1794830055.1361895,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC merah jatuh beruntun, risiko tinggi winrate historis rendah."
-    },
     "ADA": {
-      "until": 1794829448.8076277,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, winrate pola 0%, struktur belum solid."
+      "until": 1794830649.4162705,
+      "last_score": 74.9,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
     },
     "SUI": {
       "until": 1794830055.1361895,
