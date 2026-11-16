@@ -41,14 +41,19 @@
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume rendah 0.34x dan memori winrate rendah 33% berisiko."
     },
     "SOL": {
-      "until": 1794829448.8076277,
+      "until": 1794830055.1361895,
       "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah tertahan, volume BTC rendah, memori berisiko."
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC merah jatuh beruntun, risiko tinggi winrate historis rendah."
     },
     "ADA": {
       "until": 1794829448.8076277,
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, winrate pola 0%, struktur belum solid."
+    },
+    "SUI": {
+      "until": 1794830055.1361895,
+      "last_score": 75.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun dan volume SUI sangat rendah (0.26x)."
     }
   },
   "trade_experience_memory": [
