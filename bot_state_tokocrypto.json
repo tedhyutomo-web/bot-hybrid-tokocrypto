@@ -27,6 +27,45 @@
       "filled_timestamp": 1794791946.6631227,
       "peak_verified": true,
       "tp_order_id": "218755595"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 21810.0,
+      "qty": 1.65,
+      "entry_price_idr": 13218,
+      "tp_price_idr": 13396.0,
+      "sl_price_idr": 12980.0,
+      "highest_price_idr": 13218.0,
+      "filled_timestamp": 1794793139.9061606,
+      "timestamp": 1794793139.9061608,
+      "peak_verified": true
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 40333.0,
+      "qty": 2.3,
+      "entry_price_idr": 17536,
+      "tp_price_idr": 17773.0,
+      "sl_price_idr": 17220.0,
+      "highest_price_idr": 17536,
+      "rsi_at_entry": 37.5,
+      "buy_order_id": "221018249",
+      "entry_snapshot": {
+        "skor": 81.8,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 37.5,
+        "rsi_15m": 38.8,
+        "rasio_vol": 3.06,
+        "spread_pct": 0.00159,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:40.1)",
+        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Volume 3.06x tinggi, RSI 37.5, pullback tren naik."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794793149.3959246
     }
   ],
   "realized_profit_today_idr": -2127.0,
