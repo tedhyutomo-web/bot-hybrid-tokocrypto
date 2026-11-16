@@ -44,6 +44,16 @@
       "until": 1794819847.0750542,
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah, konfirmasi dua candle naik belum terbentuk."
+    },
+    "SOL": {
+      "until": 1794820446.5226326,
+      "last_score": 79.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, volume rendah, risiko terseret arus bawah."
+    },
+    "ADA": {
+      "until": 1794820517.6764245,
+      "last_score": 82.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah, volume rendah, RSI mendekati zona SL."
     }
   },
   "trade_experience_memory": [
