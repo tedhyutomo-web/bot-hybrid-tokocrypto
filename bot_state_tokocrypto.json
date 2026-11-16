@@ -11,20 +11,15 @@
       "last_score": 91.2,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko bull-trap meski volume tinggi."
     },
-    "XRP": {
-      "until": 1794787521.4389744,
-      "last_score": 75.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.27x, risiko bull-trap memori 72J tinggi."
-    },
     "DOGE": {
-      "until": 1794787521.4389744,
-      "last_score": 76.7,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.4x dan RSI 15M jenuh beli (overbought)."
+      "until": 1794789324.1568873,
+      "last_score": 78.0,
+      "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.26x terlalu rendah, rawan bull-trap tanpa dorongan likuiditas."
     },
     "BTC": {
-      "until": 1794786848.210177,
-      "last_score": 82.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.81x terlalu lemah untuk konfirmasi momentum sniper."
+      "until": 1794789248.0680594,
+      "last_score": 79.4,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.58x dan memori 72J rawan stop loss."
     },
     "ADA": {
       "until": 1794787446.198891,
