@@ -33,13 +33,13 @@
       "style": "EARLY_EMAS",
       "status": "WAITING_BUY",
       "capital_idr": 31967.0,
-      "qty": 2.43,
-      "entry_price_idr": 13155,
-      "tp_price_idr": 13300.0,
-      "sl_price_idr": 12958.0,
+      "qty": 2.41,
+      "entry_price_idr": 13224.0,
+      "tp_price_idr": 13369.0,
+      "sl_price_idr": 13026.0,
       "highest_price_idr": 13155,
       "rsi_at_entry": 52.7,
-      "buy_order_id": "44219836",
+      "buy_order_id": "44220420",
       "entry_snapshot": {
         "skor": 72.3,
         "tren_detail": "5M:DN/15M:DN/1H:DN",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Struktur Higher-Low valid dan memori historis profit 60%."
       },
       "sl_hold_history": [],
-      "timestamp": 1794818056.6037142
+      "timestamp": 1794818495.0204747
     },
     {
       "coin": "SOL",
