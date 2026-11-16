@@ -46,6 +46,11 @@
       "until": 1794793748.6464143,
       "last_score": 83.0,
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis (0.34x), rawan tidak bergerak."
+    },
+    "SOL": {
+      "until": 1794794648.8500733,
+      "last_score": 81.0,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis, rawan bull-trap."
     }
   },
   "trade_experience_memory": [
