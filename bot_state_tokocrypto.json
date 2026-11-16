@@ -31,13 +31,13 @@
     {
       "coin": "SOL",
       "style": "SNIPER",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33071.0,
       "qty": 0.0251,
       "entry_price_idr": 1317566,
-      "tp_price_idr": 1341282.0,
+      "tp_price_idr": 1341282,
       "sl_price_idr": 1296485.0,
-      "highest_price_idr": 1317566,
+      "highest_price_idr": 1317566.0,
       "rsi_at_entry": 50.7,
       "buy_order_id": "117136096",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Winrate historis 67% mendukung struktur tren naik yang valid."
       },
       "sl_hold_history": [],
-      "timestamp": 1794801621.7636368
+      "timestamp": 1794801621.7636368,
+      "filled_timestamp": 1794801851.8875825,
+      "peak_verified": true,
+      "tp_order_id": "117136667"
     }
   ],
   "realized_profit_today_idr": -1732.0,
