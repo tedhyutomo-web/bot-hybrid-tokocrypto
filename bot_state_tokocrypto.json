@@ -9,7 +9,7 @@
       "entry_price_idr": 1076.0,
       "tp_price_idr": 1091.0,
       "sl_price_idr": 1057.0,
-      "highest_price_idr": 1082.0,
+      "highest_price_idr": 1086.0,
       "rsi_at_entry": 34.5,
       "buy_order_id": "135910443",
       "entry_snapshot": {
@@ -26,7 +26,10 @@
       "timestamp": 1794844666.2422252,
       "filled_timestamp": 1794844748.2983017,
       "peak_verified": true,
-      "tp_order_id": "135910511"
+      "tp_order_id": "135910511",
+      "last_tp_eval_ts": 1794848056.4113276,
+      "last_tp_eval_bid_idr": 1084,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M UP, potensi rebound, kawal target Rp1,091."
     },
     {
       "coin": "BTC",
@@ -37,7 +40,7 @@
       "entry_price_idr": 1180175000.0,
       "tp_price_idr": 1196575000.0,
       "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1184591000.0,
+      "highest_price_idr": 1185211000.0,
       "rsi_at_entry": 29.2,
       "buy_order_id": "274384821",
       "entry_snapshot": {
@@ -72,6 +75,11 @@
       "until": 1794843847.6024342,
       "last_score": 80.2,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC jatuh beruntun, risiko terseret penurunan lebih dalam."
+    },
+    "XRP": {
+      "until": 1794848356.4113276,
+      "last_score": 74.9,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC merah, struktur koin lemah belum Higher-Low."
     }
   },
   "trade_experience_memory": [
