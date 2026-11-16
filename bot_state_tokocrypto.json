@@ -1,30 +1,71 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31836.0,
+      "qty": 1.8,
+      "entry_price_idr": 17653.0,
+      "tp_price_idr": 17891,
+      "sl_price_idr": 17335,
+      "highest_price_idr": 17589,
+      "rsi_at_entry": 30.4,
+      "buy_order_id": "221010343",
+      "entry_snapshot": {
+        "skor": 81.7,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 30.4,
+        "rsi_15m": 48.0,
+        "rasio_vol": 1.61,
+        "spread_pct": 0.00096,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:31.3)",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, spread tipis, struktur tren naik sangat solid."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794790377.4979706
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33135.0,
+      "qty": 2.48,
+      "entry_price_idr": 13361,
+      "tp_price_idr": 13541.0,
+      "sl_price_idr": 13121.0,
+      "highest_price_idr": 13361,
+      "rsi_at_entry": 37.7,
+      "buy_order_id": "44183849",
+      "entry_snapshot": {
+        "skor": 81.7,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 37.7,
+        "rsi_15m": 42.3,
+        "rasio_vol": 65.8,
+        "spread_pct": 0.00262,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:31.7)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren selaras, volume masif, SUI kuat saat BTC koreksi."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794790304.6505244
+    }
+  ],
   "realized_profit_today_idr": -1590.0,
   "completed_trades_today": 19,
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 4392.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "SUI": {
-      "until": 1794786545.9541485,
-      "last_score": 91.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko bull-trap meski volume tinggi."
-    },
     "DOGE": {
       "until": 1794789324.1568873,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.26x terlalu rendah, rawan bull-trap tanpa dorongan likuiditas."
     },
-    "BTC": {
-      "until": 1794789548.984867,
-      "last_score": 78.2,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat tipis (0.27x), rawan stagnan meski tren mendukung."
-    },
     "ADA": {
-      "until": 1794787446.198891,
-      "last_score": 93.3,
-      "reason": "[gemini-3-flash-preview#K4] TUNDA - Volume terendah dibanding kandidat lain, RSI 15M mulai jenuh."
+      "until": 1794790677.4979706,
+      "last_score": 83.9,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.54x berisiko stagnan meski tren mendukung."
     }
   },
   "trade_experience_memory": [
