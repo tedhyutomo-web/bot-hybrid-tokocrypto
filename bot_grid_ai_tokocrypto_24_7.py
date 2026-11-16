@@ -625,7 +625,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 lapis_entry = 1
                 bonus_1h = 5.0 if tren_1h_naik else 0.0
                 skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
-                diskon_entry_pct = min(max(atr_5m_pct * 0.35, 0.0015), 0.0045)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.20, 0.0008), 0.0025)
                 prediksi = "🚀 [LAPIS-1 EMAS: SNIPER] Breakout 5M & 15M Indodax Naik - SIAP ENTRY"
                 teknikal_valid = True
                 faktor_bobot_status = 1.35
@@ -633,7 +633,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 gaya = "GRID"
                 lapis_entry = 1
                 skor_dasar = 72.0 + max(0.0, (50.0 - rsi_5m) * 0.50) + (3.5 if dua_candle_5m_naik else 0.0)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.35, 0.0010), 0.0035)
                 prediksi = "🟢 [LAPIS-1 EMAS: PULLBACK] Rebound Kuat di Tren Makro Naik - SIAP ENTRY"
                 teknikal_valid = True
                 faktor_bobot_status = 1.20
@@ -641,7 +641,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 gaya = "GRID"
                 lapis_entry = 1
                 skor_dasar = 69.0 + max(0.0, (38.0 - min(rsi_5m, rsi_15m)) * 0.75) + (3.0 if dua_candle_5m_naik else 0.0)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.35, 0.0010), 0.0035)
                 prediksi = "🟢 [LAPIS-1 EMAS: OVERSOLD] Oversold 5M/15M Memantul Hijau - SIAP ENTRY"
                 teknikal_valid = True
                 faktor_bobot_status = 1.15
@@ -656,7 +656,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 bonus_tren5m = 2.0 if tren_5m_naik else 0.0
                 bonus_2c = 2.0 if dua_candle_5m_naik else 0.0
                 skor_dasar = 68.0 + bonus_tren5m + bonus_2c + min(6.0, max(0.0, rasio_vol - 0.25) * 4.5)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.50, 0.0018), 0.0060)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.25, 0.0010), 0.0030)
                 info_hl = "Higher-Low=YA" if struktur_higher_low_5m else "Higher-Low=BELUM"
                 catatan_kekurangan_emas = (
                     f"Early 5M Scalp (Momentum Mikro 5M Hijau Aktif | Info Struktur: {info_hl}, "
@@ -1024,17 +1024,33 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             umur_antre_menit = (now_ts - float(slot.get("timestamp", now_ts))) / 60.0
             umur_antre_jam = umur_antre_menit / 60.0
 
+                        # Jangan batalkan antrean beli yang baru berumur < 15 menit hanya karena pergantian candle 5M (SIDEWAYS/PULLBACK)
+            # agar harga yang sedang turun tipis sempat menjemput Limit Buy kita!
+            # Hanya batalkan instan (< 15m) jika struktur berubah jadi BAHAYA DOWNTREND atau candle jatuh beruntun.
+            sedang_bahaya_turun = bool(
+                info_pasar and (
+                    info_pasar.get("gaya") == "WAIT_DOWNTREND"
+                    or info_pasar.get("candle_jatuh_beruntun") is True
+                    or info_pasar.get("spread_pct", 0.0) > MAX_SPREAD_INDODAX_PCT * 1.5
+                )
+            )
             masih_layak_entry = bool(
                 info_pasar
-                and info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
-                and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
+                and not sedang_bahaya_turun
+                and (
+                    umur_antre_menit < 15.0
+                    or (
+                        info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
+                        and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
+                    )
+                )
             )
             if not masih_layak_entry:
                 batalkan_order_indodax(coin, slot.get("buy_order_id"))
                 dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
                 ada_eksekusi_penting = True
                 pesan = (
-                    f"🔄 [DYNAMIC CANCEL & REALOKASI INSTAN] Antrean beli {coin} dibatalkan karena status berubah "
+                    f"🔄 [DYNAMIC CANCEL & REALOKASI INSTAN] Antrean beli {coin} ({umur_antre_menit:.0f}m) dibatalkan karena status berubah "
                     f"({prediksi_koin}). Modal Rp{slot.get('capital_idr', 0):,.0f} dialihkan ke koin siap_entry lainnya!"
                 )
                 log_aksi.append(pesan)
@@ -1155,9 +1171,10 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             lama_pegang_jam = (now_ts - float(slot.get("filled_timestamp", slot.get("timestamp", now_ts)))) / 3600.0
             estimasi_nilai_jual_skrg = qty_milik_slot * harga_eksekusi_jual
 
-            # Cek Pemicu Dynamic Technical TP (>= +0.70% Bid Nyata)
-            batas_pemicu_eval_tp_pct = 0.0070
-            batas_lantai_eksekusi_pct = 0.0065
+            # Cek Pemicu Dynamic Technical TP (Normal >= +0.70% Bid, atau >= +0.62% jika sudah tertahan >= 2.5 Jam di pasar sepi!)
+            sudah_kelamaan_di_pasar_sepi = (lama_pegang_jam >= TIME_STOP_HOURS)
+            batas_pemicu_eval_tp_pct = 0.0062 if sudah_kelamaan_di_pasar_sepi else 0.0070
+            batas_lantai_eksekusi_pct = 0.0060 if sudah_kelamaan_di_pasar_sepi else 0.0065
             sedang_untung_aman_bid = (kenaikan_bid_pct >= batas_pemicu_eval_tp_pct)
             candle_5m_merah = not (info_pasar.get("candle_5m_hijau", True) if info_pasar else True)
             tren_5m_patah = not (info_pasar.get("tren_5m_naik", True) if info_pasar else True)
@@ -1177,6 +1194,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 and (tren_sekarang != "UPTREND" or info_pasar.get("gaya", "") not in ["SNIPER", "GRID"])
             ) if info_pasar else False
             sinyal_untung_besar_dekat_tp = (kenaikan_bid_pct >= 0.0115 or pencapaian_bid_ke_tp >= 0.75)
+            sinyal_time_stop_pasar_sepi = (sudah_kelamaan_di_pasar_sepi and sedang_untung_aman_bid)
 
             waktu_eval_tp_terakhir = float(slot.get("last_tp_eval_ts", 0.0))
             bid_eval_tp_terakhir = float(slot.get("last_tp_eval_bid_idr", harga_eksekusi_jual))
@@ -1186,7 +1204,13 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
 
             butuh_evaluasi_tp_dini = (
                 sedang_untung_aman_bid
-                and (sinyal_teknikal_melemah or sinyal_koreksi_puncak or sinyal_momentum_melambat or sinyal_untung_besar_dekat_tp)
+                and (
+                    sinyal_teknikal_melemah
+                    or sinyal_koreksi_puncak
+                    or sinyal_momentum_melambat
+                    or sinyal_untung_besar_dekat_tp
+                    or sinyal_time_stop_pasar_sepi
+                )
                 and (lewat_jeda_eval_tp or profit_terkikis or profit_melonjak_baru)
             )
 
