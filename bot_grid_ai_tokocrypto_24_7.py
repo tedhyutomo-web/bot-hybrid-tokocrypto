@@ -31,13 +31,14 @@ MAX_SINGLE_COIN_CAP_PCT = 0.45         # Maksimal porsi modal pada 1 koin jika h
 FEE_ROUNDTRIP_MAKER_PCT = 0.0055       # Estimasi total biaya beli+jual+PPN+CFX Indodax ~0.55%
 
 MIN_CONVICTION_SCORE = 64.0            # Skor kelayakan minimal normal (0 - 100)
-RECOVERY_SCORE_BOOST = 3.5             # Tambahan syarat skor minimal (+3.5) saat mode balik modal (Recovery) aktif
+RECOVERY_SCORE_BOOST = 1.0             # Tambahan syarat skor (+1.0 -> 66.0) agar Early 5M (Skor 67+) tetap lancar masuk!
 MAX_CONCURRENT_COINS = 3               # Maksimal 3 koin bersamaan (dengan modal Rp100rb -> ~Rp32rb-Rp35rb/koin)
 MAX_SPREAD_INDODAX_PCT = 0.0035        # Maksimal toleransi Bid-Ask Spread Indodax (0.35%) untuk scalping
 DAILY_LOSS_LIMIT_PCT = -0.025          # Batas rugi harian (-2.5% modal) untuk menyalakan Circuit Breaker
 SL_COOLDOWN_MINUTES = 45               # Masa tenang 45 menit untuk koin yang baru terkena SL (Anti-Whipsaw)
 
 # Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR Rupiah Indodax)
+TP_EARLY_EMAS_PCT = 0.0110             # +1.10% Target TP realistis khusus Lapis 2 (Early Entry Emas 5M)
 TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi
 TP_GRID_MAX_PCT = 0.0220               # +2.20% Target TP maksimal mode Grid saat volatilitas tinggi
 SL_GRID_BASE_PCT = 0.0180              # -1.80% Batas Hard SL mode Grid
@@ -436,6 +437,9 @@ def hitung_tp_sl_dinamis_atr(coin, entry_idr, gaya, atr_5m_pct):
     if gaya == "SNIPER":
         tp_pct = min(TP_SNIPER_MAX_PCT, max(TP_SNIPER_MIN_PCT, target_ayunan_pasar))
         sl_pct = SL_SNIPER_BASE_PCT
+    elif gaya == "EARLY_EMAS":
+        tp_pct = min(0.0150, max(TP_EARLY_EMAS_PCT, target_ayunan_pasar * 0.75))
+        sl_pct = 0.0150  # SL lebih ketat (-1.50%) khusus Lapis 2
     else:
         tp_pct = min(TP_GRID_MAX_PCT, max(TP_GRID_MIN_PCT, target_ayunan_pasar * 0.85))
         sl_pct = SL_GRID_BASE_PCT
@@ -597,38 +601,71 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             vol_rata = (sum(vols[-21:-2]) / 19.0) if len(vols) >= 21 else (vol_acuan or 1.0)
             rasio_vol = vol_acuan / (vol_rata or 1.0)
 
-            vol_aktif = rasio_vol >= 0.15
+            ema8_5m = sum(closes[-8:]) / len(closes[-8:])
+            vol_aktif = rasio_vol >= 0.20
             candle_5m_hijau = (closes[-1] > closes[-2]) or (closes[-1] == closes[-2] and closes[-2] > closes[-3] and vol_aktif)
             dua_candle_5m_naik = (closes[-1] > closes[-3]) and (closes[-1] >= closes[-2] >= closes[-3]) and vol_aktif
             candle_jatuh_beruntun = (closes[-1] < closes[-2] < closes[-3])
+            momentum_mikro_5m_naik = (closes[-1] >= ema8_5m) or dua_candle_5m_naik
             spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
 
-            # ATURAN EMAS 3 PINTU DISIPLIN SCALPING PRO (WIN-RATE TINGGI - BEBAS JEBAKAN COUNTER-TREND):
-            # Pintu 1: SNIPER BREAKOUT (5M & 15M Sama-sama Uptrend + RSI Sehat 42-65 + Candle 5M Hijau)
-            if tren_5m_naik and tren_15m_naik and 42.0 <= rsi_5m <= 65.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+            # Data tambahan struktur candle sebagai informasi pertimbangan bagi Gemini AI (bukan penghalang kaku)
+            struktur_higher_low_5m = (lows[-1] >= lows[-2]) or (lows[-1] >= lows[-3] and dua_candle_5m_naik)
+            rentang_hl_terakhir = max(highs[-1] - lows[-1], closes[-1] * 0.0001)
+            posisi_close_candle = (closes[-1] - lows[-1]) / rentang_hl_terakhir
+
+            lapis_entry = 0
+            catatan_kekurangan_emas = "Lengkap (Lolos Penuh Aturan Emas Lapis 1)"
+
+            # ------------------------------------------------------------------
+            # LAPIS 1 (PRIORITAS UTAMA): 3 PINTU ATURAN EMAS
+            # ------------------------------------------------------------------
+            if tren_5m_naik and tren_15m_naik and 40.0 <= rsi_5m <= 67.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "SNIPER"
+                lapis_entry = 1
                 bonus_1h = 5.0 if tren_1h_naik else 0.0
                 skor_dasar = 78.0 + bonus_1h + min(12.0, (rasio_vol - 0.8) * 9.0) - abs(52.0 - rsi_5m) * 0.3
-                diskon_entry_pct = min(max(atr_5m_pct * 0.40, 0.0015), 0.0045)
-                prediksi = "🚀 BERPELUANG UNTUNG / BREAKOUT (5M & 15M Indodax Naik - SIAP ENTRY)"
+                diskon_entry_pct = min(max(atr_5m_pct * 0.35, 0.0015), 0.0045)
+                prediksi = "🚀 [LAPIS-1 EMAS: SNIPER] Breakout 5M & 15M Indodax Naik - SIAP ENTRY"
                 teknikal_valid = True
-                faktor_bobot_status = 1.30
-            # Pintu 2: GRID PULLBACK DI TREN NAIK (15M atau 1H Uptrend + RSI 5M Diskon 28-48 + Candle 5M Hijau)
-            elif (tren_15m_naik or tren_1h_naik) and 28.0 <= rsi_5m <= 48.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+                faktor_bobot_status = 1.35
+            elif (tren_15m_naik or tren_1h_naik) and 25.0 <= rsi_5m <= 52.0 and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
                 gaya = "GRID"
-                skor_dasar = 72.0 + (48.0 - rsi_5m) * 0.55 + (4.0 if dua_candle_5m_naik else 0.0)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.65, 0.0020), 0.0075)
-                prediksi = "🟢 POTENSI REBOUND KUAT (Pullback 5M di Tren Naik - SIAP ENTRY)"
+                lapis_entry = 1
+                skor_dasar = 72.0 + max(0.0, (50.0 - rsi_5m) * 0.50) + (3.5 if dua_candle_5m_naik else 0.0)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
+                prediksi = "🟢 [LAPIS-1 EMAS: PULLBACK] Rebound Kuat di Tren Makro Naik - SIAP ENTRY"
+                teknikal_valid = True
+                faktor_bobot_status = 1.20
+            elif (rsi_5m <= 36.0 or (rsi_15m <= 38.0 and rsi_5m <= 48.0)) and candle_5m_hijau and vol_aktif and not candle_jatuh_beruntun:
+                gaya = "GRID"
+                lapis_entry = 1
+                skor_dasar = 69.0 + max(0.0, (38.0 - min(rsi_5m, rsi_15m)) * 0.75) + (3.0 if dua_candle_5m_naik else 0.0)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.55, 0.0020), 0.0065)
+                prediksi = "🟢 [LAPIS-1 EMAS: OVERSOLD] Oversold 5M/15M Memantul Hijau - SIAP ENTRY"
                 teknikal_valid = True
                 faktor_bobot_status = 1.15
-            # Pintu 3: GRID OVERSOLD REBOUND EKSTREM (RSI 5M <= 33 atau RSI 15M <= 35 + Wajib 2 Candle 5M Naik Beruntun)
-            elif (rsi_5m <= 33.0 or rsi_15m <= 35.0) and dua_candle_5m_naik and not candle_jatuh_beruntun:
-                gaya = "GRID"
-                skor_dasar = 67.5 + max(0.0, (35.0 - min(rsi_5m, rsi_15m)) * 0.85)
-                diskon_entry_pct = min(max(atr_5m_pct * 0.60, 0.0020), 0.0070)
-                prediksi = "🟢 POTENSI REBOUND CEPAT (Oversold 5M/15M Indodax Memantul - SIAP ENTRY)"
+
+            # ------------------------------------------------------------------
+            # LAPIS 2 (PERPUTARAN MODAL CEPAT): RUMUS EARLY 5M SCALP AWAL
+            # Persis menggunakan rumus Early 5M awal yang gesit + Target TP Cepat (+1.10%)!
+            # ------------------------------------------------------------------
+            elif (tren_5m_naik or momentum_mikro_5m_naik) and candle_5m_hijau and 34.0 <= rsi_5m <= 64.0 and rasio_vol >= 0.25 and not candle_jatuh_beruntun:
+                gaya = "EARLY_EMAS"
+                lapis_entry = 2
+                bonus_tren5m = 2.0 if tren_5m_naik else 0.0
+                bonus_2c = 2.0 if dua_candle_5m_naik else 0.0
+                skor_dasar = 68.0 + bonus_tren5m + bonus_2c + min(6.0, max(0.0, rasio_vol - 0.25) * 4.5)
+                diskon_entry_pct = min(max(atr_5m_pct * 0.50, 0.0018), 0.0060)
+                info_hl = "Higher-Low=YA" if struktur_higher_low_5m else "Higher-Low=BELUM"
+                catatan_kekurangan_emas = (
+                    f"Early 5M Scalp (Momentum Mikro 5M Hijau Aktif | Info Struktur: {info_hl}, "
+                    f"BodyCandle:{posisi_close_candle*100:.0f}%, 2CandleNaik:{'YA' if dua_candle_5m_naik else 'TIDAK'})"
+                )
+                prediksi = "🟢 [LAPIS-2: EARLY 5M SCALP] Momentum Mikro 5M Bangkit Hijau - SIAP ENTRY"
                 teknikal_valid = True
-                faktor_bobot_status = 1.05
+                faktor_bobot_status = 1.00
+
             elif (tren_15m_naik or tren_1h_naik) and not candle_jatuh_beruntun:
                 gaya = "WAIT_PULLBACK"
                 skor_dasar = 58.0
@@ -636,7 +673,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 prediksi = "🟢 POTENSI REBOUND (Tren makro naik, menunggu candle 5M memantul hijau)"
                 teknikal_valid = False
                 faktor_bobot_status = 0.0
-            elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and rasio_vol >= 1.25)):
+            elif not tren_5m_naik and not tren_15m_naik and (candle_jatuh_beruntun or (rsi_5m < 40.0 and not candle_5m_hijau)):
                 gaya = "WAIT_DOWNTREND"
                 skor_dasar = 25.0
                 diskon_entry_pct = 0.012
@@ -647,7 +684,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 gaya = "WAIT_SIDEWAYS"
                 skor_dasar = 45.0
                 diskon_entry_pct = 0.008
-                prediksi = "🟡 SIDEWAYS WAJAR (Konsolidasi 5M/15M normal, aman ditahan / jangan beli dulu)"
+                prediksi = "🟡 SIDEWAYS WAJAR (Belum ada struktur Higher-Low / Body Hijau Kuat)"
                 teknikal_valid = False
                 faktor_bobot_status = 0.0
 
@@ -658,7 +695,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             acuan_beli_dasar = min(harga_idr, harga_ask)
             entry_ideal_idr = bulatkan_harga_indodax(coin, acuan_beli_dasar * (1.0 - diskon_entry_pct))
             tp_ideal_idr, sl_ideal_idr, tp_target_pct = hitung_tp_sl_dinamis_atr(
-                coin, entry_ideal_idr, gaya if gaya in ["SNIPER", "GRID"] else "GRID", atr_5m_pct
+                coin, entry_ideal_idr, gaya if gaya in ["SNIPER", "GRID", "EARLY_EMAS"] else "GRID", atr_5m_pct
             )
 
             uptrend_nyata = (tren_5m_naik and rsi_5m >= 42.0) or (tren_15m_naik and rsi_5m >= 40.0)
@@ -676,6 +713,10 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
                 "tren_15m_naik": tren_15m_naik,
                 "candle_5m_hijau": candle_5m_hijau,
                 "candle_jatuh_beruntun": candle_jatuh_beruntun,
+                "struktur_higher_low_5m": struktur_higher_low_5m,
+                "posisi_close_candle": round(posisi_close_candle, 2),
+                "lapis_entry": lapis_entry,
+                "catatan_kekurangan_emas": catatan_kekurangan_emas,
                 "tren_detail": f"5M:{'UP' if tren_5m_naik else 'DN'}/15M:{'UP' if tren_15m_naik else 'DN'}/1H:{'UP' if tren_1h_naik else 'DN'}",
                 "rsi": round(rsi_5m, 1),
                 "rsi_15m": round(rsi_15m, 1),
@@ -848,9 +889,11 @@ def konsultasi_batch_semua_keputusan_gemini(daftar_tugas_ai, status_kompas_btc, 
     prompt_batch = (
         f"Anda adalah Chief Quant Scalper 5M Indodax ({konteks_mode}). Evaluasi paket data real-time berikut sekaligus.\n"
         f"Konteks Pasar: Kompas BTCIDR={status_kompas_btc}.\n"
-        f"PRINSIP KEPUTUSAN DISIPLIN: Setiap kandidat BELI_BARU di bawah ini sudah lolos Filter Kuantitatif 3 Pintu Emas (Breakout 5M+15M, "
-        f"Pullback di Tren Naik 15M/1H, atau Oversold Ekstrem <=33). Tugas Anda adalah memvalidasi kualitasnya: jawab YA jika struktur tren, "
-        f"RSI, volume, dan Memori 72J mendukung kenaikan sehat; jawab TUNDA jika volume terlalu tipis, rawan bull-trap, atau '⚠️ MEMORI 72J POLA RAWAN SL'.\n"
+        f"SISTEM SELEKSI 2 LAPIS:\n"
+        f"- [LAPIS-1 EMAS]: Kandidat yang sudah lolos penuh 3 Pintu Aturan Emas. Prioritaskan jawab YA kecuali ada bahaya ekstrem.\n"
+        f"- [LAPIS-2 EARLY_EMAS]: Kandidat pantulan 5M di pasar bearish/sideways yang kurang 1 poin dari Aturan Emas (misal 15M/1H masih DN), "
+        f"namun sudah lolos Sensor Anti-Falling Knife (Higher-Low valid & Body Candle Kuat). Karena bot punya Dynamic Scratch Profit (+0.65% s/d +1.10%), "
+        f"jawab YA jika Anda yakin pantulan 5M ini sanggup naik minimal +0.75% s/d +1.10%; jawab TUNDA jika masih berisiko jatuh.\n"
         f"Daftar Tugas Evaluasi ({len(daftar_tugas_ai)} item):\n"
         + "\n".join(baris_tugas) + "\n\n"
         f"INSTRUKSI JAWABAN:\n"
@@ -963,7 +1006,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             )
             if (dompet["terhubung"] and sudah_terbeli_penuh) or (not dompet["terhubung"] and harga_sekarang <= entry_idr):
                 slot["status"] = "HOLDING_FOR_TP"
-
                 slot["filled_timestamp"] = now_ts
                 slot["highest_price_idr"] = max(entry_idr, harga_sekarang)
                 slot["peak_verified"] = True
@@ -1053,8 +1095,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 pnl_bersih_tp = kenaikan_tp_pct - FEE_ROUNDTRIP_MAKER_PCT
                 profit_bersih = round(slot["capital_idr"] * pnl_bersih_tp, 0)
                 catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin)
-                if "rekam_pengalaman_transaksi_bot" in globals():
-                    rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
+                rekam_pengalaman_transaksi_bot(state, slot, profit_bersih, pnl_bersih_tp)
                 ada_eksekusi_penting = True
                 sisa_rec = state.get("loss_to_recover_idr", 0.0)
                 info_rec = f" | Sisa Target Recovery: Rp{sisa_rec:,.0f}" if sisa_rec > 0 else ""
@@ -1072,8 +1113,7 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 print(f"♻️ [DETEKSI TP TERBATAL MANUAL] Open Order TP {coin} (#{slot.get('tp_order_id')}) sudah tidak aktif di Indodax, siap pasang ulang!")
                 slot["tp_order_id"] = None
 
-            # 3. AUTO-MERGE PARTIAL FILL: Jika di dompet ada sisa koin bebas dari cicilan beli kedua (total > qty_slot + 5%),
-            # batalkan Order TP separuh yang lama dan gabungkan menjadi 1 Order TP utuh (kasus ETH 0.00053 + 0.00057 -> 0.0011 ETH)!
+            # 3. AUTO-MERGE PARTIAL FILL: Gabungkan pecahan order beli yang masuk bertahap menjadi 1 Order TP utuh
             jml_slot_koin_sama = sum(1 for s in state["active_slots"] if s.get("coin") == coin and s.get("status") == "HOLDING_FOR_TP")
             if dompet["terhubung"] and jml_slot_koin_sama == 1 and total_koin_tersisa > (qty_slot * 1.05) and koin_free > 0:
                 qty_gabungan = format_qty_koin(coin, total_koin_tersisa)
@@ -1442,20 +1482,33 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                     kandidat["rsi"], kandidat["rsi_15m"], kandidat["rasio_vol"]
                 )
 
-                # Karena koin ini sudah lolos Filter Kuantitatif 3 Pintu Emas (seperti Kode Bot Cadangan Non AI),
-                # jika Gemini sedang tidak bisa diakses (error/limit), langsung setujui (default_jika_error: True)!
+                lapis_k = int(kandidat.get("lapis_entry", 1))
+                info_kekurangan = kandidat.get("catatan_kekurangan_emas", "-")
+                kekuatan_body = int(float(kandidat.get("posisi_close_candle", 0.7)) * 100)
+
+                # ATURAN CADANGAN SAAT GEMINI LIMIT (HTTP 429):
+                # - Lapis 1 (Aturan Emas Penuh): Otomatis setuju (True) karena win-rate dasarnya sudah tinggi.
+                # - Lapis 2 (Early Emas 5M): Wajib divalidasi Gemini AI! Jika Gemini mati, otomatis TUNDA (False) demi keamanan modal.
+                cadangan_setuju_beli = (lapis_k == 1)
+                alasan_cadangan_beli = (
+                    f"YA - Lolos Penuh Lapis-1 Aturan Emas Indodax ({kandidat['gaya']}, Skor:{kandidat['skor']})."
+                    if cadangan_setuju_beli else
+                    f"TUNDA - Kandidat Lapis-2 Early Emas ({coin}) wajib menunggu verifikasi Gemini AI aktif."
+                )
+
                 tid = f"BELI_{coin}"
                 daftar_tugas_ai.append({
                     "id": tid,
                     "jenis": "BELI_BARU",
-                    "default_jika_error": True,
-                    "alasan_fallback": f"YA - Lolos Filter Kuantitatif 3 Pintu Emas Indodax ({kandidat['gaya']}, Skor:{kandidat['skor']}).",
+                    "default_jika_error": cadangan_setuju_beli,
+                    "alasan_fallback": alasan_cadangan_beli,
                     "deskripsi": (
-                        f"TIPE: BELI_BARU | Koin {coin} ({kandidat['gaya']}, Skor:{kandidat['skor']}){info_rev}, "
+                        f"TIPE: BELI_BARU [LAPIS-{lapis_k}: {kandidat['gaya']}] | Koin {coin} (Skor:{kandidat['skor']}){info_rev}, "
                         f"Harga Skrg:Rp{kandidat['harga_idr']:,.0f}, Rencana Limit Buy:Rp{entry_idr:,.0f}, "
-                        f"TP Dinamis:+{kandidat['tp_target_pct']}% (Alokasi:Rp{nilai_efektif_idr:,.0f}). "
+                        f"TP Dinamis:+{kandidat['tp_target_pct']}% (Alokasi:Rp{nilai_efektif_idr:,.0f} | Lapis Scratch TP +0.65% Aktif). "
                         f"Tren:{kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
-                        f"Vol:{kandidat['rasio_vol']}x, Spread:{kandidat['spread_pct']*100:.2f}%{konteks_memori_entry}. "
+                        f"Vol:{kandidat['rasio_vol']}x, BodyCandle:{kekuatan_body}%, Spread:{kandidat['spread_pct']*100:.2f}% | "
+                        f"Status Emas: {info_kekurangan}{konteks_memori_entry}. "
                         f"Jawab YA (eksekusi beli) atau TUNDA (jangan beli)."
                     )
                 })
