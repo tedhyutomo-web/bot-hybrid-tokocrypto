@@ -29,31 +29,6 @@
       "tp_order_id": "218777214"
     },
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31916.0,
-      "qty": 2.43,
-      "entry_price_idr": 13134,
-      "tp_price_idr": 13311.0,
-      "sl_price_idr": 12898.0,
-      "highest_price_idr": 13134,
-      "rsi_at_entry": 32.6,
-      "buy_order_id": "44227458",
-      "entry_snapshot": {
-        "skor": 80.7,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 32.6,
-        "rsi_15m": 54.6,
-        "rasio_vol": 0.85,
-        "spread_pct": 0.00266,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:32.8 | Vol:0.37x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, BTC tertahan, volume dukung pantulan mikro."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794822773.5069602
-    },
-    {
       "coin": "SOL",
       "style": "GRID",
       "status": "WAITING_BUY",
