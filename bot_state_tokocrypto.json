@@ -11,30 +11,25 @@
       "last_score": 91.2,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Memori 72J winrate 0% berisiko bull-trap meski volume tinggi."
     },
-    "ETH": {
-      "until": 1794786247.371958,
-      "last_score": 94.6,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk (Winrate 33%), risiko SL berulang tinggi."
-    },
-    "SOL": {
-      "until": 1794786247.371958,
-      "last_score": 82.6,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume sangat tipis (0.86x), tidak memenuhi syarat likuiditas scalping."
-    },
     "XRP": {
-      "until": 1794786324.0268896,
-      "last_score": 77.1,
-      "reason": "[gemini-3-flash-preview#K5] TUNDA - Volume 0.28x terlalu rendah, risiko bull-trap sangat tinggi."
+      "until": 1794787521.4389744,
+      "last_score": 75.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume sangat rendah 0.27x, risiko bull-trap memori 72J tinggi."
     },
     "DOGE": {
-      "until": 1794786848.210177,
-      "last_score": 91.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Winrate 72J rendah (33%) dan RSI 15M hampir jenuh."
+      "until": 1794787521.4389744,
+      "last_score": 76.7,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah 0.4x dan RSI 15M jenuh beli (overbought)."
     },
     "BTC": {
       "until": 1794786848.210177,
       "last_score": 82.3,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.81x terlalu lemah untuk konfirmasi momentum sniper."
+    },
+    "ADA": {
+      "until": 1794787446.198891,
+      "last_score": 93.3,
+      "reason": "[gemini-3-flash-preview#K4] TUNDA - Volume terendah dibanding kandidat lain, RSI 15M mulai jenuh."
     }
   },
   "trade_experience_memory": [
