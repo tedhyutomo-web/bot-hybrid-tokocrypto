@@ -50,11 +50,25 @@
         "kompas_btc": "5M:UP/15M:UP/1H:UP (RSI 5M:48.4)",
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Winrate historis 67% mendukung struktur tren naik yang valid."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794805447.9749358,
+          "pnl_bid_pct": -0.010136873598741923,
+          "tren_detail": "5M:DN/15M:UP/1H:UP",
+          "rsi_5m": 27.9,
+          "rsi_15m": 50.6,
+          "rasio_vol": 0.08,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M/1H UP, tunggu pantulan teknikal."
+        }
+      ],
       "timestamp": 1794801621.7636368,
       "filled_timestamp": 1794801851.8875825,
       "peak_verified": true,
-      "tp_order_id": "117136667"
+      "tp_order_id": "117136667",
+      "last_sl_eval_ts": 1794805447.9749358,
+      "last_sl_eval_price_idr": 1304210.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI 5M oversold, tren 15M/1H UP, tunggu pantulan teknikal.",
+      "last_eval_was_hard_sl": false
     }
   ],
   "realized_profit_today_idr": -1732.0,
