@@ -27,31 +27,6 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37975.0,
-      "qty": 13.63,
-      "entry_price_idr": 2785.0,
-      "tp_price_idr": 2823.0,
-      "sl_price_idr": 2735.0,
-      "highest_price_idr": 2778,
-      "rsi_at_entry": 35.3,
-      "buy_order_id": "144028756",
-      "entry_snapshot": {
-        "skor": 82.9,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 35.3,
-        "rsi_15m": 49.0,
-        "rasio_vol": 0.63,
-        "spread_pct": 0.00036,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:31.1 | Vol:0.08x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M oversold stabil, status Emas lengkap, histori winrate 100%."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794824951.6557763
     }
   ],
   "realized_profit_today_idr": -2285.0,
