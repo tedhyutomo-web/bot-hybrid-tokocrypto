@@ -44,6 +44,11 @@
       "until": 1794808748.134772,
       "last_score": 83.0,
       "reason": "[gemini-3-flash-preview#K5] TUNDA - BTC jatuh beruntun, struktur XRP 5M lemah (Body 0%)."
+    },
+    "SUI": {
+      "until": 1794809648.507075,
+      "last_score": 83.8,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC tren turun, volume rendah dan body candle nihil."
     }
   },
   "trade_experience_memory": [
