@@ -34,12 +34,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 54951.0,
       "qty": 4.6e-05,
-      "entry_price_idr": 1189025000.0,
-      "tp_price_idr": 1205077000.0,
-      "sl_price_idr": 1167623000.0,
+      "entry_price_idr": 1189310000.0,
+      "tp_price_idr": 1205366000.0,
+      "sl_price_idr": 1167902000.0,
       "highest_price_idr": 1194590000,
       "rsi_at_entry": 52.8,
-      "buy_order_id": "274417429",
+      "buy_order_id": "274417816",
       "entry_snapshot": {
         "skor": 89.8,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Momentum 5M kuat, volume tinggi, candle 100% dukung recovery cepat."
       },
       "sl_hold_history": [],
-      "timestamp": 1794870918.9153407
+      "timestamp": 1794871223.0845058
     }
   ],
   "realized_profit_today_idr": 134.0,
