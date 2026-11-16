@@ -1,40 +1,15 @@
 {
   "active_slots": [
     {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31836.0,
-      "qty": 1.8,
-      "entry_price_idr": 17653.0,
-      "tp_price_idr": 17891,
-      "sl_price_idr": 17335,
-      "highest_price_idr": 17589,
-      "rsi_at_entry": 30.4,
-      "buy_order_id": "221010343",
-      "entry_snapshot": {
-        "skor": 81.7,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 30.4,
-        "rsi_15m": 48.0,
-        "rasio_vol": 1.61,
-        "spread_pct": 0.00096,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:31.3)",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat, spread tipis, struktur tren naik sangat solid."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794790377.4979706
-    },
-    {
       "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33135.0,
       "qty": 2.48,
       "entry_price_idr": 13361,
       "tp_price_idr": 13541.0,
       "sl_price_idr": 13121.0,
-      "highest_price_idr": 13361,
+      "highest_price_idr": 13361.0,
       "rsi_at_entry": 37.7,
       "buy_order_id": "44183849",
       "entry_snapshot": {
@@ -48,7 +23,35 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren selaras, volume masif, SUI kuat saat BTC koreksi."
       },
       "sl_hold_history": [],
-      "timestamp": 1794790304.6505244
+      "timestamp": 1794790304.6505244,
+      "filled_timestamp": 1794790530.4496684,
+      "peak_verified": true,
+      "tp_order_id": "44184196"
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33256.0,
+      "qty": 2.8e-05,
+      "entry_price_idr": 1187721000,
+      "tp_price_idr": 1203755000.0,
+      "sl_price_idr": 1166342000.0,
+      "highest_price_idr": 1187721000,
+      "rsi_at_entry": 32.2,
+      "buy_order_id": "274300292",
+      "entry_snapshot": {
+        "skor": 84.7,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 32.2,
+        "rsi_15m": 36.9,
+        "rasio_vol": 0.35,
+        "spread_pct": 0.0,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:32.2)",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, tren besar naik, spread nol mendukung recovery."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794790455.543301
     }
   ],
   "realized_profit_today_idr": -1590.0,
@@ -66,6 +69,11 @@
       "until": 1794790677.4979706,
       "last_score": 83.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.54x berisiko stagnan meski tren mendukung."
+    },
+    "SOL": {
+      "until": 1794790830.4496684,
+      "last_score": 80.2,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis 0.27x, rawan bull-trap."
     }
   },
   "trade_experience_memory": [
