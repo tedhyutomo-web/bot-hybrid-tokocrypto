@@ -39,11 +39,6 @@
       "until": 1794800347.4485383,
       "last_score": 80.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.83x) dan Memori 72J rawan SL (Winrate 33%)."
-    },
-    "SUI": {
-      "until": 1794810314.0992246,
-      "last_score": 85.0,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Kompas BTC turun & volume SUI sangat tipis"
     }
   },
   "trade_experience_memory": [
