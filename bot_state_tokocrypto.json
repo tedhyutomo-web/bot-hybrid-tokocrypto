@@ -27,6 +27,31 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 32154.0,
+      "qty": 2.45,
+      "entry_price_idr": 13124,
+      "tp_price_idr": 13301.0,
+      "sl_price_idr": 12888.0,
+      "highest_price_idr": 13124,
+      "rsi_at_entry": 39.0,
+      "buy_order_id": "44224630",
+      "entry_snapshot": {
+        "skor": 77.5,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 39.0,
+        "rsi_15m": 45.6,
+        "rasio_vol": 3.83,
+        "spread_pct": 8e-05,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:23.0 | Vol:3.82x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume 3.83x kuat dan tren 1H UP dukung momentum recovery."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794820897.91203
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -41,9 +66,9 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah tertahan dan BodyCandle DOGE 0% nihil momentum."
     },
     "XRP": {
-      "until": 1794819847.0750542,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah, konfirmasi dua candle naik belum terbentuk."
+      "until": 1794821190.053202,
+      "last_score": 80.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.34x terlalu rendah, risiko likuiditas rendah saat BTC merah."
     },
     "SOL": {
       "until": 1794820446.5226326,
