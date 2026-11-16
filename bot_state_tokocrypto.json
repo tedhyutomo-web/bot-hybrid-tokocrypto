@@ -27,31 +27,6 @@
       "filled_timestamp": 1794851126.5426204,
       "peak_verified": true,
       "tp_order_id": "135915132"
-    },
-    {
-      "coin": "BTC",
-      "style": "SNIPER",
-      "status": "WAITING_BUY",
-      "capital_idr": 54951.0,
-      "qty": 4.6e-05,
-      "entry_price_idr": 1189310000.0,
-      "tp_price_idr": 1205366000.0,
-      "sl_price_idr": 1167902000.0,
-      "highest_price_idr": 1194590000,
-      "rsi_at_entry": 52.8,
-      "buy_order_id": "274417816",
-      "entry_snapshot": {
-        "skor": 89.8,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 52.8,
-        "rsi_15m": 75.9,
-        "rasio_vol": 9.84,
-        "spread_pct": 0.00046,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:52.8 | Vol:9.84x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Momentum 5M kuat, volume tinggi, candle 100% dukung recovery cepat."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794871223.0845058
     }
   ],
   "realized_profit_today_idr": 134.0,
@@ -74,6 +49,11 @@
       "until": 1794848356.4113276,
       "last_score": 74.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC merah, struktur koin lemah belum Higher-Low."
+    },
+    "SUI": {
+      "until": 1794871890.8674934,
+      "last_score": 91.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, BodyCandle 0%, risiko memori SL tinggi."
     }
   },
   "trade_experience_memory": [
