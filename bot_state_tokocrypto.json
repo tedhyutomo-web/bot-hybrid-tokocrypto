@@ -41,6 +41,31 @@
       "filled_timestamp": 1794831101.6258154,
       "timestamp": 1794831101.6258156,
       "peak_verified": true
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31839.0,
+      "qty": 2.7e-05,
+      "entry_price_idr": 1178882000.0,
+      "tp_price_idr": 1194797000,
+      "sl_price_idr": 1157662000,
+      "highest_price_idr": 1179221000,
+      "rsi_at_entry": 20.3,
+      "buy_order_id": "274361673",
+      "entry_snapshot": {
+        "skor": 82.3,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 20.3,
+        "rsi_15m": 42.9,
+        "rasio_vol": 5.01,
+        "spread_pct": 0.0,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:20.3 | Vol:5.01x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold ekstrem, volume tinggi, momentum mikro 5M naik."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794831710.0093198
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -49,11 +74,6 @@
   "loss_to_recover_idr": 5087.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "BTC": {
-      "until": 1794830354.0212204,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Higher-Low belum terbentuk, body tipis, tren 15M-1H masih turun."
-    },
     "ADA": {
       "until": 1794830649.4162705,
       "last_score": 74.9,
