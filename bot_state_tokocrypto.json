@@ -1,38 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 32933.0,
-      "qty": 2.7e-05,
-      "entry_price_idr": 1180175000.0,
-      "tp_price_idr": 1196575000.0,
-      "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1187255000.0,
-      "rsi_at_entry": 29.2,
-      "buy_order_id": "274384821",
-      "entry_snapshot": {
-        "skor": 75.6,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 29.2,
-        "rsi_15m": 42.0,
-        "rasio_vol": 0.82,
-        "spread_pct": 0.00067,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:29.2 | Vol:0.82x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M sangat oversold, momentum pemulihan harga mulai terlihat."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794844009.4846466,
-      "filled_timestamp": 1794844087.8359575,
-      "peak_verified": true,
-      "tp_order_id": "274385019"
-    }
-  ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "active_slots": [],
+  "realized_profit_today_idr": 72.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 3559.0,
+  "loss_to_recover_idr": 3487.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -374,6 +345,22 @@
       "rasio_vol": 0.7,
       "pnl_pct": 0.66,
       "pnl_idr": 225.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794849558.8944638,
+      "waktu": "17/11 00:19",
+      "coin": "BTC",
+      "style": "GRID",
+      "skor": 75.6,
+      "tren_detail": "5M:UP/15M:DN/1H:DN",
+      "rsi_5m": 29.2,
+      "rsi_15m": 42.0,
+      "rasio_vol": 0.82,
+      "pnl_pct": 0.22,
+      "pnl_idr": 72.0,
       "sempat_tahan_sl": false
     }
   ]
