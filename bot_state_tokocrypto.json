@@ -41,31 +41,6 @@
       "filled_timestamp": 1794793139.9061606,
       "timestamp": 1794793139.9061608,
       "peak_verified": true
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 40333.0,
-      "qty": 2.3,
-      "entry_price_idr": 17536,
-      "tp_price_idr": 17773.0,
-      "sl_price_idr": 17220.0,
-      "highest_price_idr": 17536,
-      "rsi_at_entry": 37.5,
-      "buy_order_id": "221018249",
-      "entry_snapshot": {
-        "skor": 81.8,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 37.5,
-        "rsi_15m": 38.8,
-        "rasio_vol": 3.06,
-        "spread_pct": 0.00159,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:40.1)",
-        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Volume 3.06x tinggi, RSI 37.5, pullback tren naik."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794793149.3959246
     }
   ],
   "realized_profit_today_idr": -2127.0,
@@ -82,9 +57,9 @@
       "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.26x terlalu rendah, rawan bull-trap tanpa dorongan likuiditas."
     },
     "ADA": {
-      "until": 1794790677.4979706,
-      "last_score": 83.9,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.54x berisiko stagnan meski tren mendukung."
+      "until": 1794793748.6464143,
+      "last_score": 83.0,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Volume terlalu tipis (0.34x), rawan tidak bergerak."
     },
     "SOL": {
       "until": 1794790830.4496684,
