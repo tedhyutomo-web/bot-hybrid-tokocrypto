@@ -41,9 +41,14 @@
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah tertahan dan BodyCandle DOGE 0% nihil momentum."
     },
     "SOL": {
-      "until": 1794821717.443979,
-      "last_score": 75.5,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M masih DN, RSI netral, butuh konfirmasi reversal."
+      "until": 1794822248.6283445,
+      "last_score": 69.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M turun dan body candle nol (momentum nihil)."
+    },
+    "BTC": {
+      "until": 1794822248.6283445,
+      "last_score": 71.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah dan memori 72J buruk (Winrate 0%)."
     }
   },
   "trade_experience_memory": [
