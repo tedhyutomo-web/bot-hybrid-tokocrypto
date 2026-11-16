@@ -3,13 +3,13 @@
     {
       "coin": "DOGE",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 34240,
       "qty": 31,
       "entry_price_idr": 1076.0,
-      "tp_price_idr": 1091,
-      "sl_price_idr": 1057,
-      "highest_price_idr": 1070,
+      "tp_price_idr": 1091.0,
+      "sl_price_idr": 1057.0,
+      "highest_price_idr": 1077.0,
       "rsi_at_entry": 34.5,
       "buy_order_id": "135910443",
       "entry_snapshot": {
@@ -23,7 +23,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M naik, body candle kuat, BTC 5M mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1794844666.2422252
+      "timestamp": 1794844666.2422252,
+      "filled_timestamp": 1794844748.2983017,
+      "peak_verified": true,
+      "tp_order_id": "135910511"
     },
     {
       "coin": "SUI",
