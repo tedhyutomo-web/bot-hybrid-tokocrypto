@@ -29,54 +29,29 @@
       "tp_order_id": "218777214"
     },
     {
-      "coin": "ADA",
+      "coin": "XRP",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32039.0,
-      "qty": 11.5,
-      "entry_price_idr": 2786,
-      "tp_price_idr": 2824.0,
-      "sl_price_idr": 2736.0,
-      "highest_price_idr": 2786,
-      "rsi_at_entry": 43.3,
-      "buy_order_id": "144025227",
+      "capital_idr": 31915.0,
+      "qty": 1.84,
+      "entry_price_idr": 17345,
+      "tp_price_idr": 17579.0,
+      "sl_price_idr": 17033.0,
+      "highest_price_idr": 17345,
+      "rsi_at_entry": 27.1,
+      "buy_order_id": "221079030",
       "entry_snapshot": {
-        "skor": 78.8,
-        "tren_detail": "5M:UP/15M:DN/1H:UP",
-        "rsi_5m": 43.3,
-        "rsi_15m": 47.6,
-        "rasio_vol": 1.43,
-        "spread_pct": 0.00251,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:36.0 | Vol:1.16x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau, Vol 1.43x mendukung Lapis-1 Golden Rule."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794821121.1366677
-    },
-    {
-      "coin": "BTC",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 31879.0,
-      "qty": 2.7e-05,
-      "entry_price_idr": 1180717000,
-      "tp_price_idr": 1193705000.0,
-      "sl_price_idr": 1163006000.0,
-      "highest_price_idr": 1180717000,
-      "rsi_at_entry": 36.0,
-      "buy_order_id": "274346835",
-      "entry_snapshot": {
-        "skor": 76.1,
+        "skor": 80.2,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 36.0,
-        "rsi_15m": 48.1,
-        "rasio_vol": 1.16,
-        "spread_pct": 0.00028,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:36.0 | Vol:1.16x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 36 oversold bounce, Higher-Low konfirmasi momentum mikro 5M."
+        "rsi_5m": 27.1,
+        "rsi_15m": 47.2,
+        "rasio_vol": 0.22,
+        "spread_pct": 6e-05,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:34.8 | Vol:0.08x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold ekstrem, BTC 5M UP mendukung pantulan."
       },
       "sl_hold_history": [],
-      "timestamp": 1794821121.4293733
+      "timestamp": 1794821422.8392022
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -90,15 +65,10 @@
       "last_score": 77.3,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M merah tertahan dan BodyCandle DOGE 0% nihil momentum."
     },
-    "XRP": {
-      "until": 1794821190.053202,
-      "last_score": 80.9,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume 0.34x terlalu rendah, risiko likuiditas rendah saat BTC merah."
-    },
     "SOL": {
-      "until": 1794820446.5226326,
-      "last_score": 79.9,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, volume rendah, risiko terseret arus bawah."
+      "until": 1794821717.443979,
+      "last_score": 75.5,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M masih DN, RSI netral, butuh konfirmasi reversal."
     }
   },
   "trade_experience_memory": [
