@@ -9,7 +9,7 @@
       "entry_price_idr": 1180175000.0,
       "tp_price_idr": 1196575000.0,
       "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1186349000.0,
+      "highest_price_idr": 1187255000.0,
       "rsi_at_entry": 29.2,
       "buy_order_id": "274384821",
       "entry_snapshot": {
@@ -29,9 +29,9 @@
       "tp_order_id": "274385019"
     }
   ],
-  "realized_profit_today_idr": -757.0,
-  "completed_trades_today": 28,
-  "last_reset_date": "2026-11-16",
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0,
+  "last_reset_date": "2026-11-17",
   "loss_to_recover_idr": 3559.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
