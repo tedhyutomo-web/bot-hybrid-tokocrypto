@@ -1,41 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37817.0,
-      "qty": 0.00114,
-      "entry_price_idr": 33173000,
-      "tp_price_idr": 33621000.0,
-      "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33532000.0,
-      "rsi_at_entry": 32.6,
-      "buy_order_id": "218754771",
-      "entry_snapshot": {
-        "skor": 80.5,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 32.6,
-        "rsi_15m": 46.6,
-        "rasio_vol": 0.31,
-        "spread_pct": 0.00145,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:30.1)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, tren 15M/1H naik, limit buy dukung pullback."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794791656.819747,
-      "filled_timestamp": 1794791946.6631227,
-      "peak_verified": true,
-      "tp_order_id": "218755595",
-      "last_tp_eval_ts": 1794795847.6780465,
-      "last_tp_eval_bid_idr": 33470000,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K4] TAHAN - Tren makro UP, RSI 15M rendah, potensi rebound ke target."
-    }
-  ],
-  "realized_profit_today_idr": -1953.0,
-  "completed_trades_today": 21,
+  "active_slots": [],
+  "realized_profit_today_idr": -1732.0,
+  "completed_trades_today": 22,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4755.0,
+  "loss_to_recover_idr": 4534.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -232,6 +200,22 @@
       "rasio_vol": 1.0,
       "pnl_pct": 0.8,
       "pnl_idr": 174.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794796154.3328667,
+      "waktu": "16/11 09:29",
+      "coin": "ETH",
+      "style": "GRID",
+      "skor": 80.5,
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 32.6,
+      "rsi_15m": 46.6,
+      "rasio_vol": 0.31,
+      "pnl_pct": 0.58,
+      "pnl_idr": 221.0,
       "sempat_tahan_sl": false
     }
   ]
