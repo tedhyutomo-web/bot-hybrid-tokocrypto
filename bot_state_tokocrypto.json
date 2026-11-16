@@ -36,9 +36,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "BTC": {
-      "until": 1794828846.1742048,
-      "last_score": 70.4,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume rendah 0.34x dan memori winrate rendah 33% berisiko."
+      "until": 1794830354.0212204,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Higher-Low belum terbentuk, body tipis, tren 15M-1H masih turun."
     },
     "SOL": {
       "until": 1794830055.1361895,
