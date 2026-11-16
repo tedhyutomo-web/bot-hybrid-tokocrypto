@@ -27,6 +27,56 @@
       "filled_timestamp": 1794800870.5005736,
       "peak_verified": true,
       "tp_order_id": "218777214"
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 32019.0,
+      "qty": 11.53,
+      "entry_price_idr": 2777,
+      "tp_price_idr": 2814.0,
+      "sl_price_idr": 2727.0,
+      "highest_price_idr": 2777,
+      "rsi_at_entry": 13.2,
+      "buy_order_id": "144015741",
+      "entry_snapshot": {
+        "skor": 90.6,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 13.2,
+        "rsi_15m": 25.6,
+        "rasio_vol": 0.45,
+        "spread_pct": 0.00072,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:41.3 | Vol:0.38x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI ekstrem oversold, BTC 5M hijau dukung pantulan teknikal."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794810852.1728985
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31001,
+      "qty": 29,
+      "entry_price_idr": 1069,
+      "tp_price_idr": 1083,
+      "sl_price_idr": 1050,
+      "highest_price_idr": 1069,
+      "rsi_at_entry": 20.0,
+      "buy_order_id": "135886743",
+      "entry_snapshot": {
+        "skor": 85.5,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 20.0,
+        "rsi_15m": 30.0,
+        "rasio_vol": 4.39,
+        "spread_pct": 0.00187,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:35.6 | Vol:0.3x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold ekstrem, volume tinggi, status Lapis-1 Emas lengkap."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794811078.9390454
     }
   ],
   "realized_profit_today_idr": -2285.0,
@@ -34,13 +84,7 @@
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 5087.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {
-    "ADA": {
-      "until": 1794800347.4485383,
-      "last_score": 80.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume lemah (0.83x) dan Memori 72J rawan SL (Winrate 33%)."
-    }
-  },
+  "ai_entry_hold_until": {},
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
