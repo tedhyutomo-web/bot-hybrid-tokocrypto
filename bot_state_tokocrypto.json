@@ -11,7 +11,7 @@
       "sl_price_idr": 1057,
       "highest_price_idr": 1070,
       "rsi_at_entry": 34.5,
-      "buy_order_id": "135910239",
+      "buy_order_id": "135910443",
       "entry_snapshot": {
         "skor": 79.7,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
@@ -23,7 +23,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M naik, body candle kuat, BTC 5M mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1794844362.3577929
+      "timestamp": 1794844666.2422252
     },
     {
       "coin": "SUI",
@@ -59,7 +59,7 @@
       "entry_price_idr": 1180175000.0,
       "tp_price_idr": 1196575000.0,
       "sl_price_idr": 1158932000.0,
-      "highest_price_idr": 1181799000.0,
+      "highest_price_idr": 1181999000.0,
       "rsi_at_entry": 29.2,
       "buy_order_id": "274384821",
       "entry_snapshot": {
