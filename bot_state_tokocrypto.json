@@ -1,31 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33228.0,
-      "qty": 2.8e-05,
-      "entry_price_idr": 1186730000,
-      "tp_price_idr": 1202751000.0,
-      "sl_price_idr": 1165369000.0,
-      "highest_price_idr": 1186730000,
-      "rsi_at_entry": 10.0,
-      "buy_order_id": "274419299",
-      "entry_snapshot": {
-        "skor": 90.0,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 10.0,
-        "rsi_15m": 48.6,
-        "rasio_vol": 0.83,
-        "spread_pct": 0.00103,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:10.0 | Vol:0.83x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 10.0 oversold ekstrem, BTC 5M hijau, skor 90.0."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794872952.2792213
-    },
-    {
       "coin": "SOL",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -34,7 +9,7 @@
       "entry_price_idr": 1305695,
       "tp_price_idr": 1323322.0,
       "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1309182.0,
+      "highest_price_idr": 1309602.0,
       "rsi_at_entry": 31.9,
       "buy_order_id": "117285612",
       "entry_snapshot": {
@@ -58,13 +33,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 34646.0,
-      "qty": 1.99,
-      "entry_price_idr": 17410,
-      "tp_price_idr": 17645.0,
-      "sl_price_idr": 17097.0,
+      "qty": 1.98,
+      "entry_price_idr": 17482.0,
+      "tp_price_idr": 17718.0,
+      "sl_price_idr": 17167.0,
       "highest_price_idr": 17410,
       "rsi_at_entry": 14.9,
-      "buy_order_id": "221178450",
+      "buy_order_id": "221179132",
       "entry_snapshot": {
         "skor": 86.3,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
@@ -76,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 14.9 sangat rendah, BTC 5M hijau, potensi rebound."
       },
       "sl_hold_history": [],
-      "timestamp": 1794872953.0422187
+      "timestamp": 1794873257.6744013
     }
   ],
   "realized_profit_today_idr": -644.0,
@@ -96,6 +71,11 @@
       "until": 1794871890.8674934,
       "last_score": 91.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, BodyCandle 0%, risiko memori SL tinggi."
+    },
+    "ETH": {
+      "until": 1794873770.6230557,
+      "last_score": 85.4,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, risiko terseret meski ETH status Emas."
     }
   },
   "trade_experience_memory": [
