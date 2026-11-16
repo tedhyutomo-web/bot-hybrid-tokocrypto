@@ -9,7 +9,7 @@
       "entry_price_idr": 33173000,
       "tp_price_idr": 33621000.0,
       "sl_price_idr": 32576000.0,
-      "highest_price_idr": 33206000.0,
+      "highest_price_idr": 33278000.0,
       "rsi_at_entry": 32.6,
       "buy_order_id": "218754771",
       "entry_snapshot": {
@@ -27,21 +27,39 @@
       "filled_timestamp": 1794791946.6631227,
       "peak_verified": true,
       "tp_order_id": "218755595"
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 61218,
+      "qty": 57,
+      "entry_price_idr": 1074,
+      "tp_price_idr": 1088.0,
+      "sl_price_idr": 1055.0,
+      "highest_price_idr": 1074,
+      "rsi_at_entry": 32.1,
+      "buy_order_id": "135877134",
+      "entry_snapshot": {
+        "skor": 84.7,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 32.1,
+        "rsi_15m": 36.7,
+        "rasio_vol": 0.52,
+        "spread_pct": 0.00278,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:48.6)",
+        "alasan_ai": "[gemini-3-flash-preview#K4] YA - RSI 5M oversold, tren besar naik, limit buy di support."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794794954.2190783
     }
   ],
   "realized_profit_today_idr": -1953.0,
   "completed_trades_today": 21,
   "last_reset_date": "2026-11-16",
   "loss_to_recover_idr": 4755.0,
-  "sl_cooldown_until": {
-    "SUI": 1794795622.6166584
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794789324.1568873,
-      "last_score": 78.0,
-      "reason": "[gemini-3-flash-preview#K3] TUNDA - Volume 0.26x terlalu rendah, rawan bull-trap tanpa dorongan likuiditas."
-    },
     "ADA": {
       "until": 1794793748.6464143,
       "last_score": 83.0,
