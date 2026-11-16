@@ -1,48 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 33135.0,
-      "qty": 2.48,
-      "entry_price_idr": 13361,
-      "tp_price_idr": 13541.0,
-      "sl_price_idr": 13121.0,
-      "highest_price_idr": 13361.0,
-      "rsi_at_entry": 37.7,
-      "buy_order_id": "44183849",
-      "entry_snapshot": {
-        "skor": 81.7,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 37.7,
-        "rsi_15m": 42.3,
-        "rasio_vol": 65.8,
-        "spread_pct": 0.00262,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP (RSI 5M:31.7)",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren selaras, volume masif, SUI kuat saat BTC koreksi."
-      },
-      "sl_hold_history": [
-        {
-          "ts": 1794792250.9164426,
-          "pnl_bid_pct": -0.010627947009954345,
-          "tren_detail": "5M:DN/15M:UP/1H:UP",
-          "rsi_5m": 21.6,
-          "rsi_15m": 49.8,
-          "rasio_vol": 0.01,
-          "alasan_ai": "[gemini-3-flash-preview#K5] TAHAN - RSI 5M oversold ekstrem, tren 15M/1H UP, potensi pantulan."
-        }
-      ],
-      "timestamp": 1794790304.6505244,
-      "filled_timestamp": 1794790530.4496684,
-      "peak_verified": true,
-      "tp_order_id": "44184196",
-      "last_sl_eval_ts": 1794792250.9164426,
-      "last_sl_eval_price_idr": 13219,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K5] TAHAN - RSI 5M oversold ekstrem, tren 15M/1H UP, potensi pantulan.",
-      "last_eval_was_hard_sl": false
-    },
-    {
       "coin": "ETH",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -71,11 +29,13 @@
       "tp_order_id": "218755595"
     }
   ],
-  "realized_profit_today_idr": -1590.0,
-  "completed_trades_today": 19,
+  "realized_profit_today_idr": -2127.0,
+  "completed_trades_today": 20,
   "last_reset_date": "2026-11-16",
-  "loss_to_recover_idr": 4392.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 4929.0,
+  "sl_cooldown_until": {
+    "SUI": 1794795622.6166584
+  },
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794789324.1568873,
@@ -231,6 +191,36 @@
       "pnl_pct": 0.23,
       "pnl_idr": 147.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794792922.6166615,
+      "waktu": "16/11 08:35",
+      "coin": "SUI",
+      "style": "GRID",
+      "skor": 81.7,
+      "tren_detail": "5M:UP/15M:UP/1H:UP",
+      "rsi_5m": 37.7,
+      "rsi_15m": 42.3,
+      "rasio_vol": 65.8,
+      "pnl_pct": -1.62,
+      "pnl_idr": -537.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794792922.6166615,
+      "waktu": "16/11 08:35",
+      "coin": "SUI",
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 21.6,
+      "rsi_15m": 49.8,
+      "rasio_vol": 0.01,
+      "minus_awal_pct": -1.06,
+      "pnl_akhir_pct": -1.62,
+      "pnl_idr": -537.0
     }
   ]
 }
