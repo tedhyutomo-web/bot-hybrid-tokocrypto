@@ -10,6 +10,11 @@
       "until": 1794908717.236986,
       "last_score": 83.3,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC 5M/15M DN, struktur ETH 5M belum Higher-Low."
+    },
+    "SUI": {
+      "until": 1794920055.9906003,
+      "last_score": 90.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC RSI 84.2 overbought, body 0%, waspada memori SL beruntun."
     }
   },
   "trade_experience_memory": [
