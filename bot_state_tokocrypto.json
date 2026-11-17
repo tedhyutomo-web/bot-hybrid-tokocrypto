@@ -1,56 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SOL",
-      "style": "SNIPER",
-      "status": "WAITING_BUY",
-      "capital_idr": 33729.0,
-      "qty": 0.0249,
-      "entry_price_idr": 1354597,
-      "tp_price_idr": 1384398.0,
-      "sl_price_idr": 1339696.0,
-      "highest_price_idr": 1354597,
-      "rsi_at_entry": 49.3,
-      "buy_order_id": "117386815",
-      "entry_snapshot": {
-        "skor": 79.2,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 49.3,
-        "rsi_15m": 70.6,
-        "rasio_vol": 0.47,
-        "spread_pct": 0.00155,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:61.1 | Vol:6.31x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Kompas BTC 5M hijau mendukung struktur SOL yang bullish."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794926351.4114852
-    },
-    {
-      "coin": "SOL",
-      "style": "SNIPER",
-      "status": "WAITING_BUY",
-      "capital_idr": 33729.0,
-      "qty": 0.0249,
-      "entry_price_idr": 1354597,
-      "tp_price_idr": 1384398.0,
-      "sl_price_idr": 1339696.0,
-      "highest_price_idr": 1354597,
-      "rsi_at_entry": 49.3,
-      "buy_order_id": "117386820",
-      "entry_snapshot": {
-        "skor": 79.2,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 49.3,
-        "rsi_15m": 70.6,
-        "rasio_vol": 0.47,
-        "spread_pct": 0.00155,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:61.1 | Vol:6.31x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Kompas BTC 5M hijau mendukung struktur SOL yang bullish."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794926351.8995934
-    },
-    {
       "coin": "XRP",
       "style": "SNIPER",
       "status": "HOLDING_FOR_TP",
@@ -94,6 +44,11 @@
       "until": 1794921388.6360576,
       "last_score": 75.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, ETH belum Higher-Low, winrate memori rendah."
+    },
+    "DOGE": {
+      "until": 1794927108.9715102,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M jatuh beruntun dan RSI 15M DOGE jenuh."
     }
   },
   "trade_experience_memory": [
