@@ -29,29 +29,29 @@
       "tp_order_id": "221216883"
     },
     {
-      "coin": "BTC",
+      "coin": "SUI",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 61133.0,
-      "qty": 5.2e-05,
-      "entry_price_idr": 1175627000,
-      "tp_price_idr": 1191498000,
-      "sl_price_idr": 1154466000,
-      "highest_price_idr": 1175627000,
-      "rsi_at_entry": 23.3,
-      "buy_order_id": "274459644",
+      "capital_idr": 61941.0,
+      "qty": 4.7,
+      "entry_price_idr": 13179,
+      "tp_price_idr": 13357.0,
+      "sl_price_idr": 12942.0,
+      "highest_price_idr": 13179,
+      "rsi_at_entry": 42.9,
+      "buy_order_id": "44342868",
       "entry_snapshot": {
-        "skor": 83.0,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 23.3,
-        "rsi_15m": 23.6,
-        "rasio_vol": 1.65,
-        "spread_pct": 0.00017,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:23.3 | Vol:1.65x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, candle 5M hijau, volume tinggi, pola historis profit."
+        "skor": 75.5,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 42.9,
+        "rsi_15m": 38.7,
+        "rasio_vol": 0.73,
+        "spread_pct": 0.00319,
+        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:32.4 | Vol:0.3x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, BTC oversold tertahan, historis winrate 71% mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1794907678.1416023
+      "timestamp": 1794907898.0621262
     }
   ],
   "realized_profit_today_idr": -1161.0,
