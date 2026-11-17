@@ -9,7 +9,7 @@
       "entry_price_idr": 1313505,
       "tp_price_idr": 1337148.0,
       "sl_price_idr": 1292489.0,
-      "highest_price_idr": 1324716.0,
+      "highest_price_idr": 1325903.0,
       "rsi_at_entry": 51.6,
       "buy_order_id": "117304112",
       "entry_snapshot": {
@@ -26,7 +26,10 @@
       "timestamp": 1794882853.775503,
       "filled_timestamp": 1794882925.8051026,
       "peak_verified": true,
-      "tp_order_id": "117304282"
+      "tp_order_id": "117304282",
+      "last_tp_eval_ts": 1794885631.0344555,
+      "last_tp_eval_bid_idr": 1325903,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC 5M hijau mendukung rebound SOL menuju target TP."
     }
   ],
   "realized_profit_today_idr": -358.0,
