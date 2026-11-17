@@ -37,22 +37,22 @@ MAX_SPREAD_INDODAX_PCT = 0.0035        # Maksimal toleransi Bid-Ask Spread Indod
 DAILY_LOSS_LIMIT_PCT = -0.025          # Batas rugi harian (-2.5% modal) untuk menyalakan Circuit Breaker
 SL_COOLDOWN_MINUTES = 45               # Masa tenang 45 menit untuk koin yang baru terkena SL (Anti-Whipsaw)
 
-# Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR Rupiah Indodax)
-TP_EARLY_EMAS_PCT = 0.0110             # +1.10% Target TP realistis khusus Lapis 2 (Early Entry Emas 5M)
-TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi
-TP_GRID_MAX_PCT = 0.0220               # +2.20% Target TP maksimal mode Grid saat volatilitas tinggi
-SL_GRID_BASE_PCT = 0.0180              # -1.80% Batas Hard SL mode Grid
+# Parameter Target TP & SL Dinamis (Asymmetric Risk/Reward: Biarkan Profit Lari, Potong SL Cepat!)
+TP_EARLY_EMAS_PCT = 0.0165             # +1.65% Target TP minimal Lapis 2 (agar profit bersih > +1.10% setelah fee)
+TP_GRID_MIN_PCT = 0.0185               # +1.85% Target TP minimal mode Grid
+TP_GRID_MAX_PCT = 0.0280               # +2.80% Target TP maksimal mode Grid saat volatilitas tinggi
+SL_GRID_BASE_PCT = 0.0115              # -1.15% Batas Hard SL ketat mode Grid (pangkas rugi lebih cepat)
 
-TP_SNIPER_MIN_PCT = 0.0180             # +1.80% Target TP minimal mode Sniper saat pasar moderat
-TP_SNIPER_MAX_PCT = 0.0340             # +3.40% Target TP maksimal mode Sniper saat breakout kencang
-SL_SNIPER_BASE_PCT = 0.0160            # -1.60% Batas Hard SL mode Sniper
-EMERGENCY_SL_PCT = -0.0300             # -3.00% Batas Darurat Mutlak (Wajib Cut Loss tanpa bisa ditahan)
+TP_SNIPER_MIN_PCT = 0.0220             # +2.20% Target TP minimal mode Sniper
+TP_SNIPER_MAX_PCT = 0.0380             # +3.80% Target TP maksimal mode Sniper saat breakout kencang
+SL_SNIPER_BASE_PCT = 0.0110            # -1.10% Batas Hard SL ketat mode Sniper
+EMERGENCY_SL_PCT = -0.0220             # -2.20% Batas Darurat Mutlak (Wajib Cut Loss tanpa bisa ditahan)
 
-# Parameter Penyelamatan Profit Berlapis (Poin 1) & Entry Dinamis (Poin 3)
-SCRATCH_PROFIT_BID_PCT = 0.0060        # > +0.60% pada harga Bid (sudah untung di atas fee 0.55%) saat tren patah
-TP_RANGE_MIN_PROFIT_PCT = 0.0095       # >= +0.95% untuk pengamanan puncak terlewat (TP Range)
-TIME_STOP_HOURS = 1.0                  # Jika posisi ditahan >= 1.0 jam & profit >= +0.62% di pasar sepi, cairkan profit
-TIME_STOP_MIN_PROFIT_PCT = 0.0100      # Minimal profit +1.00% untuk Time-Based Exit
+# Parameter Pengawalan Profit & Entry Dinamis
+SCRATCH_PROFIT_BID_PCT = 0.0105        # Minimal +1.05% pada harga Bid untuk evaluasi Dynamic TP (hentikan jual receh!)
+TP_RANGE_MIN_PROFIT_PCT = 0.0115       # >= +1.15% untuk pengamanan koreksi dari puncak (TP Range)
+TIME_STOP_HOURS = 3.0                  # Hanya evaluasi rotasi waktu jika tertahan >= 3.0 jam dan sudah untung >= +0.90%
+TIME_STOP_MIN_PROFIT_PCT = 0.0090      # Minimal profit +0.90% Bid (untung bersih +0.35%) untuk Time-Stop
 DYNAMIC_ENTRY_SHIFT_PCT = 0.0035       # Geser antrean Limit Buy jika harga entry ideal berubah >= 0.35%
 REVIEW_ENTRY_HOURS = 1.5               # Batas maksimal antrean Limit Buy yang belum terjemput (1.5 jam)
 
@@ -86,8 +86,8 @@ def tanggal_wib_hari_ini():
     tz_wib = timezone(timedelta(hours=7))
     return datetime.now(tz_wib).strftime("%Y-%m-%d")
 
-MEMORY_RETENTION_HOURS = 72.0          # Durasi simpan memori pengalaman: 72 Jam (3 Hari)
-MAX_EPISODIC_MEMORY_ITEMS = 60         # Maksimal menyimpan 60 transaksi selesai terakhir (Menang & Kalah)
+MEMORY_RETENTION_HOURS = 168.0         # Durasi simpan memori pengalaman: 168 Jam (7 Hari / 1 Minggu Penuh)
+MAX_EPISODIC_MEMORY_ITEMS = 100        # Maksimal menyimpan 100 transaksi selesai terakhir (Menang & Kalah)
 
 def muat_state_bot():
     tgl_skrg = tanggal_wib_hari_ini()
@@ -433,15 +433,15 @@ def ambil_harga_idr_semua_koin():
     return harga_map
 
 def hitung_tp_sl_dinamis_atr(coin, entry_idr, gaya, atr_5m_pct):
-    target_ayunan_pasar = atr_5m_pct * 4.5
+    target_ayunan_pasar = atr_5m_pct * 5.0
     if gaya == "SNIPER":
-        tp_pct = min(TP_SNIPER_MAX_PCT, max(TP_SNIPER_MIN_PCT, target_ayunan_pasar))
+        tp_pct = min(TP_SNIPER_MAX_PCT, max(TP_SNIPER_MIN_PCT, target_ayunan_pasar * 1.15))
         sl_pct = SL_SNIPER_BASE_PCT
     elif gaya == "EARLY_EMAS":
-        tp_pct = min(0.0150, max(TP_EARLY_EMAS_PCT, target_ayunan_pasar * 0.75))
-        sl_pct = 0.0150  # SL lebih ketat (-1.50%) khusus Lapis 2
+        tp_pct = min(0.0220, max(TP_EARLY_EMAS_PCT, target_ayunan_pasar * 0.90))
+        sl_pct = 0.0105  # SL ekstra rapat (-1.05%) khusus Lapis 2 agar risikonya sangat kecil
     else:
-        tp_pct = min(TP_GRID_MAX_PCT, max(TP_GRID_MIN_PCT, target_ayunan_pasar * 0.85))
+        tp_pct = min(TP_GRID_MAX_PCT, max(TP_GRID_MIN_PCT, target_ayunan_pasar))
         sl_pct = SL_GRID_BASE_PCT
 
     tp_idr = bulatkan_harga_indodax(coin, entry_idr * (1.0 + tp_pct))
@@ -1172,36 +1172,39 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             lama_pegang_jam = (now_ts - float(slot.get("filled_timestamp", slot.get("timestamp", now_ts)))) / 3600.0
             estimasi_nilai_jual_skrg = qty_milik_slot * harga_eksekusi_jual
 
-            # Cek Pemicu Dynamic Technical TP (Normal >= +0.70% Bid, atau >= +0.62% jika sudah tertahan >= 1.0 Jam di pasar sepi!)
+            # ASYMMETRIC PROFIT RIDE: Jangan potong profit saat baru naik receh (+0.62% s/d +0.95%)!
+            # Biarkan Trailing Profit Lock mengawal kenaikan koin, dan hanya panggil Dynamic TP jika:
+            # 1) Sudah untung tebal (Bid >= +1.05%, atau >= +0.90% jika sudah tertahan >= 3.0 jam), DAN
+            # 2) Terjadi koreksi nyata dari puncak atau patah tren di zona profit tinggi.
             sudah_kelamaan_di_pasar_sepi = (lama_pegang_jam >= TIME_STOP_HOURS)
-            batas_pemicu_eval_tp_pct = 0.0062 if sudah_kelamaan_di_pasar_sepi else 0.0070
-            batas_lantai_eksekusi_pct = 0.0060 if sudah_kelamaan_di_pasar_sepi else 0.0065
+            batas_pemicu_eval_tp_pct = TIME_STOP_MIN_PROFIT_PCT if sudah_kelamaan_di_pasar_sepi else SCRATCH_PROFIT_BID_PCT
+            batas_lantai_eksekusi_pct = 0.0085 if sudah_kelamaan_di_pasar_sepi else 0.0100
             sedang_untung_aman_bid = (kenaikan_bid_pct >= batas_pemicu_eval_tp_pct)
             candle_5m_merah = not (info_pasar.get("candle_5m_hijau", True) if info_pasar else True)
             tren_5m_patah = not (info_pasar.get("tren_5m_naik", True) if info_pasar else True)
             candle_jatuh = bool(info_pasar.get("candle_jatuh_beruntun", False)) if info_pasar else False
 
             sinyal_teknikal_melemah = (
-                tren_5m_patah
+                (tren_5m_patah and candle_5m_merah)
                 or candle_jatuh
-                or (candle_5m_merah and (tren_sekarang != "UPTREND" or rsi_sekarang < 52.0))
             )
             sinyal_koreksi_puncak = (
-                (pencapaian_puncak_ke_tp >= 0.60 or kenaikan_puncak_pct >= 0.0085)
-                and harga_bid_asli <= puncak_tercatat * 0.9970
+                (pencapaian_puncak_ke_tp >= 0.65 or kenaikan_puncak_pct >= 0.0125)
+                and harga_bid_asli <= puncak_tercatat * 0.9965
             )
             sinyal_momentum_melambat = (
-                kenaikan_bid_pct >= 0.0090
-                and (tren_sekarang != "UPTREND" or info_pasar.get("gaya", "") not in ["SNIPER", "GRID"])
+                kenaikan_bid_pct >= 0.0130
+                and candle_5m_merah
+                and (tren_sekarang != "UPTREND" or rsi_sekarang >= 68.0)
             ) if info_pasar else False
-            sinyal_untung_besar_dekat_tp = (kenaikan_bid_pct >= 0.0115 or pencapaian_bid_ke_tp >= 0.75)
-            sinyal_time_stop_pasar_sepi = (sudah_kelamaan_di_pasar_sepi and sedang_untung_aman_bid)
+            sinyal_untung_besar_dekat_tp = (kenaikan_bid_pct >= 0.0165 or pencapaian_bid_ke_tp >= 0.85)
+            sinyal_time_stop_pasar_sepi = (sudah_kelamaan_di_pasar_sepi and sedang_untung_aman_bid and candle_5m_merah)
 
             waktu_eval_tp_terakhir = float(slot.get("last_tp_eval_ts", 0.0))
             bid_eval_tp_terakhir = float(slot.get("last_tp_eval_bid_idr", harga_eksekusi_jual))
             lewat_jeda_eval_tp = (now_ts - waktu_eval_tp_terakhir) >= 300.0
-            profit_terkikis = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) <= -0.0020
-            profit_melonjak_baru = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) >= 0.0030
+            profit_terkikis = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) <= -0.0025
+            profit_melonjak_baru = ((harga_eksekusi_jual - bid_eval_tp_terakhir) / entry_idr) >= 0.0040
 
             butuh_evaluasi_tp_dini = (
                 sedang_untung_aman_bid
@@ -1215,14 +1218,14 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 and (lewat_jeda_eval_tp or profit_terkikis or profit_melonjak_baru)
             )
 
-            # Cek Pemicu Evaluasi Minus Dini (<= -1.00%) & Hard SL
+            # Cek Pemicu Evaluasi Minus Dini (Diperketat ke <= -0.85% agar rugi cepat dipangkas!) & Hard SL
             kena_hard_sl = (harga_sekarang <= sl_idr) or (harga_eksekusi_jual <= sl_idr)
-            kena_zona_minus_dini = (kenaikan_bid_pct <= -0.0100 or kenaikan_skrg_pct <= -0.0100)
+            kena_zona_minus_dini = (kenaikan_bid_pct <= -0.0085 or kenaikan_skrg_pct <= -0.0085)
             acuan_harga_eval_skrg = min(harga_sekarang, harga_eksekusi_jual)
             waktu_eval_sl_terakhir = float(slot.get("last_sl_eval_ts", 0.0))
             harga_eval_sl_terakhir = float(slot.get("last_sl_eval_price_idr", entry_idr))
-            lewat_jeda_eval_sl = (now_ts - waktu_eval_sl_terakhir) >= 600.0
-            turun_makin_dalam = ((acuan_harga_eval_skrg - harga_eval_sl_terakhir) / harga_eval_sl_terakhir) <= -0.0025
+            lewat_jeda_eval_sl = (now_ts - waktu_eval_sl_terakhir) >= 300.0
+            turun_makin_dalam = ((acuan_harga_eval_skrg - harga_eval_sl_terakhir) / harga_eval_sl_terakhir) <= -0.0020
             naik_level_ke_hard_sl = kena_hard_sl and not bool(slot.get("last_eval_was_hard_sl", False))
 
             butuh_sl = (
@@ -1291,11 +1294,11 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 continue
 
             if butuh_sl and estimasi_nilai_jual_skrg >= MIN_LIMIT_ORDER_INDODAX_IDR:
-                label_sl = "HARD STOP LOSS" if kena_hard_sl else "EVALUASI CUT LOSS DINI (MINUS >1%)"
+                label_sl = "HARD STOP LOSS" if kena_hard_sl else "EVALUASI CUT LOSS DINI (MINUS >0.85%)"
                 sl_dini_bahaya_kuantitatif = (
-                    kenaikan_bid_pct <= -0.0115
+                    kenaikan_bid_pct <= -0.0095
                     and tren_5m_patah
-                    and (candle_jatuh or (candle_5m_merah and rsi_sekarang < 38.0))
+                    and (candle_jatuh or (candle_5m_merah and rsi_sekarang < 42.0))
                 )
                 sl_cadangan_setuju = bool(kena_hard_sl or sl_dini_bahaya_kuantitatif)
                 alasan_sl_cadangan = (
@@ -1408,7 +1411,6 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
     state["sl_cooldown_until"] = koin_masih_cooldown
 
     info_btc = peta_analisa.get("BTC", {})
-    info_btc = peta_analisa.get("BTC", {})
     btc_sedang_dump = str(info_btc.get("prediksi", "")).startswith("🔴 BAHAYA") and info_btc.get("rsi", 50.0) < 36.0
     btc_jatuh_beruntun_5m = bool(info_btc.get("candle_jatuh_beruntun", False))
     btc_candle_hijau_5m = bool(info_btc.get("candle_5m_hijau", False))
@@ -1470,14 +1472,28 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 alasan_tahan = f"Belum ada koin lolos Lapis-1 Emas / Lapis-2 Early 5M (Skor >= {skor_minimal_sesi}{info_cd}{info_ai_hold})"
             pesan_status_anggaran = f"⏸️ [AI WAIT / CASH IS KING]{info_rec} Dana Rp{saldo_idr_tersedia:,.0f} aman di Rupiah ({alasan_tahan})."
         else:
-            jumlah_siap = len(kandidat_siap_entry)
-            total_bobot = sum(k.get("bobot_alokasi", k["skor"]) for k in kandidat_siap_entry)
             sisa_kas_simulasi = saldo_idr_tersedia
+            
+            # PENGUNCI ALOKASI RATA 3 SLOT: Maksimal plafon per koin adalah ~33.5% dari modal bot (Rp33.500)
+            # agar 1 koin tidak rakus menghabiskan Rp45rb-60rb dan menyisakan jatah aman untuk koin ke-2 & ke-3.
+            plafon_maks_per_slot = math.floor(MAX_BOT_CAPITAL_IDR / MAX_CONCURRENT_COINS) + 500.0  # Rp33.833 untuk batas 3 koin
 
-            if jumlah_siap == 1 and sisa_slot_maks >= 2 and saldo_idr_tersedia >= (MIN_NEW_BUY_ALLOCATION_IDR * 2):
-                k_tunggal = kandidat_siap_entry[0]
-                rasio_status = MAX_SINGLE_COIN_CAP_PCT if k_tunggal["gaya"] == "SNIPER" else 0.38
-                anggaran_sesi_ini = max(MIN_NEW_BUY_ALLOCATION_IDR + 1000.0, min(saldo_idr_tersedia, math.floor(MAX_BOT_CAPITAL_IDR * rasio_status)))
+            for idx_k, kandidat in enumerate(kandidat_siap_entry):
+                if sisa_kas_simulasi < MIN_NEW_BUY_ALLOCATION_IDR:
+                    break
+
+                # Setiap koin HANYA boleh mengambil maksimal jatah per slot (Rp33.833) atau sisa kas nyata (jika sisa kas lebih kecil)
+                alokasi_idr = min(sisa_kas_simulasi, plafon_maks_per_slot)
+
+                # Syarat wajib keselamatan Indodax: Alokasi tidak boleh lebih kecil dari buffer minimal (Rp32.000)
+                if alokasi_idr < MIN_NEW_BUY_ALLOCATION_IDR:
+                    continue
+
+                coin = kandidat["coin"]
+                entry_idr = kandidat["entry_ideal_idr"]
+                qty_rencana = hitung_kuantitas_koin(coin, alokasi_idr, entry_idr)
+                nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
+
             else:
                 anggaran_sesi_ini = saldo_idr_tersedia
 
@@ -1746,12 +1762,19 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             log_aksi.append(pesan)
             log_transaksi.append(pesan)
 
-        if item["kenaikan_bid_pct"] >= 0.0115:
-            sl_kunci_untung = bulatkan_harga_indodax(coin, entry_idr * 1.0068)
+        # DYNAMIC TRAILING PROFIT LOCK: Begitu Bid nyata menyentuh >= +1.00%, kunci SL minimal di +0.68%,
+        # dan jika koin terus terbang tinggi (misal +2.5%), SL otomatis ikut mendaki 0.35% di bawah puncak Bid!
+        if item["kenaikan_bid_pct"] >= 0.0100:
+            puncak_bid_slot = max(float(slot.get("highest_price_idr", entry_idr)), item["harga_bid_asli"])
+            sl_lantai_untung = entry_idr * 1.0068
+            sl_buntut_puncak = puncak_bid_slot * 0.9965
+            sl_kunci_untung = bulatkan_harga_indodax(coin, max(sl_lantai_untung, sl_buntut_puncak))
             if sl_kunci_untung > slot["sl_price_idr"]:
                 slot["sl_price_idr"] = sl_kunci_untung
+                pct_kunci = ((sl_kunci_untung - entry_idr) / entry_idr) * 100.0
                 log_aksi.append(
-                    f"🔒 [TRAILING PROFIT LOCK] {coin} Bid nyata naik +{item['kenaikan_bid_pct']*100:.2f}%! SL dikunci di zona untung Rp{sl_kunci_untung:,.0f}."
+                    f"🔒 [DYNAMIC TRAILING LOCK] {coin} Bid naik +{item['kenaikan_bid_pct']*100:.2f}%! "
+                    f"SL didorong naik mengunci profit di Rp{sl_kunci_untung:,.0f} (+{pct_kunci:.2f}%)."
                 )
 
         status_tp_order = f"OrderTP:#{slot.get('tp_order_id')}" if slot.get("tp_order_id") else "TP-Aktif"
