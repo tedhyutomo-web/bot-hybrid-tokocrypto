@@ -1,31 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 42895.0,
-      "qty": 3.6e-05,
-      "entry_price_idr": 1191518000,
-      "tp_price_idr": 1207603000.0,
-      "sl_price_idr": 1170071000.0,
-      "highest_price_idr": 1191518000,
-      "rsi_at_entry": 49.7,
-      "buy_order_id": "274445280",
-      "entry_snapshot": {
-        "skor": 75.7,
-        "tren_detail": "5M:UP/15M:DN/1H:UP",
-        "rsi_5m": 49.7,
-        "rsi_15m": 57.8,
-        "rasio_vol": 0.63,
-        "spread_pct": 6e-05,
-        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:49.7 | Vol:0.63x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Winrate historis 83% tinggi, struktur 5M hijau mendukung grid."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794893353.2078032
-    },
-    {
       "coin": "SUI",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -34,11 +9,36 @@
       "entry_price_idr": 13366,
       "tp_price_idr": 13546.0,
       "sl_price_idr": 13125.0,
-      "highest_price_idr": 13388.0,
+      "highest_price_idr": 13391.0,
       "filled_timestamp": 1794893492.9823248,
       "timestamp": 1794893492.9823256,
       "tp_order_id": "44328836",
       "peak_verified": true
+    },
+    {
+      "coin": "SOL",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 44997.0,
+      "qty": 0.0336,
+      "entry_price_idr": 1339203,
+      "tp_price_idr": 1363309.0,
+      "sl_price_idr": 1317776.0,
+      "highest_price_idr": 1339203,
+      "rsi_at_entry": 62.0,
+      "buy_order_id": "117323409",
+      "entry_snapshot": {
+        "skor": 82.8,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 62.0,
+        "rsi_15m": 78.3,
+        "rasio_vol": 1.11,
+        "spread_pct": 0.00118,
+        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:45.6 | Vol:0.79x",
+        "alasan_ai": "[gemini-3-flash-preview#K4] YA - Tren selaras, volume kuat, BTC tertahan bukan jatuh beruntun."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794893798.9687717
     }
   ],
   "realized_profit_today_idr": -109.0,
