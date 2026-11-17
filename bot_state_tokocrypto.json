@@ -1,29 +1,44 @@
 {
   "active_slots": [
     {
-      "coin": "XRP",
-      "style": "SNIPER",
+      "coin": "BTC",
+      "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 44999.0,
-      "qty": 2.54,
-      "entry_price_idr": 17716,
-      "tp_price_idr": 18035,
-      "sl_price_idr": 17433,
-      "highest_price_idr": 17716,
-      "rsi_at_entry": 55.9,
-      "buy_order_id": "221211233",
+      "capital_idr": 42895.0,
+      "qty": 3.6e-05,
+      "entry_price_idr": 1191518000,
+      "tp_price_idr": 1207603000.0,
+      "sl_price_idr": 1170071000.0,
+      "highest_price_idr": 1191518000,
+      "rsi_at_entry": 49.7,
+      "buy_order_id": "274445280",
       "entry_snapshot": {
-        "skor": 71.7,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 55.9,
-        "rsi_15m": 62.1,
-        "rasio_vol": 0.23,
-        "spread_pct": 0.00102,
-        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:48.1 | Vol:0.61x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, tren mikro naik, limit buy amankan posisi."
+        "skor": 75.7,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 49.7,
+        "rsi_15m": 57.8,
+        "rasio_vol": 0.63,
+        "spread_pct": 6e-05,
+        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:49.7 | Vol:0.63x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Winrate historis 83% tinggi, struktur 5M hijau mendukung grid."
       },
       "sl_hold_history": [],
-      "timestamp": 1794893272.7043257
+      "timestamp": 1794893353.2078032
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 26732.0,
+      "qty": 2.0,
+      "entry_price_idr": 13366,
+      "tp_price_idr": 13546.0,
+      "sl_price_idr": 13125.0,
+      "highest_price_idr": 13388.0,
+      "filled_timestamp": 1794893492.9823248,
+      "timestamp": 1794893492.9823256,
+      "tp_order_id": "44328836",
+      "peak_verified": true
     }
   ],
   "realized_profit_today_idr": -109.0,
@@ -36,11 +51,6 @@
       "until": 1794893347.2535295,
       "last_score": 93.5,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - RSI 15M jenuh beli dan BodyCandle nol rawan koreksi."
-    },
-    "SUI": {
-      "until": 1794893347.2535295,
-      "last_score": 89.6,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BodyCandle nol dan tren 1H turun, momentum belum valid."
     }
   },
   "trade_experience_memory": [
