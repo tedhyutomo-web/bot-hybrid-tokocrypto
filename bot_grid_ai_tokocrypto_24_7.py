@@ -1024,17 +1024,32 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
             umur_antre_menit = (now_ts - float(slot.get("timestamp", now_ts))) / 60.0
             umur_antre_jam = umur_antre_menit / 60.0
 
+            # GRACE PERIOD 15 MENIT: Jangan batalkan antrean beli yang baru berumur < 15 menit hanya karena
+            # pergantian candle 5M (SIDEWAYS/PULLBACK). Hanya batalkan instan (< 15m) jika jatuh ke WAIT_DOWNTREND!
+            sedang_bahaya_turun = bool(
+                info_pasar and (
+                    info_pasar.get("gaya") == "WAIT_DOWNTREND"
+                    or info_pasar.get("candle_jatuh_beruntun") is True
+                    or info_pasar.get("spread_pct", 0.0) > MAX_SPREAD_INDODAX_PCT * 1.5
+                )
+            )
             masih_layak_entry = bool(
                 info_pasar
-                and info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
-                and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
+                and not sedang_bahaya_turun
+                and (
+                    umur_antre_menit < 15.0
+                    or (
+                        info_pasar.get("teknikal_valid", info_pasar.get("siap_entry", False)) is True
+                        and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE
+                    )
+                )
             )
             if not masih_layak_entry:
                 batalkan_order_indodax(coin, slot.get("buy_order_id"))
                 dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
                 ada_eksekusi_penting = True
                 pesan = (
-                    f"🔄 [DYNAMIC CANCEL & REALOKASI INSTAN] Antrean beli {coin} dibatalkan karena status berubah "
+                    f"🔄 [DYNAMIC CANCEL & REALOKASI INSTAN] Antrean beli {coin} ({umur_antre_menit:.0f}m) dibatalkan karena status berubah "
                     f"({prediksi_koin}). Modal Rp{slot.get('capital_idr', 0):,.0f} dialihkan ke koin siap_entry lainnya!"
                 )
                 log_aksi.append(pesan)
@@ -1088,8 +1103,10 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         # KASUS B: HOLDING_FOR_TP
         if slot["status"] == "HOLDING_FOR_TP":
             batas_habis_slot = max(5000.0 / harga_sekarang, qty_slot * 0.50) if harga_sekarang > 0 else 0.0
-            # 1. Jika koin di dompet sudah habis (< Rp5.000), berarti sudah TERJUAL (baik lewat Limit TP maupun manual/tanpa tp_order_id)
+            # 1. Jika koin di dompet sudah habis (< Rp5.000), berarti sudah TERJUAL (baik 100% maupun 98%-99% menyisakan debu)
             if dompet["terhubung"] and total_koin_tersisa < batas_habis_slot:
+                if slot.get("tp_order_id"):
+                    batalkan_order_indodax(coin, slot.get("tp_order_id"))
                 harga_jual_acuan = tp_idr if slot.get("tp_order_id") else max(tp_idr, harga_bid_asli)
                 kenaikan_tp_pct = (harga_jual_acuan - entry_idr) / entry_idr
                 pnl_bersih_tp = kenaikan_tp_pct - FEE_ROUNDTRIP_MAKER_PCT
