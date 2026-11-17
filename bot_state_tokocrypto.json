@@ -1,54 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 26732.0,
-      "qty": 2.0,
-      "entry_price_idr": 13366,
-      "tp_price_idr": 13546.0,
-      "sl_price_idr": 13125.0,
-      "highest_price_idr": 13366.0,
-      "filled_timestamp": 1794893492.9823248,
-      "timestamp": 1794893492.9823256,
-      "tp_order_id": "44328836",
-      "peak_verified": true,
-      "last_sl_eval_ts": 1794903246.9183614,
-      "last_sl_eval_price_idr": 13227.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, tren makro UP, tunggu pantulan mikro.",
-      "last_eval_was_hard_sl": false,
-      "sl_hold_history": [
-        {
-          "ts": 1794897398.7829578,
-          "pnl_bid_pct": -0.01264402214574293,
-          "tren_detail": "5M:UP/15M:UP/1H:DN",
-          "rsi_5m": 36.4,
-          "rsi_15m": 68.1,
-          "rasio_vol": 1.08,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - BTC RSI 9.3 oversold ekstrem, potensi pantulan teknikal segera."
-        },
-        {
-          "ts": 1794898057.2999363,
-          "pnl_bid_pct": -0.010773604668562023,
-          "tren_detail": "5M:UP/15M:UP/1H:DN",
-          "rsi_5m": 31.6,
-          "rsi_15m": 48.3,
-          "rasio_vol": 0.15,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - BTC RSI 0.0 oversold, tren 15M SUI masih UP."
-        },
-        {
-          "ts": 1794903246.9183614,
-          "pnl_bid_pct": -0.008753553793206643,
-          "tren_detail": "5M:DN/15M:UP/1H:UP",
-          "rsi_5m": 30.0,
-          "rsi_15m": 44.7,
-          "rasio_vol": 4.5,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, tren makro UP, tunggu pantulan mikro."
-        }
-      ]
-    },
-    {
       "coin": "ADA",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -105,11 +57,13 @@
       "tp_order_id": "221216883"
     }
   ],
-  "realized_profit_today_idr": -109.0,
-  "completed_trades_today": 6,
+  "realized_profit_today_idr": -604.0,
+  "completed_trades_today": 7,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 3668.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 4163.0,
+  "sl_cooldown_until": {
+    "SUI": 1794907154.1348345
+  },
   "ai_entry_hold_until": {
     "DOGE": {
       "until": 1794894924.3900478,
@@ -537,6 +491,36 @@
       "pnl_pct": 0.4,
       "pnl_idr": 249.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794904454.1348367,
+      "waktu": "17/11 15:34",
+      "coin": "SUI",
+      "style": "GRID",
+      "skor": 70.0,
+      "tren_detail": "-",
+      "rsi_5m": 50.0,
+      "rsi_15m": 50.0,
+      "rasio_vol": 1.0,
+      "pnl_pct": -1.85,
+      "pnl_idr": -495.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794904454.1348367,
+      "waktu": "17/11 15:34",
+      "coin": "SUI",
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 30.0,
+      "rsi_15m": 44.7,
+      "rasio_vol": 4.5,
+      "minus_awal_pct": -0.88,
+      "pnl_akhir_pct": -1.85,
+      "pnl_idr": -495.0
     }
   ]
 }
