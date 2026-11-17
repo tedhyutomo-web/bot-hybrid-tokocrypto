@@ -27,9 +27,9 @@
       "filled_timestamp": 1794897163.895019,
       "peak_verified": true,
       "tp_order_id": "221216883",
-      "last_tp_eval_ts": 1794916814.3651743,
-      "last_tp_eval_bid_idr": 17765,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Tren 1H naik, profit tipis, kawal pantulan ke target TP."
+      "last_tp_eval_ts": 1794918257.3486946,
+      "last_tp_eval_bid_idr": 17755,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren makro naik, tunggu pantulan hijau untuk TP maksimal."
     }
   ],
   "realized_profit_today_idr": -950.0,
