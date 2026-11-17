@@ -5,13 +5,13 @@
       "style": "EARLY_EMAS",
       "status": "WAITING_BUY",
       "capital_idr": 51007.0,
-      "qty": 0.00152,
-      "entry_price_idr": 33357000.0,
-      "tp_price_idr": 33724000,
-      "sl_price_idr": 32857000,
+      "qty": 0.00153,
+      "entry_price_idr": 33217000.0,
+      "tp_price_idr": 33665000.0,
+      "sl_price_idr": 32619000.0,
       "highest_price_idr": 33338000,
       "rsi_at_entry": 60.9,
-      "buy_order_id": "218978575",
+      "buy_order_id": "218979076",
       "entry_snapshot": {
         "skor": 75.0,
         "tren_detail": "5M:UP/15M:DN/1H:UP",
@@ -23,7 +23,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume kuat 1.36x, body 100%, BTC mendukung momentum mikro."
       },
       "sl_hold_history": [],
-      "timestamp": 1794920270.058269
+      "timestamp": 1794920489.7600565
     }
   ],
   "realized_profit_today_idr": -767.0,
@@ -41,6 +41,11 @@
       "until": 1794920422.7961326,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah dan RSI 15M XRP jenuh beli."
+    },
+    "SOL": {
+      "until": 1794920866.8275871,
+      "last_score": 78.6,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah/stagnan dan RSI BTC overbought (78.6)."
     }
   },
   "trade_experience_memory": [
