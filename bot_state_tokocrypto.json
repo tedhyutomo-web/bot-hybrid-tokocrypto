@@ -9,7 +9,7 @@
       "entry_price_idr": 1305695,
       "tp_price_idr": 1323322.0,
       "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1309628.0,
+      "highest_price_idr": 1309999.0,
       "rsi_at_entry": 31.9,
       "buy_order_id": "117285612",
       "entry_snapshot": {
@@ -27,31 +27,6 @@
       "filled_timestamp": 1794873026.0540526,
       "peak_verified": true,
       "tp_order_id": "117285841"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 34646.0,
-      "qty": 1.99,
-      "entry_price_idr": 17400.0,
-      "tp_price_idr": 17635.0,
-      "sl_price_idr": 17087.0,
-      "highest_price_idr": 17410,
-      "rsi_at_entry": 14.9,
-      "buy_order_id": "221179858",
-      "entry_snapshot": {
-        "skor": 86.3,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 14.9,
-        "rsi_15m": 37.6,
-        "rasio_vol": 0.66,
-        "spread_pct": 0.00143,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:10.0 | Vol:0.83x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 14.9 sangat rendah, BTC 5M hijau, potensi rebound."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794873776.0574756
     },
     {
       "coin": "BTC",
@@ -77,6 +52,31 @@
       },
       "sl_hold_history": [],
       "timestamp": 1794873698.3883357
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 34599.0,
+      "qty": 0.00104,
+      "entry_price_idr": 33114000.0,
+      "tp_price_idr": 33561000.0,
+      "sl_price_idr": 32518000.0,
+      "highest_price_idr": 33268000,
+      "rsi_at_entry": 26.2,
+      "buy_order_id": "218909411",
+      "entry_snapshot": {
+        "skor": 83.9,
+        "tren_detail": "5M:UP/15M:UP/1H:DN",
+        "rsi_5m": 26.2,
+        "rsi_15m": 46.7,
+        "rasio_vol": 10.88,
+        "spread_pct": 0.00108,
+        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:16.7 | Vol:5.49x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lengkap, BTC oversold, volume ETH tinggi mendukung pantulan."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794874233.3696792
     }
   ],
   "realized_profit_today_idr": -644.0,
@@ -96,11 +96,6 @@
       "until": 1794873848.0723372,
       "last_score": 84.3,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, hindari risiko terseret pelemahan pasar."
-    },
-    "ETH": {
-      "until": 1794873770.6230557,
-      "last_score": 85.4,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, risiko terseret meski ETH status Emas."
     }
   },
   "trade_experience_memory": [
