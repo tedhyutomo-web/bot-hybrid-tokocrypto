@@ -31,13 +31,13 @@
     {
       "coin": "ADA",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 62055.0,
       "qty": 22.1,
       "entry_price_idr": 2807.0,
-      "tp_price_idr": 2838.0,
+      "tp_price_idr": 2838,
       "sl_price_idr": 2765.0,
-      "highest_price_idr": 2794,
+      "highest_price_idr": 2807.0,
       "rsi_at_entry": 40.6,
       "buy_order_id": "144105112",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, RSI 15M oversold, BTC 5M hijau mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1794909921.216763
+      "timestamp": 1794909921.216763,
+      "filled_timestamp": 1794910216.3334398,
+      "peak_verified": true,
+      "tp_order_id": "144105361"
     }
   ],
   "realized_profit_today_idr": -1161.0,
