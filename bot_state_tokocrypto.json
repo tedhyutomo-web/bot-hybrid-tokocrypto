@@ -1,37 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37943.0,
-      "qty": 2.89,
-      "entry_price_idr": 13129,
-      "tp_price_idr": 13306.0,
-      "sl_price_idr": 12893.0,
-      "highest_price_idr": 13241.0,
-      "rsi_at_entry": 38.5,
-      "buy_order_id": "44308026",
-      "entry_snapshot": {
-        "skor": 81.3,
-        "tren_detail": "5M:DN/15M:UP/1H:DN",
-        "rsi_5m": 38.5,
-        "rsi_15m": 41.2,
-        "rasio_vol": 3.66,
-        "spread_pct": 0.00205,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:11.2 | Vol:0.35x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, BTC oversold 11.2, volume SUI kuat mendukung pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794875359.289544,
-      "filled_timestamp": 1794875571.4801455,
-      "peak_verified": true,
-      "tp_order_id": "44308282",
-      "last_tp_eval_ts": 1794884947.6929855,
-      "last_tp_eval_bid_idr": 13231,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Momentum 5M naik, BTC mendukung, kawal ke target profit."
-    },
-    {
       "coin": "SOL",
       "style": "SNIPER",
       "status": "HOLDING_FOR_TP",
@@ -60,10 +29,10 @@
       "tp_order_id": "117304282"
     }
   ],
-  "realized_profit_today_idr": -482.0,
-  "completed_trades_today": 4,
+  "realized_profit_today_idr": -358.0,
+  "completed_trades_today": 5,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 4041.0,
+  "loss_to_recover_idr": 3917.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -459,6 +428,22 @@
       "rasio_vol": 0.29,
       "pnl_pct": 0.51,
       "pnl_idr": 162.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794885404.2569492,
+      "waktu": "17/11 10:16",
+      "coin": "SUI",
+      "style": "GRID",
+      "skor": 81.3,
+      "tren_detail": "5M:DN/15M:UP/1H:DN",
+      "rsi_5m": 38.5,
+      "rsi_15m": 41.2,
+      "rasio_vol": 3.66,
+      "pnl_pct": 0.33,
+      "pnl_idr": 124.0,
       "sempat_tahan_sl": false
     }
   ]
