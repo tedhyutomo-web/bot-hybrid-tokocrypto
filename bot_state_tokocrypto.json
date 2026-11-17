@@ -1,37 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 31990.0,
-      "qty": 0.0245,
-      "entry_price_idr": 1305695,
-      "tp_price_idr": 1323322.0,
-      "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1317787.0,
-      "rsi_at_entry": 31.9,
-      "buy_order_id": "117285612",
-      "entry_snapshot": {
-        "skor": 84.6,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 31.9,
-        "rsi_15m": 40.4,
-        "rasio_vol": 0.29,
-        "spread_pct": 0.00142,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:10.0 | Vol:0.83x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lolos Aturan Emas, BTC 5M hijau, BodyCandle 100% solid."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794872952.6656399,
-      "filled_timestamp": 1794873026.0540526,
-      "peak_verified": true,
-      "tp_order_id": "117285841",
-      "last_tp_eval_ts": 1794880887.203531,
-      "last_tp_eval_bid_idr": 1317338,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren 15M naik, tunggu pantulan hijau 5M sesuai diagnosa."
-    },
-    {
       "coin": "SUI",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -40,7 +9,7 @@
       "entry_price_idr": 13129,
       "tp_price_idr": 13306.0,
       "sl_price_idr": 12893.0,
-      "highest_price_idr": 13177.0,
+      "highest_price_idr": 13192.0,
       "rsi_at_entry": 38.5,
       "buy_order_id": "44308026",
       "entry_snapshot": {
@@ -60,10 +29,10 @@
       "tp_order_id": "44308282"
     }
   ],
-  "realized_profit_today_idr": -644.0,
-  "completed_trades_today": 3,
+  "realized_profit_today_idr": -482.0,
+  "completed_trades_today": 4,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 4203.0,
+  "loss_to_recover_idr": 4041.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
@@ -443,6 +412,22 @@
       "rasio_vol": 0.39,
       "pnl_pct": -1.74,
       "pnl_idr": -778.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794881197.5069437,
+      "waktu": "17/11 09:06",
+      "coin": "SOL",
+      "style": "GRID",
+      "skor": 84.6,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 31.9,
+      "rsi_15m": 40.4,
+      "rasio_vol": 0.29,
+      "pnl_pct": 0.51,
+      "pnl_idr": 162.0,
       "sempat_tahan_sl": false
     }
   ]
