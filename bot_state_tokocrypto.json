@@ -27,31 +27,6 @@
       "filled_timestamp": 1794875571.4801455,
       "peak_verified": true,
       "tp_order_id": "44308282"
-    },
-    {
-      "coin": "SOL",
-      "style": "SNIPER",
-      "status": "WAITING_BUY",
-      "capital_idr": 61985.0,
-      "qty": 0.0472,
-      "entry_price_idr": 1313241,
-      "tp_price_idr": 1336879.0,
-      "sl_price_idr": 1292229.0,
-      "highest_price_idr": 1313241,
-      "rsi_at_entry": 54.3,
-      "buy_order_id": "117302862",
-      "entry_snapshot": {
-        "skor": 89.3,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 54.3,
-        "rsi_15m": 50.8,
-        "rasio_vol": 3.26,
-        "spread_pct": 0.00149,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:54.8 | Vol:0.23x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Tren UP, Vol tinggi, BTC 5M hijau dukung Lapis-1."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794882326.1174254
     }
   ],
   "realized_profit_today_idr": -482.0,
