@@ -27,9 +27,9 @@
       "filled_timestamp": 1794873026.0540526,
       "peak_verified": true,
       "tp_order_id": "117285841",
-      "last_tp_eval_ts": 1794880220.2085726,
-      "last_tp_eval_bid_idr": 1314368,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - BTC 5M hijau mendukung rebound SOL menuju target TP penuh."
+      "last_tp_eval_ts": 1794880522.3316956,
+      "last_tp_eval_bid_idr": 1316440,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Vol 1.43x kuat, 15M:UP, kawal pantulan menuju target penuh."
     },
     {
       "coin": "SUI",
@@ -40,7 +40,7 @@
       "entry_price_idr": 13129,
       "tp_price_idr": 13306.0,
       "sl_price_idr": 12893.0,
-      "highest_price_idr": 13148.0,
+      "highest_price_idr": 13151.0,
       "rsi_at_entry": 38.5,
       "buy_order_id": "44308026",
       "entry_snapshot": {
