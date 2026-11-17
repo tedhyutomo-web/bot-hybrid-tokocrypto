@@ -7,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
-      "until": 1794923048.3366582,
-      "last_score": 94.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, hindari risiko terseret arus koreksi."
+      "until": 1794926349.5733988,
+      "last_score": 75.9,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun, volume SUI rendah, RSI 15M jenuh."
     },
     "ETH": {
       "until": 1794921388.6360576,
