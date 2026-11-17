@@ -1,5 +1,31 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "SNIPER",
+      "status": "WAITING_BUY",
+      "capital_idr": 47776.0,
+      "qty": 0.00142,
+      "entry_price_idr": 33645000,
+      "tp_price_idr": 34251000.0,
+      "sl_price_idr": 33107000.0,
+      "highest_price_idr": 33645000,
+      "rsi_at_entry": 56.3,
+      "buy_order_id": "218935568",
+      "entry_snapshot": {
+        "skor": 84.6,
+        "tren_detail": "5M:UP/15M:UP/1H:UP",
+        "rsi_5m": 56.3,
+        "rsi_15m": 73.7,
+        "rasio_vol": 1.12,
+        "spread_pct": 0.00062,
+        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:\u26a0\ufe0f MERAH-JATUH-BERUNTUN | RSI 5M:43.0 | Vol:0.94x",
+        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Tren kuat, memori winrate tinggi, struktur valid."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794892002.2764285
+    }
+  ],
   "realized_profit_today_idr": -109.0,
   "completed_trades_today": 6,
   "last_reset_date": "2026-11-17",
@@ -10,6 +36,16 @@
       "until": 1794830649.4162705,
       "last_score": 74.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
+    },
+    "SOL": {
+      "until": 1794892294.4683883,
+      "last_score": 92.1,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - Memori 72 jam rawan SL dan volume meragukan."
+    },
+    "XRP": {
+      "until": 1794892373.6118164,
+      "last_score": 72.0,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC 5M jatuh beruntun, tunda beli baru."
     }
   },
   "trade_experience_memory": [
