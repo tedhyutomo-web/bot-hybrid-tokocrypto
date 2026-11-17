@@ -9,7 +9,7 @@
       "entry_price_idr": 1305695,
       "tp_price_idr": 1323322.0,
       "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1309602.0,
+      "highest_price_idr": 1309628.0,
       "rsi_at_entry": 31.9,
       "buy_order_id": "117285612",
       "entry_snapshot": {
@@ -33,13 +33,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 34646.0,
-      "qty": 1.98,
-      "entry_price_idr": 17482.0,
-      "tp_price_idr": 17718.0,
-      "sl_price_idr": 17167.0,
+      "qty": 1.99,
+      "entry_price_idr": 17400.0,
+      "tp_price_idr": 17635,
+      "sl_price_idr": 17087,
       "highest_price_idr": 17410,
       "rsi_at_entry": 14.9,
-      "buy_order_id": "221179132",
+      "buy_order_id": "221179858",
       "entry_snapshot": {
         "skor": 86.3,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
@@ -51,7 +51,32 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 14.9 sangat rendah, BTC 5M hijau, potensi rebound."
       },
       "sl_hold_history": [],
-      "timestamp": 1794873257.6744013
+      "timestamp": 1794873776.0574756
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33266.0,
+      "qty": 2.8e-05,
+      "entry_price_idr": 1182574000.0,
+      "tp_price_idr": 1198539000.0,
+      "sl_price_idr": 1161288000.0,
+      "highest_price_idr": 1188075000,
+      "rsi_at_entry": 18.9,
+      "buy_order_id": "274420092",
+      "entry_snapshot": {
+        "skor": 86.3,
+        "tren_detail": "5M:UP/15M:UP/1H:DN",
+        "rsi_5m": 18.9,
+        "rsi_15m": 47.5,
+        "rasio_vol": 4.36,
+        "spread_pct": 0.00104,
+        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:18.9 | Vol:4.36x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 18.9 oversold, volume tinggi, status Emas lolos penuh."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794873698.3883357
     }
   ],
   "realized_profit_today_idr": -644.0,
@@ -68,9 +93,9 @@
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
     },
     "SUI": {
-      "until": 1794871890.8674934,
-      "last_score": 91.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, BodyCandle 0%, risiko memori SL tinggi."
+      "until": 1794873848.0723372,
+      "last_score": 84.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, hindari risiko terseret pelemahan pasar."
     },
     "ETH": {
       "until": 1794873770.6230557,
