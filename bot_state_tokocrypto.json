@@ -9,7 +9,7 @@
       "entry_price_idr": 1305695,
       "tp_price_idr": 1323322.0,
       "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1313556.0,
+      "highest_price_idr": 1314482.0,
       "rsi_at_entry": 31.9,
       "buy_order_id": "117285612",
       "entry_snapshot": {
@@ -26,7 +26,10 @@
       "timestamp": 1794872952.6656399,
       "filled_timestamp": 1794873026.0540526,
       "peak_verified": true,
-      "tp_order_id": "117285841"
+      "tp_order_id": "117285841",
+      "last_tp_eval_ts": 1794879548.2600443,
+      "last_tp_eval_bid_idr": 1314482,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Volume tinggi 2.09x, BTC 5M hijau, potensi kenaikan lanjut."
     },
     {
       "coin": "SUI",
