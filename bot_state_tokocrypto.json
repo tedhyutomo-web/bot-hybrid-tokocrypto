@@ -22,11 +22,34 @@
         "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:61.1 | Vol:6.31x",
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M sehat, body candle kuat, tren 1H mendukung."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1794928149.0253189,
+          "pnl_bid_pct": -0.010956453686623064,
+          "tren_detail": "5M:UP/15M:UP/1H:UP",
+          "rsi_5m": 30.0,
+          "rsi_15m": 59.7,
+          "rasio_vol": 0.97,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold, tren makro naik, memori historis mendukung pantulan."
+        },
+        {
+          "ts": 1794928285.2404492,
+          "pnl_bid_pct": -0.01134775560400246,
+          "tren_detail": "5M:UP/15M:UP/1H:UP",
+          "rsi_5m": 28.2,
+          "rsi_15m": 62.0,
+          "rasio_vol": 2.01,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI oversold, tren makro UP, potensi rebound sesuai memori."
+        }
+      ],
       "timestamp": 1794926352.2185256,
       "filled_timestamp": 1794926423.485728,
       "peak_verified": true,
-      "tp_order_id": "221270680"
+      "tp_order_id": "221270680",
+      "last_sl_eval_ts": 1794928285.2404492,
+      "last_sl_eval_price_idr": 17686,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI oversold, tren makro UP, potensi rebound sesuai memori.",
+      "last_eval_was_hard_sl": true
     }
   ],
   "realized_profit_today_idr": -767.0,
