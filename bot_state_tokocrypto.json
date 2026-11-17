@@ -27,6 +27,34 @@
       "filled_timestamp": 1794875571.4801455,
       "peak_verified": true,
       "tp_order_id": "44308282"
+    },
+    {
+      "coin": "SOL",
+      "style": "SNIPER",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 61997.0,
+      "qty": 0.0472,
+      "entry_price_idr": 1313505,
+      "tp_price_idr": 1337148,
+      "sl_price_idr": 1292489.0,
+      "highest_price_idr": 1313505.0,
+      "rsi_at_entry": 51.6,
+      "buy_order_id": "117304112",
+      "entry_snapshot": {
+        "skor": 76.6,
+        "tren_detail": "5M:UP/15M:UP/1H:DN",
+        "rsi_5m": 51.6,
+        "rsi_15m": 48.6,
+        "rasio_vol": 0.66,
+        "spread_pct": 0.00159,
+        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:44.9 | Vol:5.42x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, tren 5M/15M UP, BTC tertahan, histori kuat."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794882853.775503,
+      "filled_timestamp": 1794882925.8051026,
+      "peak_verified": true,
+      "tp_order_id": "117304282"
     }
   ],
   "realized_profit_today_idr": -482.0,
