@@ -9,7 +9,7 @@
       "entry_price_idr": 13129,
       "tp_price_idr": 13306.0,
       "sl_price_idr": 12893.0,
-      "highest_price_idr": 13203.0,
+      "highest_price_idr": 13241.0,
       "rsi_at_entry": 38.5,
       "buy_order_id": "44308026",
       "entry_snapshot": {
@@ -26,7 +26,10 @@
       "timestamp": 1794875359.289544,
       "filled_timestamp": 1794875571.4801455,
       "peak_verified": true,
-      "tp_order_id": "44308282"
+      "tp_order_id": "44308282",
+      "last_tp_eval_ts": 1794884947.6929855,
+      "last_tp_eval_bid_idr": 13231,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Momentum 5M naik, BTC mendukung, kawal ke target profit."
     },
     {
       "coin": "SOL",
@@ -37,7 +40,7 @@
       "entry_price_idr": 1313505,
       "tp_price_idr": 1337148.0,
       "sl_price_idr": 1292489.0,
-      "highest_price_idr": 1316500.0,
+      "highest_price_idr": 1324716.0,
       "rsi_at_entry": 51.6,
       "buy_order_id": "117304112",
       "entry_snapshot": {
