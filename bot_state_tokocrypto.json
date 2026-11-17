@@ -58,15 +58,24 @@
           "rsi_15m": 48.2,
           "rasio_vol": 0.11,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - Tren makro naik, BTC 5M hijau, minus di bawah ambang."
+        },
+        {
+          "ts": 1794929647.621377,
+          "pnl_bid_pct": -0.00978254793448488,
+          "tren_detail": "5M:UP/15M:UP/1H:UP",
+          "rsi_5m": 43.2,
+          "rsi_15m": 56.3,
+          "rasio_vol": 5.47,
+          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren makro UP dan volume tinggi, tunggu pantulan area support."
         }
       ],
       "timestamp": 1794926352.2185256,
       "filled_timestamp": 1794926423.485728,
       "peak_verified": true,
       "tp_order_id": "221270680",
-      "last_sl_eval_ts": 1794928888.0593832,
-      "last_sl_eval_price_idr": 17733.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Tren makro naik, BTC 5M hijau, minus di bawah ambang.",
+      "last_sl_eval_ts": 1794929647.621377,
+      "last_sl_eval_price_idr": 17714,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren makro UP dan volume tinggi, tunggu pantulan area support.",
       "last_eval_was_hard_sl": false
     }
   ],
