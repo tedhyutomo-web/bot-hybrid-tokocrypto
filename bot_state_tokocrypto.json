@@ -9,7 +9,7 @@
       "entry_price_idr": 1305695,
       "tp_price_idr": 1323322.0,
       "sl_price_idr": 1282192.0,
-      "highest_price_idr": 1309999.0,
+      "highest_price_idr": 1310000.0,
       "rsi_at_entry": 31.9,
       "buy_order_id": "117285612",
       "entry_snapshot": {
@@ -27,6 +27,34 @@
       "filled_timestamp": 1794873026.0540526,
       "peak_verified": true,
       "tp_order_id": "117285841"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 37943.0,
+      "qty": 2.89,
+      "entry_price_idr": 13129,
+      "tp_price_idr": 13306,
+      "sl_price_idr": 12893.0,
+      "highest_price_idr": 13129.0,
+      "rsi_at_entry": 38.5,
+      "buy_order_id": "44308026",
+      "entry_snapshot": {
+        "skor": 81.3,
+        "tren_detail": "5M:DN/15M:UP/1H:DN",
+        "rsi_5m": 38.5,
+        "rsi_15m": 41.2,
+        "rasio_vol": 3.66,
+        "spread_pct": 0.00205,
+        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:11.2 | Vol:0.35x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, BTC oversold 11.2, volume SUI kuat mendukung pantulan."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794875359.289544,
+      "filled_timestamp": 1794875571.4801455,
+      "peak_verified": true,
+      "tp_order_id": "44308282"
     }
   ],
   "realized_profit_today_idr": -644.0,
@@ -39,11 +67,6 @@
       "until": 1794830649.4162705,
       "last_score": 74.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
-    },
-    "SUI": {
-      "until": 1794875116.6327548,
-      "last_score": 82.1,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, RSI SUI berisiko ulangi pola SL."
     }
   },
   "trade_experience_memory": [
