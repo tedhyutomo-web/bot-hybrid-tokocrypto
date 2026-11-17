@@ -1,31 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "BTC",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 37010.0,
-      "qty": 3.1e-05,
-      "entry_price_idr": 1193864000,
-      "tp_price_idr": 1206997000.0,
-      "sl_price_idr": 1175956000.0,
-      "highest_price_idr": 1193864000,
-      "rsi_at_entry": 59.6,
-      "buy_order_id": "274442500",
-      "entry_snapshot": {
-        "skor": 78.0,
-        "tren_detail": "5M:UP/15M:DN/1H:UP",
-        "rsi_5m": 59.6,
-        "rsi_15m": 69.7,
-        "rasio_vol": 8.39,
-        "spread_pct": 0.00144,
-        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:59.6 | Vol:8.39x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Momentum 5M kuat, volume tinggi, struktur Higher-Low dukung pemulihan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794890873.2095535
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -109.0,
   "completed_trades_today": 6,
   "last_reset_date": "2026-11-17",
