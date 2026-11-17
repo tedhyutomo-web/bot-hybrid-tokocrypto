@@ -40,16 +40,25 @@
           "rsi_15m": 62.0,
           "rasio_vol": 2.01,
           "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI oversold, tren makro UP, potensi rebound sesuai memori."
+        },
+        {
+          "ts": 1794928587.0886438,
+          "pnl_bid_pct": -0.010621052043155011,
+          "tren_detail": "5M:UP/15M:UP/1H:UP",
+          "rsi_5m": 32.0,
+          "rsi_15m": 48.7,
+          "rasio_vol": 0.11,
+          "alasan_ai": "[gemini-3-flash-preview#K5] TAHAN - Tren makro UP, RSI oversold, volume rendah, potensi rebound kuat."
         }
       ],
       "timestamp": 1794926352.2185256,
       "filled_timestamp": 1794926423.485728,
       "peak_verified": true,
       "tp_order_id": "221270680",
-      "last_sl_eval_ts": 1794928285.2404492,
-      "last_sl_eval_price_idr": 17686,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - RSI oversold, tren makro UP, potensi rebound sesuai memori.",
-      "last_eval_was_hard_sl": true
+      "last_sl_eval_ts": 1794928587.0886438,
+      "last_sl_eval_price_idr": 17699,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K5] TAHAN - Tren makro UP, RSI oversold, volume rendah, potensi rebound kuat.",
+      "last_eval_was_hard_sl": false
     }
   ],
   "realized_profit_today_idr": -767.0,
