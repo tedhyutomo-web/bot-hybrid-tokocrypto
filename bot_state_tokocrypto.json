@@ -27,40 +27,13 @@
       "filled_timestamp": 1794873026.0540526,
       "peak_verified": true,
       "tp_order_id": "117285841"
-    },
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 34599.0,
-      "qty": 0.00104,
-      "entry_price_idr": 33114000.0,
-      "tp_price_idr": 33561000.0,
-      "sl_price_idr": 32518000.0,
-      "highest_price_idr": 33268000,
-      "rsi_at_entry": 26.2,
-      "buy_order_id": "218909411",
-      "entry_snapshot": {
-        "skor": 83.9,
-        "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 26.2,
-        "rsi_15m": 46.7,
-        "rasio_vol": 10.88,
-        "spread_pct": 0.00108,
-        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:16.7 | Vol:5.49x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lengkap, BTC oversold, volume ETH tinggi mendukung pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794874233.3696792
     }
   ],
   "realized_profit_today_idr": -644.0,
   "completed_trades_today": 3,
   "last_reset_date": "2026-11-17",
   "loss_to_recover_idr": 4203.0,
-  "sl_cooldown_until": {
-    "DOGE": 1794874753.3765903
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
       "until": 1794830649.4162705,
@@ -68,9 +41,9 @@
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
     },
     "SUI": {
-      "until": 1794873848.0723372,
-      "last_score": 84.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, hindari risiko terseret pelemahan pasar."
+      "until": 1794875116.6327548,
+      "last_score": 82.1,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, RSI SUI berisiko ulangi pola SL."
     }
   },
   "trade_experience_memory": [
