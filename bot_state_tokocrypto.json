@@ -7,9 +7,9 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
-      "until": 1794920055.9906003,
-      "last_score": 90.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC RSI 84.2 overbought, body 0%, waspada memori SL beruntun."
+      "until": 1794923048.3366582,
+      "last_score": 94.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, hindari risiko terseret arus koreksi."
     },
     "XRP": {
       "until": 1794920422.7961326,
