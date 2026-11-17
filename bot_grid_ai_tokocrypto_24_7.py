@@ -1494,28 +1494,65 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
                 qty_rencana = hitung_kuantitas_koin(coin, alokasi_idr, entry_idr)
                 nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
 
-            else:
-                anggaran_sesi_ini = saldo_idr_tersedia
+                if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
+                    step_qty = 10 ** (-WATCHLIST_COINS[coin]["step_decimals"])
+                    qty_tambah = format_qty_koin(coin, qty_rencana + step_qty)
+                    if (qty_tambah * entry_idr) <= sisa_kas_simulasi:
+                        qty_rencana = qty_tambah
+                        nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
 
-            for idx_k, kandidat in enumerate(kandidat_siap_entry):
-                if sisa_kas_simulasi < MIN_NEW_BUY_ALLOCATION_IDR:
-                    break
-                if idx_k == jumlah_siap - 1:
-                    alokasi_idr = math.floor(min(sisa_kas_simulasi, anggaran_sesi_ini))
-                else:
-                    porsi = kandidat.get("bobot_alokasi", kandidat["skor"]) / total_bobot
-                    alokasi_idr = math.floor(anggaran_sesi_ini * porsi)
-                    sisa_kandidat_lain = jumlah_siap - 1 - idx_k
-                    maks_boleh_pakai = sisa_kas_simulasi - (sisa_kandidat_lain * MIN_NEW_BUY_ALLOCATION_IDR)
-                    alokasi_idr = max(int(MIN_NEW_BUY_ALLOCATION_IDR), min(int(alokasi_idr), int(maks_boleh_pakai)))
-
-                if alokasi_idr < MIN_NEW_BUY_ALLOCATION_IDR:
+                if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
+                    log_aksi.append(
+                        f"⚠️ [SKIP {coin}] Nilai efektif Rp{nilai_efektif_idr:,.0f} di bawah buffer SL Rp{MIN_SAFE_SL_BUFFER_IDR:,.0f}."
+                    )
                     continue
 
-                coin = kandidat["coin"]
-                entry_idr = kandidat["entry_ideal_idr"]
-                qty_rencana = hitung_kuantitas_koin(coin, alokasi_idr, entry_idr)
-                nilai_efektif_idr = round(qty_rencana * entry_idr, 0)
+                is_tembus_cd = coin in [kc.split("(")[0] for kc in koin_tembus_cooldown]
+                info_rev = " [V-Shape Reversal pasca SL]" if is_tembus_cd else ""
+
+                konteks_memori_entry = tarik_konteks_memori_pola_mirip(
+                    state, "EVAL_ENTRY", coin, kandidat["tren_detail"],
+                    kandidat["rsi"], kandidat["rsi_15m"], kandidat["rasio_vol"]
+                )
+
+                lapis_k = int(kandidat.get("lapis_entry", 1))
+                info_kekurangan = kandidat.get("catatan_kekurangan_emas", "-")
+                kekuatan_body = int(float(kandidat.get("posisi_close_candle", 0.7)) * 100)
+
+                # ATURAN CADANGAN SAAT GEMINI LIMIT (HTTP 429)
+                cadangan_setuju_beli = (lapis_k == 1)
+                alasan_cadangan_beli = (
+                    f"YA - Lolos Penuh Lapis-1 Aturan Emas Indodax ({kandidat['gaya']}, Skor:{kandidat['skor']})."
+                    if cadangan_setuju_beli else
+                    f"TUNDA - Kandidat Lapis-2 Early Emas ({coin}) wajib menunggu verifikasi Gemini AI aktif."
+                )
+
+                tid = f"BELI_{coin}"
+                daftar_tugas_ai.append({
+                    "id": tid,
+                    "jenis": "BELI_BARU",
+                    "default_jika_error": cadangan_setuju_beli,
+                    "alasan_fallback": alasan_cadangan_beli,
+                    "deskripsi": (
+                        f"TIPE: BELI_BARU [LAPIS-{lapis_k}: {kandidat['gaya']}] | Koin {coin} (Skor:{kandidat['skor']}){info_rev}, "
+                        f"Harga Skrg:Rp{kandidat['harga_idr']:,.0f}, Rencana Limit Buy:Rp{entry_idr:,.0f}, "
+                        f"TP Dinamis:+{kandidat['tp_target_pct']}% (Alokasi:Rp{nilai_efektif_idr:,.0f} | Lapis Scratch TP +0.65% Aktif). "
+                        f"Tren:{kandidat['tren_detail']}, RSI 5M:{kandidat['rsi']}, RSI 15M:{kandidat['rsi_15m']}, "
+                        f"Vol:{kandidat['rasio_vol']}x, BodyCandle:{kekuatan_body}%, Spread:{kandidat['spread_pct']*100:.2f}% | "
+                        f"Status Emas: {info_kekurangan}{konteks_memori_entry}. "
+                        f"Jawab YA (eksekusi beli) atau TUNDA (jangan beli)."
+                    )
+                })
+                rencana_beli_baru.append({
+                    "task_id": tid,
+                    "kandidat": kandidat,
+                    "qty_rencana": qty_rencana,
+                    "nilai_efektif_idr": nilai_efektif_idr,
+                    "is_tembus_cd": is_tembus_cd
+                })
+                sisa_kas_simulasi -= nilai_efektif_idr
+                anggaran_sesi_ini = max(0.0, float(sisa_kas_simulasi))
+
 
                 if nilai_efektif_idr < MIN_SAFE_SL_BUFFER_IDR:
                     step_qty = 10 ** (-WATCHLIST_COINS[coin]["step_decimals"])
