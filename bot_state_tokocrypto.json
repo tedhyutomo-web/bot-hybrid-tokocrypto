@@ -1,47 +1,56 @@
 {
   "active_slots": [
     {
-      "coin": "SOL",
+      "coin": "BTC",
       "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 61997.0,
-      "qty": 0.0477,
-      "entry_price_idr": 1313505,
-      "tp_price_idr": 1337148.0,
-      "sl_price_idr": 1292489.0,
-      "highest_price_idr": 1325903.0,
-      "rsi_at_entry": 51.6,
-      "buy_order_id": "117304112",
+      "status": "WAITING_BUY",
+      "capital_idr": 37995.0,
+      "qty": 3.2e-05,
+      "entry_price_idr": 1187354000,
+      "tp_price_idr": 1208726000.0,
+      "sl_price_idr": 1168356000.0,
+      "highest_price_idr": 1187354000,
+      "rsi_at_entry": 55.9,
+      "buy_order_id": "274435803",
       "entry_snapshot": {
-        "skor": 76.6,
+        "skor": 88.8,
         "tren_detail": "5M:UP/15M:UP/1H:DN",
-        "rsi_5m": 51.6,
-        "rsi_15m": 48.6,
-        "rasio_vol": 0.66,
-        "spread_pct": 0.00159,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:44.9 | Vol:5.42x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, tren 5M/15M UP, BTC tertahan, histori kuat."
+        "rsi_5m": 55.9,
+        "rsi_15m": 50.8,
+        "rasio_vol": 2.42,
+        "spread_pct": 0.0,
+        "kompas_btc": "5M:UP/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:55.9 | Vol:2.42x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren 5M/15M UP, volume kuat, lolos Aturan Emas."
       },
       "sl_hold_history": [],
-      "timestamp": 1794882853.775503,
-      "filled_timestamp": 1794882925.8051026,
-      "peak_verified": true,
-      "tp_order_id": "117304282",
-      "last_tp_eval_ts": 1794885631.0344555,
-      "last_tp_eval_bid_idr": 1325903,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC 5M hijau mendukung rebound SOL menuju target TP."
+      "timestamp": 1794886004.6447978
     }
   ],
-  "realized_profit_today_idr": -358.0,
-  "completed_trades_today": 5,
+  "realized_profit_today_idr": -109.0,
+  "completed_trades_today": 6,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 3917.0,
+  "loss_to_recover_idr": 3668.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ADA": {
       "until": 1794830649.4162705,
       "last_score": 74.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - Memori 72J buruk, volume rendah, dan body candle tipis."
+    },
+    "ETH": {
+      "until": 1794886150.6305418,
+      "last_score": 91.3,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah, body candle tipis, waspada memori winrate rendah."
+    },
+    "DOGE": {
+      "until": 1794886225.8426518,
+      "last_score": 72.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah dan BodyCandle 0% rentan pembalikan arah mendadak."
+    },
+    "XRP": {
+      "until": 1794886375.600373,
+      "last_score": 83.9,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BodyCandle 0% dan histori winrate rendah, risiko SL tinggi."
     }
   },
   "trade_experience_memory": [
@@ -447,6 +456,22 @@
       "rasio_vol": 3.66,
       "pnl_pct": 0.33,
       "pnl_idr": 124.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794886004.2983837,
+      "waktu": "17/11 10:26",
+      "coin": "SOL",
+      "style": "SNIPER",
+      "skor": 76.6,
+      "tren_detail": "5M:UP/15M:UP/1H:DN",
+      "rsi_5m": 51.6,
+      "rsi_15m": 48.6,
+      "rasio_vol": 0.66,
+      "pnl_pct": 0.4,
+      "pnl_idr": 249.0,
       "sempat_tahan_sl": false
     }
   ]
