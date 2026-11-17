@@ -14,31 +14,6 @@
       "timestamp": 1794893492.9823256,
       "tp_order_id": "44328836",
       "peak_verified": true
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 32070.0,
-      "qty": 11.34,
-      "entry_price_idr": 2828,
-      "tp_price_idr": 2866.0,
-      "sl_price_idr": 2777.0,
-      "highest_price_idr": 2828,
-      "rsi_at_entry": 38.5,
-      "buy_order_id": "144094436",
-      "entry_snapshot": {
-        "skor": 77.8,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 38.5,
-        "rsi_15m": 74.6,
-        "rasio_vol": 0.21,
-        "spread_pct": 0.00035,
-        "kompas_btc": "5M:UP/15M:UP/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:42.7 | Vol:1.2x",
-        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Lolos Lapis-1, Kompas BTC UP, Memori profit tinggi"
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794895822.9060073
     }
   ],
   "realized_profit_today_idr": -109.0,
@@ -53,9 +28,9 @@
       "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC merah jatuh beruntun dan body candle tipis."
     },
     "SOL": {
-      "until": 1794896560.0567057,
-      "last_score": 77.0,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC 5M merah beruntun, waspada koreksi pasar."
+      "until": 1794896647.9253645,
+      "last_score": 94.3,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC 5M jatuh beruntun, tunda risiko."
     }
   },
   "trade_experience_memory": [
