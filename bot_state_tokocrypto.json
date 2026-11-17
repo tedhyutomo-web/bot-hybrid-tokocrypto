@@ -27,31 +27,6 @@
       "filled_timestamp": 1794897163.895019,
       "peak_verified": true,
       "tp_order_id": "221216883"
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 61104,
-      "qty": 57,
-      "entry_price_idr": 1072,
-      "tp_price_idr": 1086,
-      "sl_price_idr": 1053,
-      "highest_price_idr": 1072,
-      "rsi_at_entry": 36.4,
-      "buy_order_id": "135939615",
-      "entry_snapshot": {
-        "skor": 82.3,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 36.4,
-        "rsi_15m": 20.7,
-        "rasio_vol": 0.45,
-        "spread_pct": 0.00187,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:41.8 | Vol:0.03x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold, pola historis 100%, BTC tertahan support."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794908273.5675533
     }
   ],
   "realized_profit_today_idr": -1161.0,
@@ -61,7 +36,13 @@
   "sl_cooldown_until": {
     "ADA": 1794908954.6997144
   },
-  "ai_entry_hold_until": {},
+  "ai_entry_hold_until": {
+    "ETH": {
+      "until": 1794908717.236986,
+      "last_score": 83.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC 5M/15M DN, struktur ETH 5M belum Higher-Low."
+    }
+  },
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
