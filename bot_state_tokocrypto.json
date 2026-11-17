@@ -9,7 +9,7 @@
       "entry_price_idr": 17644,
       "tp_price_idr": 17882.0,
       "sl_price_idr": 17326.0,
-      "highest_price_idr": 17740.0,
+      "highest_price_idr": 17765.0,
       "rsi_at_entry": 27.1,
       "buy_order_id": "221216551",
       "entry_snapshot": {
@@ -26,44 +26,16 @@
       "timestamp": 1794897026.8323936,
       "filled_timestamp": 1794897163.895019,
       "peak_verified": true,
-      "tp_order_id": "221216883"
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62055.0,
-      "qty": 22.1,
-      "entry_price_idr": 2807.0,
-      "tp_price_idr": 2838.0,
-      "sl_price_idr": 2765.0,
-      "highest_price_idr": 2833.0,
-      "rsi_at_entry": 40.6,
-      "buy_order_id": "144105112",
-      "entry_snapshot": {
-        "skor": 80.2,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 40.6,
-        "rsi_15m": 20.3,
-        "rasio_vol": 1.63,
-        "spread_pct": 0.00036,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:51.7 | Vol:0.13x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, RSI 15M oversold, BTC 5M hijau mendukung."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794909921.216763,
-      "filled_timestamp": 1794910216.3334398,
-      "peak_verified": true,
-      "tp_order_id": "144105361",
-      "last_tp_eval_ts": 1794916517.8626757,
-      "last_tp_eval_bid_idr": 2833,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Tren makro UP, BTC hijau, tunggu pantulan 5M ke target."
+      "tp_order_id": "221216883",
+      "last_tp_eval_ts": 1794916814.3651743,
+      "last_tp_eval_bid_idr": 17765,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Tren 1H naik, profit tipis, kawal pantulan ke target TP."
     }
   ],
-  "realized_profit_today_idr": -1161.0,
-  "completed_trades_today": 8,
+  "realized_profit_today_idr": -950.0,
+  "completed_trades_today": 9,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 4720.0,
+  "loss_to_recover_idr": 4509.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ETH": {
@@ -537,6 +509,22 @@
       "rasio_vol": 9.71,
       "pnl_pct": -1.58,
       "pnl_idr": -557.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794916894.9044359,
+      "waktu": "17/11 19:01",
+      "coin": "ADA",
+      "style": "GRID",
+      "skor": 80.2,
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 40.6,
+      "rsi_15m": 20.3,
+      "rasio_vol": 1.63,
+      "pnl_pct": 0.34,
+      "pnl_idr": 211.0,
       "sempat_tahan_sl": false
     }
   ]
