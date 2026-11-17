@@ -29,29 +29,29 @@
       "tp_order_id": "221216883"
     },
     {
-      "coin": "SUI",
+      "coin": "DOGE",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 61941.0,
-      "qty": 4.7,
-      "entry_price_idr": 13179,
-      "tp_price_idr": 13357.0,
-      "sl_price_idr": 12942.0,
-      "highest_price_idr": 13179,
-      "rsi_at_entry": 42.9,
-      "buy_order_id": "44342868",
+      "capital_idr": 61104,
+      "qty": 57,
+      "entry_price_idr": 1072,
+      "tp_price_idr": 1086,
+      "sl_price_idr": 1053,
+      "highest_price_idr": 1072,
+      "rsi_at_entry": 36.4,
+      "buy_order_id": "135939615",
       "entry_snapshot": {
-        "skor": 75.5,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 42.9,
-        "rsi_15m": 38.7,
-        "rasio_vol": 0.73,
-        "spread_pct": 0.00319,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:32.4 | Vol:0.3x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, BTC oversold tertahan, historis winrate 71% mendukung."
+        "skor": 82.3,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 36.4,
+        "rsi_15m": 20.7,
+        "rasio_vol": 0.45,
+        "spread_pct": 0.00187,
+        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:41.8 | Vol:0.03x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold, pola historis 100%, BTC tertahan support."
       },
       "sl_hold_history": [],
-      "timestamp": 1794907898.0621262
+      "timestamp": 1794908273.5675533
     }
   ],
   "realized_profit_today_idr": -1161.0,
@@ -61,13 +61,7 @@
   "sl_cooldown_until": {
     "ADA": 1794908954.6997144
   },
-  "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1794894924.3900478,
-      "last_score": 78.0,
-      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC merah jatuh beruntun dan body candle tipis."
-    }
-  },
+  "ai_entry_hold_until": {},
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
