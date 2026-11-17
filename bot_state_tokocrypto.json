@@ -26,6 +26,16 @@
       "until": 1794894247.9628842,
       "last_score": 92.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - RSI 15M overbought, BTC 15M DN, memori winrate rendah."
+    },
+    "ETH": {
+      "until": 1794894848.11361,
+      "last_score": 77.8,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume lemah 0.62x dan winrate historis rendah 40%."
+    },
+    "DOGE": {
+      "until": 1794894924.3900478,
+      "last_score": 78.0,
+      "reason": "[gemini-flash-lite-latest#K1] TUNDA - BTC merah jatuh beruntun dan body candle tipis."
     }
   },
   "trade_experience_memory": [
