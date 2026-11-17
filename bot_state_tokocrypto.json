@@ -1,20 +1,46 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "EARLY_EMAS",
+      "status": "WAITING_BUY",
+      "capital_idr": 51007.0,
+      "qty": 0.00152,
+      "entry_price_idr": 33357000.0,
+      "tp_price_idr": 33724000,
+      "sl_price_idr": 32857000,
+      "highest_price_idr": 33338000,
+      "rsi_at_entry": 60.9,
+      "buy_order_id": "218978575",
+      "entry_snapshot": {
+        "skor": 75.0,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 60.9,
+        "rsi_15m": 56.3,
+        "rasio_vol": 1.36,
+        "spread_pct": 0.00042,
+        "kompas_btc": "5M:UP/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:81.9 | Vol:0.8x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume kuat 1.36x, body 100%, BTC mendukung momentum mikro."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794920270.058269
+    }
+  ],
   "realized_profit_today_idr": -767.0,
   "completed_trades_today": 10,
   "last_reset_date": "2026-11-17",
   "loss_to_recover_idr": 4326.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "ETH": {
-      "until": 1794908717.236986,
-      "last_score": 83.3,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC 5M/15M DN, struktur ETH 5M belum Higher-Low."
-    },
     "SUI": {
       "until": 1794920055.9906003,
       "last_score": 90.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC RSI 84.2 overbought, body 0%, waspada memori SL beruntun."
+    },
+    "XRP": {
+      "until": 1794920422.7961326,
+      "last_score": 78.0,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M merah dan RSI 15M XRP jenuh beli."
     }
   },
   "trade_experience_memory": [
