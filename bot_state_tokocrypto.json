@@ -1,89 +1,12 @@
 {
-  "active_slots": [
-    {
-      "coin": "XRP",
-      "style": "SNIPER",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 32379.0,
-      "qty": 1.81,
-      "entry_price_idr": 17889,
-      "tp_price_idr": 18283.0,
-      "sl_price_idr": 17692.0,
-      "highest_price_idr": 17890.0,
-      "rsi_at_entry": 47.1,
-      "buy_order_id": "221270353",
-      "entry_snapshot": {
-        "skor": 76.5,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 47.1,
-        "rsi_15m": 68.6,
-        "rasio_vol": 0.24,
-        "spread_pct": 0.00162,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:61.1 | Vol:6.31x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M sehat, body candle kuat, tren 1H mendukung."
-      },
-      "sl_hold_history": [
-        {
-          "ts": 1794928149.0253189,
-          "pnl_bid_pct": -0.010956453686623064,
-          "tren_detail": "5M:UP/15M:UP/1H:UP",
-          "rsi_5m": 30.0,
-          "rsi_15m": 59.7,
-          "rasio_vol": 0.97,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold, tren makro naik, memori historis mendukung pantulan."
-        },
-        {
-          "ts": 1794928285.2404492,
-          "pnl_bid_pct": -0.01134775560400246,
-          "tren_detail": "5M:UP/15M:UP/1H:UP",
-          "rsi_5m": 28.2,
-          "rsi_15m": 62.0,
-          "rasio_vol": 2.01,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - RSI oversold, tren makro UP, potensi rebound sesuai memori."
-        },
-        {
-          "ts": 1794928587.0886438,
-          "pnl_bid_pct": -0.010621052043155011,
-          "tren_detail": "5M:UP/15M:UP/1H:UP",
-          "rsi_5m": 32.0,
-          "rsi_15m": 48.7,
-          "rasio_vol": 0.11,
-          "alasan_ai": "[gemini-3-flash-preview#K5] TAHAN - Tren makro UP, RSI oversold, volume rendah, potensi rebound kuat."
-        },
-        {
-          "ts": 1794928888.0593832,
-          "pnl_bid_pct": -0.006149030130247638,
-          "tren_detail": "5M:UP/15M:UP/1H:UP",
-          "rsi_5m": 40.0,
-          "rsi_15m": 48.2,
-          "rasio_vol": 0.11,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - Tren makro naik, BTC 5M hijau, minus di bawah ambang."
-        },
-        {
-          "ts": 1794929647.621377,
-          "pnl_bid_pct": -0.00978254793448488,
-          "tren_detail": "5M:UP/15M:UP/1H:UP",
-          "rsi_5m": 43.2,
-          "rsi_15m": 56.3,
-          "rasio_vol": 5.47,
-          "alasan_ai": "[gemini-3-flash-preview#K2] TAHAN - Tren makro UP dan volume tinggi, tunggu pantulan area support."
-        }
-      ],
-      "timestamp": 1794926352.2185256,
-      "filled_timestamp": 1794926423.485728,
-      "peak_verified": true,
-      "tp_order_id": "221270680",
-      "last_sl_eval_ts": 1794929647.621377,
-      "last_sl_eval_price_idr": 17714,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren makro UP dan volume tinggi, tunggu pantulan area support.",
-      "last_eval_was_hard_sl": false
-    }
-  ],
-  "realized_profit_today_idr": -767.0,
-  "completed_trades_today": 10,
+  "active_slots": [],
+  "realized_profit_today_idr": -1468.0,
+  "completed_trades_today": 11,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 4326.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 5027.0,
+  "sl_cooldown_until": {
+    "XRP": 1794932972.5139909
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1794926349.5733988,
@@ -599,6 +522,36 @@
       "pnl_pct": 0.48,
       "pnl_idr": 183.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1794930272.5139935,
+      "waktu": "17/11 22:44",
+      "coin": "XRP",
+      "style": "SNIPER",
+      "skor": 76.5,
+      "tren_detail": "5M:UP/15M:UP/1H:UP",
+      "rsi_5m": 47.1,
+      "rsi_15m": 68.6,
+      "rasio_vol": 0.24,
+      "pnl_pct": -2.17,
+      "pnl_idr": -701.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1794930272.5139935,
+      "waktu": "17/11 22:44",
+      "coin": "XRP",
+      "tren_detail": "5M:UP/15M:UP/1H:UP",
+      "rsi_5m": 43.2,
+      "rsi_15m": 56.3,
+      "rasio_vol": 5.47,
+      "minus_awal_pct": -0.98,
+      "pnl_akhir_pct": -2.17,
+      "pnl_idr": -701.0
     }
   ]
 }
