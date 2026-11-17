@@ -9,7 +9,7 @@
       "entry_price_idr": 17644,
       "tp_price_idr": 17882.0,
       "sl_price_idr": 17326.0,
-      "highest_price_idr": 17736.0,
+      "highest_price_idr": 17737.0,
       "rsi_at_entry": 27.1,
       "buy_order_id": "221216551",
       "entry_snapshot": {
@@ -55,9 +55,9 @@
       "filled_timestamp": 1794910216.3334398,
       "peak_verified": true,
       "tp_order_id": "144105361",
-      "last_tp_eval_ts": 1794915847.2288744,
-      "last_tp_eval_bid_idr": 2825,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Volume tinggi 4.65x, tren makro naik, ruang RSI luas."
+      "last_tp_eval_ts": 1794916148.235873,
+      "last_tp_eval_bid_idr": 2830,
+      "last_tp_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - Volume 4.25x kuat, kawal momentum hijau menuju target 2,838."
     }
   ],
   "realized_profit_today_idr": -1161.0,
