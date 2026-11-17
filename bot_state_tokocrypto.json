@@ -56,12 +56,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 32370.0,
       "qty": 1.81,
-      "entry_price_idr": 17884,
-      "tp_price_idr": 18277,
-      "sl_price_idr": 17687,
+      "entry_price_idr": 17804.0,
+      "tp_price_idr": 18133.0,
+      "sl_price_idr": 17599.0,
       "highest_price_idr": 17884,
       "rsi_at_entry": 52.4,
-      "buy_order_id": "221266198",
+      "buy_order_id": "221266437",
       "entry_snapshot": {
         "skor": 80.1,
         "tren_detail": "5M:UP/15M:UP/1H:UP",
@@ -73,7 +73,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Tren kuat, Lapis-1 lengkap, BTC tertahan bukan jatuh deras."
       },
       "sl_hold_history": [],
-      "timestamp": 1794925032.3811483
+      "timestamp": 1794925149.295269
     }
   ],
   "realized_profit_today_idr": -767.0,
