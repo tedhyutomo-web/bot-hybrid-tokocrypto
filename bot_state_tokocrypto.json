@@ -1,41 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37935.0,
-      "qty": 2.15,
-      "entry_price_idr": 17644,
-      "tp_price_idr": 17882.0,
-      "sl_price_idr": 17326.0,
-      "highest_price_idr": 17765.0,
-      "rsi_at_entry": 27.1,
-      "buy_order_id": "221216551",
-      "entry_snapshot": {
-        "skor": 87.0,
-        "tren_detail": "5M:UP/15M:UP/1H:UP",
-        "rsi_5m": 27.1,
-        "rsi_15m": 61.1,
-        "rasio_vol": 0.59,
-        "spread_pct": 0.00102,
-        "kompas_btc": "5M:UP/15M:UP/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:15.8 | Vol:0.07x",
-        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Lolos Lapis-1 Emas, tren BTC naik, winrate tinggi."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794897026.8323936,
-      "filled_timestamp": 1794897163.895019,
-      "peak_verified": true,
-      "tp_order_id": "221216883",
-      "last_tp_eval_ts": 1794918257.3486946,
-      "last_tp_eval_bid_idr": 17755,
-      "last_tp_eval_reason": "[gemini-3-flash-preview#K2] TAHAN - Tren makro naik, tunggu pantulan hijau untuk TP maksimal."
-    }
-  ],
-  "realized_profit_today_idr": -950.0,
-  "completed_trades_today": 9,
+  "active_slots": [],
+  "realized_profit_today_idr": -767.0,
+  "completed_trades_today": 10,
   "last_reset_date": "2026-11-17",
-  "loss_to_recover_idr": 4509.0,
+  "loss_to_recover_idr": 4326.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "ETH": {
@@ -525,6 +493,22 @@
       "rasio_vol": 1.63,
       "pnl_pct": 0.34,
       "pnl_idr": 211.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1794918554.0545928,
+      "waktu": "17/11 19:29",
+      "coin": "XRP",
+      "style": "GRID",
+      "skor": 87.0,
+      "tren_detail": "5M:UP/15M:UP/1H:UP",
+      "rsi_5m": 27.1,
+      "rsi_15m": 61.1,
+      "rasio_vol": 0.59,
+      "pnl_pct": 0.48,
+      "pnl_idr": 183.0,
       "sempat_tahan_sl": false
     }
   ]
