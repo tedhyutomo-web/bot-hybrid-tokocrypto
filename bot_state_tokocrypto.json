@@ -14,9 +14,9 @@
       "timestamp": 1794893492.9823256,
       "tp_order_id": "44328836",
       "peak_verified": true,
-      "last_sl_eval_ts": 1794898057.2999363,
-      "last_sl_eval_price_idr": 13222,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - BTC RSI 0.0 oversold, tren 15M SUI masih UP.",
+      "last_sl_eval_ts": 1794903246.9183614,
+      "last_sl_eval_price_idr": 13227.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, tren makro UP, tunggu pantulan mikro.",
       "last_eval_was_hard_sl": false,
       "sl_hold_history": [
         {
@@ -36,6 +36,15 @@
           "rsi_15m": 48.3,
           "rasio_vol": 0.15,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - BTC RSI 0.0 oversold, tren 15M SUI masih UP."
+        },
+        {
+          "ts": 1794903246.9183614,
+          "pnl_bid_pct": -0.008753553793206643,
+          "tren_detail": "5M:DN/15M:UP/1H:UP",
+          "rsi_5m": 30.0,
+          "rsi_15m": 44.7,
+          "rasio_vol": 4.5,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, tren makro UP, tunggu pantulan mikro."
         }
       ]
     },
