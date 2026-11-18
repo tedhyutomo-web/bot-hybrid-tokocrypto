@@ -24,6 +24,31 @@
       },
       "sl_hold_history": [],
       "timestamp": 1795025957.2745955
+    },
+    {
+      "coin": "SOL",
+      "style": "EARLY_EMAS",
+      "status": "WAITING_BUY",
+      "capital_idr": 33749.0,
+      "qty": 0.025,
+      "entry_price_idr": 1349953,
+      "tp_price_idr": 1372227.0,
+      "sl_price_idr": 1335778.0,
+      "highest_price_idr": 1349953,
+      "rsi_at_entry": 54.2,
+      "buy_order_id": "117639045",
+      "entry_snapshot": {
+        "skor": 71.0,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 54.2,
+        "rsi_15m": 47.2,
+        "rasio_vol": 0.48,
+        "spread_pct": 0.00151,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:51.8 | Vol:0.29x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Momentum 5M kuat, Higher-Low valid, BTC 5M hijau mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795026695.9134836
     }
   ],
   "realized_profit_today_idr": -1304.0,
@@ -31,7 +56,18 @@
   "last_reset_date": "2026-11-19",
   "loss_to_recover_idr": 6331.0,
   "sl_cooldown_until": {},
-  "ai_entry_hold_until": {},
+  "ai_entry_hold_until": {
+    "SUI": {
+      "until": 1795026916.7313712,
+      "last_score": 73.2,
+      "reason": "[gemini-3-flash-preview#K4] TUNDA - Kompas BTC triple-down dan BodyCandle SUI masih 0%."
+    },
+    "BTC": {
+      "until": 1795026991.2371523,
+      "last_score": 68.2,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren mayoritas turun, volume rendah, body candle 0% lemah."
+    }
+  },
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
