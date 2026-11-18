@@ -59,12 +59,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 32843.0,
       "qty": 2.8e-05,
-      "entry_price_idr": 1172973000,
-      "tp_price_idr": 1194673000.0,
-      "sl_price_idr": 1159484000.0,
+      "entry_price_idr": 1168023000.0,
+      "tp_price_idr": 1189631000.0,
+      "sl_price_idr": 1154591000.0,
       "highest_price_idr": 1172973000,
       "rsi_at_entry": 27.7,
-      "buy_order_id": "274593361",
+      "buy_order_id": "274593685",
       "entry_snapshot": {
         "skor": 86.6,
         "tren_detail": "5M:DN/15M:UP/1H:DN",
@@ -76,7 +76,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, candle 5M hijau, volume naik, lolos Aturan Emas."
       },
       "sl_hold_history": [],
-      "timestamp": 1795000892.0953982
+      "timestamp": 1795001119.6858828
     }
   ],
   "realized_profit_today_idr": 0.0,
