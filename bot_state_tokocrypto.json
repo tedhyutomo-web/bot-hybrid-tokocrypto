@@ -63,7 +63,7 @@
       "capital_idr": 32470.0,
       "qty": 1.8,
       "entry_price_idr": 18039,
-      "tp_price_idr": 18373,
+      "tp_price_idr": 18373.0,
       "sl_price_idr": 17832.0,
       "highest_price_idr": 18039.0,
       "rsi_at_entry": 46.1,
