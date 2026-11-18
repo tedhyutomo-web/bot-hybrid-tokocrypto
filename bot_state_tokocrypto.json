@@ -1,32 +1,34 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 37630.0,
-      "qty": 3.3e-05,
-      "entry_price_idr": 1140289000,
-      "tp_price_idr": 1155683000.0,
-      "sl_price_idr": 1119764000.0,
-      "highest_price_idr": 1140289000,
-      "rsi_at_entry": 36.6,
-      "buy_order_id": "274664289",
-      "timestamp": 1795039454.1717072
-    },
-    {
       "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 62251.0,
       "qty": 4.76,
       "entry_price_idr": 13078,
       "tp_price_idr": 13255,
-      "sl_price_idr": 12843,
-      "highest_price_idr": 13078,
+      "sl_price_idr": 12843.0,
+      "highest_price_idr": 13217.0,
       "rsi_at_entry": 32.4,
       "buy_order_id": "44513233",
-      "timestamp": 1795040248.5027835
+      "timestamp": 1795040248.5027835,
+      "filled_timestamp": 1795040555.1108685,
+      "tp_order_id": "44513445"
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37597.0,
+      "qty": 2.13,
+      "entry_price_idr": 17651,
+      "tp_price_idr": 17889.0,
+      "sl_price_idr": 17333.0,
+      "highest_price_idr": 17651,
+      "rsi_at_entry": 40.9,
+      "buy_order_id": "221534636",
+      "timestamp": 1795040483.9432611
     }
   ],
   "realized_profit_today_idr": -1824.0,
