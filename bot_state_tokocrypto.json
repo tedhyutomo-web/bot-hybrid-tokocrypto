@@ -57,29 +57,29 @@
       "tp_order_id": "221447941"
     },
     {
-      "coin": "ETH",
+      "coin": "ADA",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 33809.0,
-      "qty": 0.00105,
-      "entry_price_idr": 32199000,
-      "tp_price_idr": 32795000.0,
-      "sl_price_idr": 31829000.0,
-      "highest_price_idr": 32199000,
-      "rsi_at_entry": 14.5,
-      "buy_order_id": "219164049",
+      "capital_idr": 33827.0,
+      "qty": 12.16,
+      "entry_price_idr": 2781.0,
+      "tp_price_idr": 2832.0,
+      "sl_price_idr": 2749.0,
+      "highest_price_idr": 2791,
+      "rsi_at_entry": 20.5,
+      "buy_order_id": "144202872",
       "entry_snapshot": {
-        "skor": 86.6,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 14.5,
-        "rsi_15m": 17.6,
-        "rasio_vol": 1.94,
-        "spread_pct": 0.00133,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:32.8 | Vol:1.91x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI ekstrem oversold, BTC 5M hijau, Lapis-1 Emas lengkap."
+        "skor": 85.1,
+        "tren_detail": "5M:UP/15M:DN/1H:UP",
+        "rsi_5m": 20.5,
+        "rsi_15m": 44.6,
+        "rasio_vol": 2.31,
+        "spread_pct": 0.00107,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:43.5 | Vol:1.33x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lolos, RSI 5M oversold, BTC 5M hijau mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1795013651.2722592
+      "timestamp": 1795014319.9178076
     }
   ],
   "realized_profit_today_idr": -545.0,
@@ -94,11 +94,6 @@
       "until": 1795003154.493793,
       "last_score": 79.4,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M/15M turun, volume rendah, struktur candle belum konfirmasi."
-    },
-    "ADA": {
-      "until": 1795013647.76525,
-      "last_score": 93.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, risiko terseret meski RSI ADA oversold."
     }
   },
   "trade_experience_memory": [
