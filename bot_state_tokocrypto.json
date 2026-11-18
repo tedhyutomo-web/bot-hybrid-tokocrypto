@@ -1,5 +1,34 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37964.0,
+      "qty": 2.14,
+      "entry_price_idr": 17740,
+      "tp_price_idr": 17979.0,
+      "sl_price_idr": 17421.0,
+      "highest_price_idr": 17740,
+      "rsi_at_entry": 70.2,
+      "buy_order_id": "221529373",
+      "timestamp": 1795037947.752723
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 61596.0,
+      "qty": 5.4e-05,
+      "entry_price_idr": 1140674000,
+      "tp_price_idr": 1156073000.0,
+      "sl_price_idr": 1120142000.0,
+      "highest_price_idr": 1140674000,
+      "rsi_at_entry": 35.5,
+      "buy_order_id": "274661872",
+      "timestamp": 1795038017.2584522
+    }
+  ],
   "realized_profit_today_idr": -1824.0,
   "completed_trades_today": 8,
   "last_reset_date": "2026-11-19",
