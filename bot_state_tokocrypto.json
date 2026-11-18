@@ -27,6 +27,31 @@
       "filled_timestamp": 1795026925.266541,
       "peak_verified": true,
       "tp_order_id": "117639446"
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33270.0,
+      "qty": 2.9e-05,
+      "entry_price_idr": 1140145000.0,
+      "tp_price_idr": 1161238000,
+      "sl_price_idr": 1127033000,
+      "highest_price_idr": 1147239000,
+      "rsi_at_entry": 26.4,
+      "buy_order_id": "274651887",
+      "entry_snapshot": {
+        "skor": 77.7,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 26.4,
+        "rsi_15m": 45.4,
+        "rasio_vol": 1.54,
+        "spread_pct": 0.00017,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:26.4 | Vol:1.54x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI 5M oversold, volume kuat, status emas lolos penuh."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795031128.5559144
     }
   ],
   "realized_profit_today_idr": -1304.0,
