@@ -3,13 +3,13 @@
     {
       "coin": "SOL",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33785.0,
       "qty": 0.0248,
       "entry_price_idr": 1362296,
       "tp_price_idr": 1387498.0,
       "sl_price_idr": 1346630.0,
-      "highest_price_idr": 1362296,
+      "highest_price_idr": 1363638.0,
       "rsi_at_entry": 44.2,
       "buy_order_id": "117562617",
       "entry_snapshot": {
@@ -23,7 +23,35 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC oversold, tren 15M/1H naik, limit buy beri proteksi."
       },
       "sl_hold_history": [],
-      "timestamp": 1794999695.5128746
+      "timestamp": 1794999695.5128746,
+      "filled_timestamp": 1794999995.128758,
+      "peak_verified": true,
+      "tp_order_id": "117563215"
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33606.0,
+      "qty": 0.00102,
+      "entry_price_idr": 32819000.0,
+      "tp_price_idr": 33426000.0,
+      "sl_price_idr": 32442000.0,
+      "highest_price_idr": 32947000,
+      "rsi_at_entry": 29.4,
+      "buy_order_id": "219134637",
+      "entry_snapshot": {
+        "skor": 82.3,
+        "tren_detail": "5M:DN/15M:UP/1H:DN",
+        "rsi_5m": 29.4,
+        "rsi_15m": 36.4,
+        "rasio_vol": 3.26,
+        "spread_pct": 0.00143,
+        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:26.5 | Vol:0.21x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, volume tinggi, BTC tertahan di area support."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1794999995.128758
     }
   ],
   "realized_profit_today_idr": 0.0,
@@ -41,6 +69,11 @@
       "until": 1794927108.9715102,
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC 5M jatuh beruntun dan RSI 15M DOGE jenuh."
+    },
+    "XRP": {
+      "until": 1795000223.6407025,
+      "last_score": 74.6,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, struktur XRP 5M masih turun."
     }
   },
   "trade_experience_memory": [
