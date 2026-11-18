@@ -17,18 +17,18 @@
       "tp_order_id": "44513445"
     },
     {
-      "coin": "XRP",
+      "coin": "ADA",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 37597.0,
-      "qty": 2.13,
-      "entry_price_idr": 17651,
-      "tp_price_idr": 17889.0,
-      "sl_price_idr": 17333.0,
-      "highest_price_idr": 17651,
-      "rsi_at_entry": 40.9,
-      "buy_order_id": "221534636",
-      "timestamp": 1795040483.9432611
+      "capital_idr": 37744.0,
+      "qty": 13.77,
+      "entry_price_idr": 2741,
+      "tp_price_idr": 2778.0,
+      "sl_price_idr": 2692.0,
+      "highest_price_idr": 2741,
+      "rsi_at_entry": 0.0,
+      "buy_order_id": "144225752",
+      "timestamp": 1795041092.6574697
     }
   ],
   "realized_profit_today_idr": -1824.0,
