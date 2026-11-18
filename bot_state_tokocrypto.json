@@ -26,29 +26,29 @@
       "timestamp": 1795032315.34755
     },
     {
-      "coin": "ETH",
-      "style": "GRID",
+      "coin": "DOGE",
+      "style": "EARLY_EMAS",
       "status": "WAITING_BUY",
-      "capital_idr": 33711.0,
-      "qty": 0.00105,
-      "entry_price_idr": 31911000.0,
-      "tp_price_idr": 32501000.0,
-      "sl_price_idr": 31544000.0,
-      "highest_price_idr": 32106000,
-      "rsi_at_entry": 27.2,
-      "buy_order_id": "219213813",
+      "capital_idr": 33232,
+      "qty": 31,
+      "entry_price_idr": 1065.0,
+      "tp_price_idr": 1085,
+      "sl_price_idr": 1053,
+      "highest_price_idr": 1072,
+      "rsi_at_entry": 38.9,
+      "buy_order_id": "136015945",
       "entry_snapshot": {
-        "skor": 80.1,
+        "skor": 78.0,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 27.2,
-        "rsi_15m": 49.9,
-        "rasio_vol": 13.96,
-        "spread_pct": 0.00137,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:24.9 | Vol:0.27x",
-        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Lolos Lapis-1, volume tinggi, memori 100% profit, tren naik."
+        "rsi_5m": 38.9,
+        "rsi_15m": 57.1,
+        "rasio_vol": 2.29,
+        "spread_pct": 0.00093,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:40.0 | Vol:0.06x",
+        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Volume tinggi, momentum 5M kuat, struktur valid."
       },
       "sl_hold_history": [],
-      "timestamp": 1795032315.34755
+      "timestamp": 1795032930.847817
     }
   ],
   "realized_profit_today_idr": -1824.0,
@@ -59,11 +59,6 @@
     "SOL": 1795034815.8114161
   },
   "ai_entry_hold_until": {
-    "DOGE": {
-      "until": 1795029754.2651079,
-      "last_score": 72.2,
-      "reason": "[gemini-flash-lite-latest#K2] TUNDA - Volume tipis 0.3x dan riwayat winrate buruk."
-    },
     "XRP": {
       "until": 1795032848.132608,
       "last_score": 85.8,
