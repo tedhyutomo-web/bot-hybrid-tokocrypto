@@ -29,31 +29,6 @@
       "tp_order_id": "117639446"
     },
     {
-      "coin": "BTC",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 33547.0,
-      "qty": 2.9e-05,
-      "entry_price_idr": 1143208000.0,
-      "tp_price_idr": 1164357000,
-      "sl_price_idr": 1130061000,
-      "highest_price_idr": 1156781000,
-      "rsi_at_entry": 36.9,
-      "buy_order_id": "274648364",
-      "entry_snapshot": {
-        "skor": 77.3,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 36.9,
-        "rsi_15m": 39.2,
-        "rasio_vol": 1.43,
-        "spread_pct": 0.00119,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:36.9 | Vol:1.43x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI rendah, struktur Higher-Low valid, momentum mikro hijau kuat."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795028644.6561239
-    },
-    {
       "coin": "ADA",
       "style": "EARLY_EMAS",
       "status": "WAITING_BUY",
@@ -94,6 +69,11 @@
       "until": 1795027832.050173,
       "last_score": 79.1,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BodyCandle 0% dan winrate rendah, butuh konfirmasi momentum."
+    },
+    "ETH": {
+      "until": 1795029246.745078,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun dan struktur ETH belum Higher-Low."
     }
   },
   "trade_experience_memory": [
