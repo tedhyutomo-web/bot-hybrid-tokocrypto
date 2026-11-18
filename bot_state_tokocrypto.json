@@ -30,13 +30,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 33609.0,
-      "qty": 0.00102,
-      "entry_price_idr": 32810000.0,
-      "tp_price_idr": 33417000.0,
-      "sl_price_idr": 32433000.0,
+      "qty": 0.00101,
+      "entry_price_idr": 32965000.0,
+      "tp_price_idr": 33575000.0,
+      "sl_price_idr": 32586000.0,
       "highest_price_idr": 32950000,
       "rsi_at_entry": 26.1,
-      "buy_order_id": "219132783",
+      "buy_order_id": "219133639",
       "entry_snapshot": {
         "skor": 84.0,
         "tren_detail": "5M:DN/15M:UP/1H:DN",
@@ -48,7 +48,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, volume tinggi, BTC 5M mulai membalas naik."
       },
       "sl_hold_history": [],
-      "timestamp": 1794998796.4827213
+      "timestamp": 1794999316.1295097
     },
     {
       "coin": "BTC",
