@@ -1,5 +1,31 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33597.0,
+      "qty": 0.00105,
+      "entry_price_idr": 31997000,
+      "tp_price_idr": 32589000.0,
+      "sl_price_idr": 31629000.0,
+      "highest_price_idr": 31997000,
+      "rsi_at_entry": 33.5,
+      "buy_order_id": "219218439",
+      "entry_snapshot": {
+        "skor": 75.4,
+        "tren_detail": "5M:DN/15M:DN/1H:DN",
+        "rsi_5m": 33.5,
+        "rsi_15m": 49.9,
+        "rasio_vol": 1.2,
+        "spread_pct": 0.00156,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:39.4 | Vol:3.36x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M hijau, ETH oversold, status Emas lengkap, winrate historis."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795035251.6251733
+    }
+  ],
   "realized_profit_today_idr": -1824.0,
   "completed_trades_today": 8,
   "last_reset_date": "2026-11-19",
@@ -7,14 +33,19 @@
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "XRP": {
-      "until": 1795032848.132608,
-      "last_score": 85.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, XRP oversold tanpa konfirmasi body candle."
+      "until": 1795035694.5213614,
+      "last_score": 79.7,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC DN, BodyCandle 0%, winrate rendah, momentum lemah."
     },
-    "ETH": {
-      "until": 1795035021.8915396,
-      "last_score": 75.1,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC jatuh beruntun, tunggu konfirmasi pantulan RSI."
+    "SUI": {
+      "until": 1795035622.7296956,
+      "last_score": 78.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC triple-down, BodyCandle 0%, winrate rendah rawan SL."
+    },
+    "BTC": {
+      "until": 1795035767.1728566,
+      "last_score": 76.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren besar DN, Higher-Low belum terbentuk, winrate memori rendah."
     }
   },
   "trade_experience_memory": [
