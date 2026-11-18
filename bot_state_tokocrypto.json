@@ -29,29 +29,29 @@
       "tp_order_id": "117639446"
     },
     {
-      "coin": "ADA",
-      "style": "EARLY_EMAS",
+      "coin": "BTC",
+      "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32687.0,
-      "qty": 11.83,
-      "entry_price_idr": 2762.0,
-      "tp_price_idr": 2813.0,
-      "sl_price_idr": 2730.0,
-      "highest_price_idr": 2789,
-      "rsi_at_entry": 48.5,
-      "buy_order_id": "144217069",
+      "capital_idr": 33332.0,
+      "qty": 2.9e-05,
+      "entry_price_idr": 1149390000,
+      "tp_price_idr": 1170654000.0,
+      "sl_price_idr": 1136172000.0,
+      "highest_price_idr": 1149390000,
+      "rsi_at_entry": 32.3,
+      "buy_order_id": "274649092",
       "entry_snapshot": {
-        "skor": 78.0,
+        "skor": 73.3,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 48.5,
-        "rsi_15m": 45.5,
-        "rasio_vol": 398.55,
-        "spread_pct": 0.00179,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:41.7 | Vol:1.57x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume masif, struktur Higher-Low valid, BTC 5M mendukung."
+        "rsi_5m": 32.3,
+        "rsi_15m": 39.1,
+        "rasio_vol": 0.76,
+        "spread_pct": 0.0006,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:32.3 | Vol:0.76x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold, candle hijau kuat, status Lapis-1 lengkap."
       },
       "sl_hold_history": [],
-      "timestamp": 1795028498.9565144
+      "timestamp": 1795029251.1454515
     }
   ],
   "realized_profit_today_idr": -1304.0,
@@ -66,9 +66,9 @@
       "reason": "[gemini-3-flash-preview#K4] TUNDA - Kompas BTC triple-down dan BodyCandle SUI masih 0%."
     },
     "DOGE": {
-      "until": 1795027832.050173,
-      "last_score": 79.1,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BodyCandle 0% dan winrate rendah, butuh konfirmasi momentum."
+      "until": 1795029754.2651079,
+      "last_score": 72.2,
+      "reason": "[gemini-flash-lite-latest#K2] TUNDA - Volume tipis 0.3x dan riwayat winrate buruk."
     },
     "ETH": {
       "until": 1795029246.745078,
