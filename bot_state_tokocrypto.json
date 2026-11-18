@@ -5,11 +5,25 @@
   "last_reset_date": "2026-11-18",
   "loss_to_recover_idr": 7263.0,
   "sl_cooldown_until": {
-    "DOGE": 1795019353.2392745,
-    "XRP": 1795019354.85055,
     "SOL": 1795021750.927201
   },
-  "ai_entry_hold_until": {},
+  "ai_entry_hold_until": {
+    "ETH": {
+      "until": 1795019949.227458,
+      "last_score": 91.4,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC jatuh beruntun, hindari risiko pisau jatuh."
+    },
+    "DOGE": {
+      "until": 1795019949.227458,
+      "last_score": 85.3,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC merah beruntun dan body candle DOGE kosong."
+    },
+    "XRP": {
+      "until": 1795019949.227458,
+      "last_score": 82.2,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC jatuh beruntun, volume XRP sangat rendah."
+    }
+  },
   "trade_experience_memory": [
     {
       "kategori": "EVAL_ENTRY",
