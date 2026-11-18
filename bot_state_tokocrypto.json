@@ -1,38 +1,10 @@
 {
-  "active_slots": [
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33203.0,
-      "qty": 2.9e-05,
-      "entry_price_idr": 1138058000.0,
-      "tp_price_idr": 1159112000,
-      "sl_price_idr": 1124970000,
-      "highest_price_idr": 1144942000,
-      "rsi_at_entry": 33.3,
-      "buy_order_id": "274657160",
-      "entry_snapshot": {
-        "skor": 75.5,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 33.3,
-        "rsi_15m": 43.4,
-        "rasio_vol": 0.35,
-        "spread_pct": 0.0,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:33.3 | Vol:0.35x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, candle 5M hijau, limit buy antisipasi pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795034721.8915396
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -1824.0,
   "completed_trades_today": 8,
   "last_reset_date": "2026-11-19",
   "loss_to_recover_idr": 6851.0,
-  "sl_cooldown_until": {
-    "SOL": 1795034815.8114161
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "XRP": {
       "until": 1795032848.132608,
