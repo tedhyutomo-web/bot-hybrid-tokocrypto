@@ -1,34 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 33785.0,
-      "qty": 0.0248,
-      "entry_price_idr": 1362296,
-      "tp_price_idr": 1387498.0,
-      "sl_price_idr": 1346630.0,
-      "highest_price_idr": 1366577.0,
-      "rsi_at_entry": 44.2,
-      "buy_order_id": "117562617",
-      "entry_snapshot": {
-        "skor": 74.9,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 44.2,
-        "rsi_15m": 41.0,
-        "rasio_vol": 0.76,
-        "spread_pct": 0.00049,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:MERAH-TERTAHAN | RSI 5M:29.6 | Vol:0.21x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC oversold, tren 15M/1H naik, limit buy beri proteksi."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1794999695.5128746,
-      "filled_timestamp": 1794999995.128758,
-      "peak_verified": true,
-      "tp_order_id": "117563215"
-    },
-    {
       "coin": "DOGE",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -85,11 +57,13 @@
       "tp_order_id": "221447941"
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": -545.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-18",
-  "loss_to_recover_idr": 5027.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 5572.0,
+  "sl_cooldown_until": {
+    "SOL": 1795015464.4968073
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795003154.493793,
@@ -630,6 +604,22 @@
       "minus_awal_pct": -0.98,
       "pnl_akhir_pct": -2.17,
       "pnl_idr": -701.0
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1795012764.49681,
+      "waktu": "18/11 21:39",
+      "coin": "SOL",
+      "style": "GRID",
+      "skor": 74.9,
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 44.2,
+      "rsi_15m": 41.0,
+      "rasio_vol": 0.76,
+      "pnl_pct": -1.61,
+      "pnl_idr": -545.0,
+      "sempat_tahan_sl": false
     }
   ]
 }
