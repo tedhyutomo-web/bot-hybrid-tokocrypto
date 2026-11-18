@@ -1432,11 +1432,12 @@ def proses_siklus_batch_terpadu(state, peta_analisa, dompet):
         sisa_kas_simulasi = saldo_idr_tersedia
         plafon_maks_per_slot = math.floor(MAX_BOT_CAPITAL_IDR / MAX_CONCURRENT_COINS) + 500.0
 
-        # GEMBOK ANTI-DOUBLE BUY: Ambil koin dari state aktif DAN dari order yang mungkin belum tersimpan ke disk
+        # GEMBOK ANTI-DOUBLE BUY: Ambil koin dari state aktif DAN koin yang benar-benar ada isinya (>= Rp10.000) di dompet
         koin_sudah_ada = {s["coin"] for s in slot_aktif_sementara}
-        # Kunci tambahan dari koin yang sedang ada di antrean Indodax tapi mungkin belum tercatat di file
-        for k_simpan in dompet["coins_locked"].keys():
-            koin_sudah_ada.add(k_simpan)
+        for k_simpan, qty_locked in dompet["coins_locked"].items():
+            harga_k = peta_analisa.get(k_simpan, {}).get("harga_idr", 0.0)
+            if (qty_locked * harga_k) >= 10000.0:
+                koin_sudah_ada.add(k_simpan)
 
         ai_hold_map = state.setdefault("ai_entry_hold_until", {})
         koin_baru_dieksekusi_siklus_ini = set() # Gembok lapis kedua untuk loop kandidat
