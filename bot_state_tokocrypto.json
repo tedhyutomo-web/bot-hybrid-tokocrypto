@@ -1,29 +1,54 @@
 {
   "active_slots": [
     {
-      "coin": "ETH",
+      "coin": "XRP",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 33597.0,
-      "qty": 0.00105,
-      "entry_price_idr": 31858000.0,
-      "tp_price_idr": 32447000,
-      "sl_price_idr": 31492000,
-      "highest_price_idr": 31997000,
-      "rsi_at_entry": 33.5,
-      "buy_order_id": "219218937",
+      "capital_idr": 33824.0,
+      "qty": 1.91,
+      "entry_price_idr": 17709,
+      "tp_price_idr": 18037.0,
+      "sl_price_idr": 17505.0,
+      "highest_price_idr": 17709,
+      "rsi_at_entry": 45.0,
+      "buy_order_id": "221525795",
       "entry_snapshot": {
-        "skor": 75.4,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 33.5,
-        "rsi_15m": 49.9,
-        "rasio_vol": 1.2,
-        "spread_pct": 0.00156,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:39.4 | Vol:3.36x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M hijau, ETH oversold, status Emas lengkap, winrate historis."
+        "skor": 78.0,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 45.0,
+        "rsi_15m": 22.2,
+        "rasio_vol": 4.07,
+        "spread_pct": 0.00152,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:40.9 | Vol:2.62x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M oversold ekstrem, volume kuat, BTC 5M hijau."
       },
       "sl_hold_history": [],
-      "timestamp": 1795035552.7298923
+      "timestamp": 1795035850.9947093
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 32040.0,
+      "qty": 2.8e-05,
+      "entry_price_idr": 1137403000.0,
+      "tp_price_idr": 1158445000.0,
+      "sl_price_idr": 1124323000.0,
+      "highest_price_idr": 1144283000,
+      "rsi_at_entry": 40.9,
+      "buy_order_id": "274659264",
+      "entry_snapshot": {
+        "skor": 80.5,
+        "tren_detail": "5M:DN/15M:DN/1H:DN",
+        "rsi_5m": 40.9,
+        "rsi_15m": 26.7,
+        "rasio_vol": 2.62,
+        "spread_pct": 0.0,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:40.9 | Vol:2.62x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lengkap, RSI oversold, momentum 5M hijau mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795035921.68061
     }
   ],
   "realized_profit_today_idr": -1824.0,
@@ -32,25 +57,20 @@
   "loss_to_recover_idr": 6851.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
-    "XRP": {
-      "until": 1795035694.5213614,
-      "last_score": 79.7,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Kompas BTC DN, BodyCandle 0%, winrate rendah, momentum lemah."
-    },
     "SUI": {
       "until": 1795035622.7296956,
       "last_score": 78.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC triple-down, BodyCandle 0%, winrate rendah rawan SL."
     },
-    "BTC": {
-      "until": 1795035767.1728566,
-      "last_score": 76.0,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren besar DN, Higher-Low belum terbentuk, winrate memori rendah."
-    },
     "DOGE": {
       "until": 1795035852.7298923,
       "last_score": 74.0,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC turun, tunggu konfirmasi Higher-Low atau RSI memantul."
+    },
+    "SOL": {
+      "until": 1795036221.68061,
+      "last_score": 75.5,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - Volume rendah, winrate buruk, tunggu konfirmasi momentum 5M hijau."
     }
   },
   "trade_experience_memory": [
