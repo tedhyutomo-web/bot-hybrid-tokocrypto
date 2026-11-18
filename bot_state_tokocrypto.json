@@ -22,11 +22,25 @@
         "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:51.8 | Vol:0.29x",
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Momentum 5M kuat, Higher-Low valid, BTC 5M hijau mendukung."
       },
-      "sl_hold_history": [],
+      "sl_hold_history": [
+        {
+          "ts": 1795031349.0211623,
+          "pnl_bid_pct": -0.008646226942715784,
+          "tren_detail": "5M:UP/15M:DN/1H:UP",
+          "rsi_5m": 13.1,
+          "rsi_15m": 47.8,
+          "rasio_vol": 1.32,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold ekstrem, tren 1H naik, tunggu pantulan teknikal."
+        }
+      ],
       "timestamp": 1795026695.9134836,
       "filled_timestamp": 1795026925.266541,
       "peak_verified": true,
-      "tp_order_id": "117639446"
+      "tp_order_id": "117639446",
+      "last_sl_eval_ts": 1795031349.0211623,
+      "last_sl_eval_price_idr": 1338100.0,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold ekstrem, tren 1H naik, tunggu pantulan teknikal.",
+      "last_eval_was_hard_sl": false
     },
     {
       "coin": "BTC",
@@ -35,8 +49,8 @@
       "capital_idr": 33270.0,
       "qty": 2.9e-05,
       "entry_price_idr": 1140145000.0,
-      "tp_price_idr": 1161238000,
-      "sl_price_idr": 1127033000,
+      "tp_price_idr": 1161238000.0,
+      "sl_price_idr": 1127033000.0,
       "highest_price_idr": 1147239000,
       "rsi_at_entry": 26.4,
       "buy_order_id": "274651887",
