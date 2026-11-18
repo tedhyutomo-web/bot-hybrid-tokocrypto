@@ -9,7 +9,7 @@
       "entry_price_idr": 1349953,
       "tp_price_idr": 1372227.0,
       "sl_price_idr": 1335778.0,
-      "highest_price_idr": 1353990.0,
+      "highest_price_idr": 1355212.0,
       "rsi_at_entry": 54.2,
       "buy_order_id": "117639045",
       "entry_snapshot": {
@@ -27,6 +27,31 @@
       "filled_timestamp": 1795026925.266541,
       "peak_verified": true,
       "tp_order_id": "117639446"
+    },
+    {
+      "coin": "BTC",
+      "style": "EARLY_EMAS",
+      "status": "WAITING_BUY",
+      "capital_idr": 33547.0,
+      "qty": 2.9e-05,
+      "entry_price_idr": 1149786000.0,
+      "tp_price_idr": 1171057000,
+      "sl_price_idr": 1136563000,
+      "highest_price_idr": 1156781000,
+      "rsi_at_entry": 36.9,
+      "buy_order_id": "274647275",
+      "entry_snapshot": {
+        "skor": 77.3,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 36.9,
+        "rsi_15m": 39.2,
+        "rasio_vol": 1.43,
+        "spread_pct": 0.00119,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:36.9 | Vol:1.43x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI rendah, struktur Higher-Low valid, momentum mikro hijau kuat."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795027532.050173
     }
   ],
   "realized_profit_today_idr": -1304.0,
@@ -40,10 +65,10 @@
       "last_score": 73.2,
       "reason": "[gemini-3-flash-preview#K4] TUNDA - Kompas BTC triple-down dan BodyCandle SUI masih 0%."
     },
-    "BTC": {
-      "until": 1795026991.2371523,
-      "last_score": 68.2,
-      "reason": "[gemini-3-flash-preview#K2] TUNDA - Tren mayoritas turun, volume rendah, body candle 0% lemah."
+    "DOGE": {
+      "until": 1795027832.050173,
+      "last_score": 79.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BodyCandle 0% dan winrate rendah, butuh konfirmasi momentum."
     }
   },
   "trade_experience_memory": [
