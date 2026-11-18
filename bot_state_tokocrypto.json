@@ -34,12 +34,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 33547.0,
       "qty": 2.9e-05,
-      "entry_price_idr": 1147903000.0,
-      "tp_price_idr": 1169139000.0,
-      "sl_price_idr": 1134702000.0,
+      "entry_price_idr": 1143208000.0,
+      "tp_price_idr": 1164357000,
+      "sl_price_idr": 1130061000,
       "highest_price_idr": 1156781000,
       "rsi_at_entry": 36.9,
-      "buy_order_id": "274648064",
+      "buy_order_id": "274648364",
       "entry_snapshot": {
         "skor": 77.3,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI rendah, struktur Higher-Low valid, momentum mikro hijau kuat."
       },
       "sl_hold_history": [],
-      "timestamp": 1795028417.3542488
+      "timestamp": 1795028644.6561239
     },
     {
       "coin": "ADA",
