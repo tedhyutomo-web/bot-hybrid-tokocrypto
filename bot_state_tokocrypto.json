@@ -1,67 +1,13 @@
 {
-  "active_slots": [
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 33604,
-      "qty": 31,
-      "entry_price_idr": 1084,
-      "tp_price_idr": 1104.0,
-      "sl_price_idr": 1072.0,
-      "highest_price_idr": 1088.0,
-      "rsi_at_entry": 42.9,
-      "buy_order_id": "135994285",
-      "entry_snapshot": {
-        "skor": 79.1,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 42.9,
-        "rsi_15m": 42.4,
-        "rasio_vol": 2.52,
-        "spread_pct": 0.00184,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:54.4 | Vol:0.23x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lengkap, BTC 5M hijau, volume DOGE tinggi mendukung recovery."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795003005.83205,
-      "filled_timestamp": 1795003455.0929797,
-      "peak_verified": true,
-      "tp_order_id": "135994521"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 32470.0,
-      "qty": 1.8,
-      "entry_price_idr": 18039,
-      "tp_price_idr": 18373.0,
-      "sl_price_idr": 17832.0,
-      "highest_price_idr": 18120.0,
-      "rsi_at_entry": 46.1,
-      "buy_order_id": "221447813",
-      "entry_snapshot": {
-        "skor": 77.5,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 46.1,
-        "rsi_15m": 26.3,
-        "rasio_vol": 0.24,
-        "spread_pct": 0.00044,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:71.0 | Vol:2.45x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lolos, RSI 15M oversold, BTC 5M hijau mendukung."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795004654.1985538,
-      "filled_timestamp": 1795004726.1958778,
-      "peak_verified": true,
-      "tp_order_id": "221447941"
-    }
-  ],
-  "realized_profit_today_idr": -545.0,
-  "completed_trades_today": 1,
+  "active_slots": [],
+  "realized_profit_today_idr": -1684.0,
+  "completed_trades_today": 3,
   "last_reset_date": "2026-11-18",
-  "loss_to_recover_idr": 5572.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 6711.0,
+  "sl_cooldown_until": {
+    "DOGE": 1795019353.2392745,
+    "XRP": 1795019354.85055
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795003154.493793,
@@ -612,6 +558,38 @@
       "rasio_vol": 0.76,
       "pnl_pct": -1.61,
       "pnl_idr": -545.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1795016653.2392771,
+      "waktu": "18/11 22:44",
+      "coin": "DOGE",
+      "style": "GRID",
+      "skor": 79.1,
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 42.9,
+      "rsi_15m": 42.4,
+      "rasio_vol": 2.52,
+      "pnl_pct": -1.66,
+      "pnl_idr": -557.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1795016654.8505528,
+      "waktu": "18/11 22:44",
+      "coin": "XRP",
+      "style": "GRID",
+      "skor": 77.5,
+      "tren_detail": "5M:DN/15M:UP/1H:UP",
+      "rsi_5m": 46.1,
+      "rsi_15m": 26.3,
+      "rasio_vol": 0.24,
+      "pnl_pct": -1.79,
+      "pnl_idr": -582.0,
       "sempat_tahan_sl": false
     }
   ]
