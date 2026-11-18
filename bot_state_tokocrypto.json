@@ -55,6 +55,31 @@
       "filled_timestamp": 1795004726.1958778,
       "peak_verified": true,
       "tp_order_id": "221447941"
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33809.0,
+      "qty": 0.00105,
+      "entry_price_idr": 32199000,
+      "tp_price_idr": 32795000.0,
+      "sl_price_idr": 31829000.0,
+      "highest_price_idr": 32199000,
+      "rsi_at_entry": 14.5,
+      "buy_order_id": "219164049",
+      "entry_snapshot": {
+        "skor": 86.6,
+        "tren_detail": "5M:DN/15M:DN/1H:DN",
+        "rsi_5m": 14.5,
+        "rsi_15m": 17.6,
+        "rasio_vol": 1.94,
+        "spread_pct": 0.00133,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:32.8 | Vol:1.91x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI ekstrem oversold, BTC 5M hijau, Lapis-1 Emas lengkap."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795013651.2722592
     }
   ],
   "realized_profit_today_idr": -545.0,
@@ -69,11 +94,6 @@
       "until": 1795003154.493793,
       "last_score": 79.4,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - Tren 5M/15M turun, volume rendah, struktur candle belum konfirmasi."
-    },
-    "ETH": {
-      "until": 1795002026.3714395,
-      "last_score": 84.8,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, tren ETH 1H-15M-5M masih turun."
     },
     "ADA": {
       "until": 1795013647.76525,
