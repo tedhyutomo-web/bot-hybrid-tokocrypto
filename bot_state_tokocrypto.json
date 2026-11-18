@@ -1,5 +1,20 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 37630.0,
+      "qty": 3.3e-05,
+      "entry_price_idr": 1140289000,
+      "tp_price_idr": 1155683000.0,
+      "sl_price_idr": 1119764000.0,
+      "highest_price_idr": 1140289000,
+      "rsi_at_entry": 36.6,
+      "buy_order_id": "274664289",
+      "timestamp": 1795039454.1717072
+    }
+  ],
   "realized_profit_today_idr": -1824.0,
   "completed_trades_today": 8,
   "last_reset_date": "2026-11-19",
