@@ -1,31 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "DOGE",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 33232,
-      "qty": 31,
-      "entry_price_idr": 1065.0,
-      "tp_price_idr": 1085.0,
-      "sl_price_idr": 1053.0,
-      "highest_price_idr": 1072,
-      "rsi_at_entry": 38.9,
-      "buy_order_id": "136015945",
-      "entry_snapshot": {
-        "skor": 78.0,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 38.9,
-        "rsi_15m": 57.1,
-        "rasio_vol": 2.29,
-        "spread_pct": 0.00093,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:40.0 | Vol:0.06x",
-        "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Volume tinggi, momentum 5M kuat, struktur valid."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795032930.847817
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -1824.0,
   "completed_trades_today": 8,
   "last_reset_date": "2026-11-19",
