@@ -29,54 +29,54 @@
       "tp_order_id": "117563215"
     },
     {
-      "coin": "DOGE",
+      "coin": "XRP",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32430,
-      "qty": 30,
-      "entry_price_idr": 1081,
-      "tp_price_idr": 1101.0,
-      "sl_price_idr": 1069.0,
-      "highest_price_idr": 1081,
-      "rsi_at_entry": 30.0,
-      "buy_order_id": "135993500",
+      "capital_idr": 33208.0,
+      "qty": 1.84,
+      "entry_price_idr": 18048,
+      "tp_price_idr": 18382.0,
+      "sl_price_idr": 17840.0,
+      "highest_price_idr": 18048,
+      "rsi_at_entry": 28.7,
+      "buy_order_id": "221441932",
       "entry_snapshot": {
-        "skor": 82.0,
+        "skor": 82.6,
         "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 30.0,
-        "rsi_15m": 41.2,
-        "rasio_vol": 1.96,
-        "spread_pct": 0.00092,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:30.2 | Vol:2.71x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume tinggi, RSI 5M oversold, struktur 15M/1H kuat."
+        "rsi_5m": 28.7,
+        "rsi_15m": 28.1,
+        "rasio_vol": 0.61,
+        "spread_pct": 0.00039,
+        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:30.1 | Vol:0.8x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, Lapis-1 lengkap, histori winrate 100%, BTC tertahan."
       },
       "sl_hold_history": [],
-      "timestamp": 1795000747.320344
+      "timestamp": 1795001653.3526793
     },
     {
       "coin": "BTC",
       "style": "GRID",
       "status": "WAITING_BUY",
-      "capital_idr": 32843.0,
+      "capital_idr": 32846.0,
       "qty": 2.8e-05,
-      "entry_price_idr": 1168023000.0,
-      "tp_price_idr": 1189631000.0,
-      "sl_price_idr": 1154591000.0,
-      "highest_price_idr": 1172973000,
-      "rsi_at_entry": 27.7,
-      "buy_order_id": "274593685",
+      "entry_price_idr": 1173059000,
+      "tp_price_idr": 1194761000,
+      "sl_price_idr": 1159569000,
+      "highest_price_idr": 1173059000,
+      "rsi_at_entry": 39.7,
+      "buy_order_id": "274594838",
       "entry_snapshot": {
-        "skor": 86.6,
-        "tren_detail": "5M:DN/15M:UP/1H:DN",
-        "rsi_5m": 27.7,
-        "rsi_15m": 39.1,
-        "rasio_vol": 1.46,
-        "spread_pct": 0.00065,
-        "kompas_btc": "5M:DN/15M:UP/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:27.7 | Vol:1.46x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, candle 5M hijau, volume naik, lolos Aturan Emas."
+        "skor": 77.1,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 39.7,
+        "rsi_15m": 31.3,
+        "rasio_vol": 0.97,
+        "spread_pct": 0.00093,
+        "kompas_btc": "5M:DN/15M:UP/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:39.7 | Vol:0.97x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, RSI oversold, tren besar naik, candle hijau."
       },
       "sl_hold_history": [],
-      "timestamp": 1795001119.6858828
+      "timestamp": 1795001873.9406416
     }
   ],
   "realized_profit_today_idr": 0.0,
@@ -89,6 +89,11 @@
       "until": 1794926349.5733988,
       "last_score": 75.9,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun, volume SUI rendah, RSI 15M jenuh."
+    },
+    "ETH": {
+      "until": 1795002026.3714395,
+      "last_score": 84.8,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, tren ETH 1H-15M-5M masih turun."
     }
   },
   "trade_experience_memory": [
