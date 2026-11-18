@@ -35,7 +35,7 @@
       "capital_idr": 33604,
       "qty": 31,
       "entry_price_idr": 1084,
-      "tp_price_idr": 1104,
+      "tp_price_idr": 1104.0,
       "sl_price_idr": 1072.0,
       "highest_price_idr": 1085.0,
       "rsi_at_entry": 42.9,
@@ -55,6 +55,31 @@
       "filled_timestamp": 1795003455.0929797,
       "peak_verified": true,
       "tp_order_id": "135994521"
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 31648.0,
+      "qty": 2.7e-05,
+      "entry_price_idr": 1172152000,
+      "tp_price_idr": 1193837000.0,
+      "sl_price_idr": 1158672000.0,
+      "highest_price_idr": 1172152000,
+      "rsi_at_entry": 34.8,
+      "buy_order_id": "274597558",
+      "entry_snapshot": {
+        "skor": 79.6,
+        "tren_detail": "5M:DN/15M:DN/1H:UP",
+        "rsi_5m": 34.8,
+        "rsi_15m": 27.5,
+        "rasio_vol": 1.68,
+        "spread_pct": 0.00044,
+        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:34.8 | Vol:1.68x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, 5M hijau, tren 1H UP, pola historis valid."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795003748.5473497
     }
   ],
   "realized_profit_today_idr": 0.0,
