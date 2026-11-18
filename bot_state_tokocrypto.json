@@ -34,12 +34,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 33332.0,
       "qty": 2.9e-05,
-      "entry_price_idr": 1141793000.0,
-      "tp_price_idr": 1162916000.0,
-      "sl_price_idr": 1128662000.0,
+      "entry_price_idr": 1141794000.0,
+      "tp_price_idr": 1162917000,
+      "sl_price_idr": 1128663000,
       "highest_price_idr": 1149390000,
       "rsi_at_entry": 32.3,
-      "buy_order_id": "274649750",
+      "buy_order_id": "274650732",
       "entry_snapshot": {
         "skor": 73.3,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
@@ -51,7 +51,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold, candle hijau kuat, status Lapis-1 lengkap."
       },
       "sl_hold_history": [],
-      "timestamp": 1795029614.878413
+      "timestamp": 1795030360.427357
     }
   ],
   "realized_profit_today_idr": -1304.0,
@@ -74,6 +74,11 @@
       "until": 1795029246.745078,
       "last_score": 76.0,
       "reason": "[gemini-3-flash-preview#K2] TUNDA - BTC jatuh beruntun dan struktur ETH belum Higher-Low."
+    },
+    "XRP": {
+      "until": 1795030447.8042777,
+      "last_score": 80.4,
+      "reason": "[gemini-3-flash-preview#K2] TUNDA - Volume sangat rendah 0.25x dan candle 0% berisiko stagnan."
     }
   },
   "trade_experience_memory": [
