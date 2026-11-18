@@ -1,39 +1,14 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 32951.0,
-      "qty": 2.52,
-      "entry_price_idr": 13053.0,
-      "tp_price_idr": 13294.0,
-      "sl_price_idr": 12903.0,
-      "highest_price_idr": 13128,
-      "rsi_at_entry": 50.8,
-      "buy_order_id": "44506180",
-      "entry_snapshot": {
-        "skor": 75.4,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 50.8,
-        "rsi_15m": 60.8,
-        "rasio_vol": 0.99,
-        "spread_pct": 0.00144,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:20.3 | Vol:0.11x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - BTC 5M hijau/oversold, struktur Higher-Low valid, momentum mikro aktif."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795032315.34755
-    },
-    {
       "coin": "DOGE",
       "style": "EARLY_EMAS",
       "status": "WAITING_BUY",
       "capital_idr": 33232,
       "qty": 31,
       "entry_price_idr": 1065.0,
-      "tp_price_idr": 1085,
-      "sl_price_idr": 1053,
+      "tp_price_idr": 1085.0,
+      "sl_price_idr": 1053.0,
       "highest_price_idr": 1072,
       "rsi_at_entry": 38.9,
       "buy_order_id": "136015945",
