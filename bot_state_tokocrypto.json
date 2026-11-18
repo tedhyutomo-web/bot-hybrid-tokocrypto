@@ -1,56 +1,5 @@
 {
-  "active_slots": [
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33227.0,
-      "qty": 0.0247,
-      "entry_price_idr": 1341710.0,
-      "tp_price_idr": 1363889.0,
-      "sl_price_idr": 1327622.0,
-      "highest_price_idr": 1334428,
-      "rsi_at_entry": 44.4,
-      "buy_order_id": "117628402",
-      "entry_snapshot": {
-        "skor": 74.8,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 44.4,
-        "rsi_15m": 33.5,
-        "rasio_vol": 2.69,
-        "spread_pct": 0.00146,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:43.6 | Vol:0.06x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume kuat 2.69x, Body 100%, BTC 5M hijau mendukung pantulan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795022504.203924
-    },
-    {
-      "coin": "DOGE",
-      "style": "EARLY_EMAS",
-      "status": "WAITING_BUY",
-      "capital_idr": 33263,
-      "qty": 31,
-      "entry_price_idr": 1073,
-      "tp_price_idr": 1091.0,
-      "sl_price_idr": 1062.0,
-      "highest_price_idr": 1073,
-      "rsi_at_entry": 54.5,
-      "buy_order_id": "136009996",
-      "entry_snapshot": {
-        "skor": 75.1,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 54.5,
-        "rsi_15m": 37.3,
-        "rasio_vol": 1.39,
-        "spread_pct": 0.00093,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:54.9 | Vol:0.04x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume tinggi dan struktur Higher-Low kuat saat BTC hijau."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795022511.6348062
-    }
-  ],
+  "active_slots": [],
   "realized_profit_today_idr": -1304.0,
   "completed_trades_today": 7,
   "last_reset_date": "2026-11-19",
