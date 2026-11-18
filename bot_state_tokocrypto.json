@@ -5,13 +5,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 33111.0,
-      "qty": 1.88,
-      "entry_price_idr": 17538.0,
-      "tp_price_idr": 17862.0,
-      "sl_price_idr": 17336.0,
+      "qty": 1.86,
+      "entry_price_idr": 17770.0,
+      "tp_price_idr": 18099,
+      "sl_price_idr": 17566,
       "highest_price_idr": 17612,
       "rsi_at_entry": 19.0,
-      "buy_order_id": "221494565",
+      "buy_order_id": "221495621",
       "entry_snapshot": {
         "skor": 83.3,
         "tren_detail": "5M:DN/15M:DN/1H:UP",
@@ -23,7 +23,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K5] YA - Volume tinggi, RSI oversold, tren 1H masih bertahan UP."
       },
       "sl_hold_history": [],
-      "timestamp": 1795020909.8404202
+      "timestamp": 1795021359.6763155
     },
     {
       "coin": "SUI",
@@ -34,7 +34,7 @@
       "entry_price_idr": 12942,
       "tp_price_idr": 13181.0,
       "sl_price_idr": 12793.0,
-      "highest_price_idr": 12942.0,
+      "highest_price_idr": 13055.0,
       "rsi_at_entry": 30.5,
       "buy_order_id": "44492761",
       "entry_snapshot": {
@@ -52,11 +52,36 @@
       "filled_timestamp": 1795020909.8404202,
       "peak_verified": true,
       "tp_order_id": "44493007"
+    },
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 33114.0,
+      "qty": 0.00103,
+      "entry_price_idr": 32003000.0,
+      "tp_price_idr": 32595000,
+      "sl_price_idr": 31635000,
+      "highest_price_idr": 31840000,
+      "rsi_at_entry": 32.6,
+      "buy_order_id": "219190919",
+      "entry_snapshot": {
+        "skor": 79.6,
+        "tren_detail": "5M:DN/15M:DN/1H:DN",
+        "rsi_5m": 32.6,
+        "rsi_15m": 23.8,
+        "rasio_vol": 1.46,
+        "spread_pct": 0.00144,
+        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:34.1 | Vol:0.11x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 15M sangat oversold, status emas lengkap, BTC rebound."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795021359.6763155
     }
   ],
   "realized_profit_today_idr": -2236.0,
   "completed_trades_today": 4,
-  "last_reset_date": "2026-11-18",
+  "last_reset_date": "2026-11-19",
   "loss_to_recover_idr": 7263.0,
   "sl_cooldown_until": {
     "SOL": 1795021750.927201
