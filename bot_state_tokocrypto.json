@@ -3,13 +3,13 @@
     {
       "coin": "XRP",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33111.0,
       "qty": 1.86,
       "entry_price_idr": 17770.0,
-      "tp_price_idr": 18099.0,
+      "tp_price_idr": 18099,
       "sl_price_idr": 17566.0,
-      "highest_price_idr": 17612,
+      "highest_price_idr": 17770.0,
       "rsi_at_entry": 19.0,
       "buy_order_id": "221495621",
       "entry_snapshot": {
@@ -23,7 +23,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K5] YA - Volume tinggi, RSI oversold, tren 1H masih bertahan UP."
       },
       "sl_hold_history": [],
-      "timestamp": 1795021359.6763155
+      "timestamp": 1795021359.6763155,
+      "filled_timestamp": 1795022064.7365575,
+      "peak_verified": true,
+      "tp_order_id": "221497226"
     },
     {
       "coin": "SUI",
