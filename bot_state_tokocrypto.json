@@ -6,12 +6,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 33111.0,
       "qty": 1.88,
-      "entry_price_idr": 17612,
-      "tp_price_idr": 17938.0,
-      "sl_price_idr": 17409.0,
+      "entry_price_idr": 17538.0,
+      "tp_price_idr": 17862.0,
+      "sl_price_idr": 17336.0,
       "highest_price_idr": 17612,
       "rsi_at_entry": 19.0,
-      "buy_order_id": "221493800",
+      "buy_order_id": "221494565",
       "entry_snapshot": {
         "skor": 83.3,
         "tren_detail": "5M:DN/15M:DN/1H:UP",
@@ -23,18 +23,18 @@
         "alasan_ai": "[gemini-3-flash-preview#K5] YA - Volume tinggi, RSI oversold, tren 1H masih bertahan UP."
       },
       "sl_hold_history": [],
-      "timestamp": 1795020595.7976336
+      "timestamp": 1795020909.8404202
     },
     {
       "coin": "SUI",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33649.0,
       "qty": 2.6,
       "entry_price_idr": 12942,
       "tp_price_idr": 13181.0,
       "sl_price_idr": 12793.0,
-      "highest_price_idr": 12942,
+      "highest_price_idr": 12942.0,
       "rsi_at_entry": 30.5,
       "buy_order_id": "44492761",
       "entry_snapshot": {
@@ -48,7 +48,10 @@
         "alasan_ai": "[gemini-flash-lite-latest#K1] YA - Lolos Lapis-1, RSI oversold, winrate historis 100%."
       },
       "sl_hold_history": [],
-      "timestamp": 1795020723.765272
+      "timestamp": 1795020723.765272,
+      "filled_timestamp": 1795020909.8404202,
+      "peak_verified": true,
+      "tp_order_id": "44493007"
     }
   ],
   "realized_profit_today_idr": -2236.0,
