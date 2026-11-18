@@ -34,12 +34,12 @@
       "status": "WAITING_BUY",
       "capital_idr": 33547.0,
       "qty": 2.9e-05,
-      "entry_price_idr": 1149786000.0,
-      "tp_price_idr": 1171057000.0,
-      "sl_price_idr": 1136563000.0,
+      "entry_price_idr": 1155077000.0,
+      "tp_price_idr": 1174136000.0,
+      "sl_price_idr": 1142949000.0,
       "highest_price_idr": 1156781000,
       "rsi_at_entry": 36.9,
-      "buy_order_id": "274647275",
+      "buy_order_id": "274647793",
       "entry_snapshot": {
         "skor": 77.3,
         "tren_detail": "5M:UP/15M:DN/1H:DN",
@@ -51,7 +51,32 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - RSI rendah, struktur Higher-Low valid, momentum mikro hijau kuat."
       },
       "sl_hold_history": [],
-      "timestamp": 1795027532.050173
+      "timestamp": 1795028048.233548
+    },
+    {
+      "coin": "ADA",
+      "style": "EARLY_EMAS",
+      "status": "WAITING_BUY",
+      "capital_idr": 32687.0,
+      "qty": 11.72,
+      "entry_price_idr": 2789,
+      "tp_price_idr": 2835.0,
+      "sl_price_idr": 2760.0,
+      "highest_price_idr": 2789,
+      "rsi_at_entry": 48.5,
+      "buy_order_id": "144216749",
+      "entry_snapshot": {
+        "skor": 78.0,
+        "tren_detail": "5M:UP/15M:DN/1H:DN",
+        "rsi_5m": 48.5,
+        "rsi_15m": 45.5,
+        "rasio_vol": 398.55,
+        "spread_pct": 0.00179,
+        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:41.7 | Vol:1.57x",
+        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Volume masif, struktur Higher-Low valid, BTC 5M mendukung."
+      },
+      "sl_hold_history": [],
+      "timestamp": 1795028054.705586
     }
   ],
   "realized_profit_today_idr": -1304.0,
