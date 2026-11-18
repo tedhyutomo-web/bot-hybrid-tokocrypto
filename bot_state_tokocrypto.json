@@ -55,40 +55,13 @@
       "filled_timestamp": 1795004726.1958778,
       "peak_verified": true,
       "tp_order_id": "221447941"
-    },
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33827.0,
-      "qty": 12.21,
-      "entry_price_idr": 2769.0,
-      "tp_price_idr": 2820.0,
-      "sl_price_idr": 2737.0,
-      "highest_price_idr": 2791,
-      "rsi_at_entry": 20.5,
-      "buy_order_id": "144203554",
-      "entry_snapshot": {
-        "skor": 85.1,
-        "tren_detail": "5M:UP/15M:DN/1H:UP",
-        "rsi_5m": 20.5,
-        "rsi_15m": 44.6,
-        "rasio_vol": 2.31,
-        "spread_pct": 0.00107,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:43.5 | Vol:1.33x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lolos, RSI 5M oversold, BTC 5M hijau mendukung."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795014921.8496783
     }
   ],
   "realized_profit_today_idr": -545.0,
   "completed_trades_today": 1,
   "last_reset_date": "2026-11-18",
   "loss_to_recover_idr": 5572.0,
-  "sl_cooldown_until": {
-    "SOL": 1795015464.4968073
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795003154.493793,
