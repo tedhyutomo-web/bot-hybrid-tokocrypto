@@ -9,7 +9,7 @@
       "entry_price_idr": 1362296,
       "tp_price_idr": 1387498.0,
       "sl_price_idr": 1346630.0,
-      "highest_price_idr": 1366103.0,
+      "highest_price_idr": 1366577.0,
       "rsi_at_entry": 44.2,
       "buy_order_id": "117562617",
       "entry_snapshot": {
@@ -57,29 +57,32 @@
       "tp_order_id": "135994521"
     },
     {
-      "coin": "BTC",
+      "coin": "XRP",
       "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31648.0,
-      "qty": 2.7e-05,
-      "entry_price_idr": 1172152000,
-      "tp_price_idr": 1193837000.0,
-      "sl_price_idr": 1158672000.0,
-      "highest_price_idr": 1172152000,
-      "rsi_at_entry": 34.8,
-      "buy_order_id": "274597558",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 32470.0,
+      "qty": 1.8,
+      "entry_price_idr": 18039,
+      "tp_price_idr": 18373,
+      "sl_price_idr": 17832.0,
+      "highest_price_idr": 18039.0,
+      "rsi_at_entry": 46.1,
+      "buy_order_id": "221447813",
       "entry_snapshot": {
-        "skor": 79.6,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 34.8,
-        "rsi_15m": 27.5,
-        "rasio_vol": 1.68,
+        "skor": 77.5,
+        "tren_detail": "5M:DN/15M:UP/1H:UP",
+        "rsi_5m": 46.1,
+        "rsi_15m": 26.3,
+        "rasio_vol": 0.24,
         "spread_pct": 0.00044,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:34.8 | Vol:1.68x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, 5M hijau, tren 1H UP, pola historis valid."
+        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:71.0 | Vol:2.45x",
+        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lolos, RSI 15M oversold, BTC 5M hijau mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1795003748.5473497
+      "timestamp": 1795004654.1985538,
+      "filled_timestamp": 1795004726.1958778,
+      "peak_verified": true,
+      "tp_order_id": "221447941"
     }
   ],
   "realized_profit_today_idr": 0.0,
@@ -97,11 +100,6 @@
       "until": 1795002026.3714395,
       "last_score": 84.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, tren ETH 1H-15M-5M masih turun."
-    },
-    "XRP": {
-      "until": 1795003227.12267,
-      "last_score": 81.6,
-      "reason": "[gemini-3-flash-preview#K1] TUNDA - Kompas BTC 5M/15M DN, XRP 5M DN, momentum belum muncul."
     }
   },
   "trade_experience_memory": [
