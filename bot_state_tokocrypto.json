@@ -31,13 +31,13 @@
     {
       "coin": "DOGE",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 33604,
       "qty": 31,
       "entry_price_idr": 1084,
-      "tp_price_idr": 1104.0,
+      "tp_price_idr": 1104,
       "sl_price_idr": 1072.0,
-      "highest_price_idr": 1084,
+      "highest_price_idr": 1085.0,
       "rsi_at_entry": 42.9,
       "buy_order_id": "135994285",
       "entry_snapshot": {
@@ -51,7 +51,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lengkap, BTC 5M hijau, volume DOGE tinggi mendukung recovery."
       },
       "sl_hold_history": [],
-      "timestamp": 1795003005.83205
+      "timestamp": 1795003005.83205,
+      "filled_timestamp": 1795003455.0929797,
+      "peak_verified": true,
+      "tp_order_id": "135994521"
     }
   ],
   "realized_profit_today_idr": 0.0,
