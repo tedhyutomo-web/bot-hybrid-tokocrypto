@@ -29,31 +29,6 @@
       "tp_order_id": "117563215"
     },
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 31670.0,
-      "qty": 2.7e-05,
-      "entry_price_idr": 1172950000,
-      "tp_price_idr": 1194650000.0,
-      "sl_price_idr": 1159461000.0,
-      "highest_price_idr": 1172950000,
-      "rsi_at_entry": 50.1,
-      "buy_order_id": "274596264",
-      "entry_snapshot": {
-        "skor": 72.0,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 50.1,
-        "rsi_15m": 37.9,
-        "rasio_vol": 0.43,
-        "spread_pct": 0.00068,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:50.1 | Vol:0.43x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Kompas 15M/1H naik, candle 5M full body, spread tipis."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795002855.7408264
-    },
-    {
       "coin": "DOGE",
       "style": "GRID",
       "status": "WAITING_BUY",
