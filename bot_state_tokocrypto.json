@@ -27,31 +27,6 @@
       "filled_timestamp": 1795026925.266541,
       "peak_verified": true,
       "tp_order_id": "117639446"
-    },
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33332.0,
-      "qty": 2.9e-05,
-      "entry_price_idr": 1141794000.0,
-      "tp_price_idr": 1162917000.0,
-      "sl_price_idr": 1128663000.0,
-      "highest_price_idr": 1149390000,
-      "rsi_at_entry": 32.3,
-      "buy_order_id": "274650732",
-      "entry_snapshot": {
-        "skor": 73.3,
-        "tren_detail": "5M:UP/15M:DN/1H:DN",
-        "rsi_5m": 32.3,
-        "rsi_15m": 39.1,
-        "rasio_vol": 0.76,
-        "spread_pct": 0.0006,
-        "kompas_btc": "5M:UP/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:32.3 | Vol:0.76x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI 5M oversold, candle hijau kuat, status Lapis-1 lengkap."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795030360.427357
     }
   ],
   "realized_profit_today_idr": -1304.0,
