@@ -1,40 +1,15 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33470.0,
-      "qty": 2.9e-05,
-      "entry_price_idr": 1146936000.0,
-      "tp_price_idr": 1168154000.0,
-      "sl_price_idr": 1133746000.0,
-      "highest_price_idr": 1154130000,
-      "rsi_at_entry": 44.7,
-      "buy_order_id": "274628097",
-      "entry_snapshot": {
-        "skor": 78.0,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 44.7,
-        "rsi_15m": 26.0,
-        "rasio_vol": 7.98,
-        "spread_pct": 0.0004,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:44.7 | Vol:7.98x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Volume 7.98x masif, candle 5M hijau, pimpin pemulihan pasar."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795017403.953138
-    },
-    {
       "coin": "SOL",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 32624.0,
       "qty": 0.0243,
       "entry_price_idr": 1342531,
-      "tp_price_idr": 1367368.0,
+      "tp_price_idr": 1367368,
       "sl_price_idr": 1327092.0,
-      "highest_price_idr": 1342531,
+      "highest_price_idr": 1342531.0,
       "rsi_at_entry": 46.3,
       "buy_order_id": "117610400",
       "entry_snapshot": {
@@ -48,32 +23,10 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Struktur 1H UP, body candle 100%, momentum mikro positif."
       },
       "sl_hold_history": [],
-      "timestamp": 1795017255.6835096
-    },
-    {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33755.0,
-      "qty": 2.59,
-      "entry_price_idr": 13033,
-      "tp_price_idr": 13274.0,
-      "sl_price_idr": 12883.0,
-      "highest_price_idr": 13033,
-      "rsi_at_entry": 34.4,
-      "buy_order_id": "44486384",
-      "entry_snapshot": {
-        "skor": 78.5,
-        "tren_detail": "5M:DN/15M:DN/1H:DN",
-        "rsi_5m": 34.4,
-        "rsi_15m": 29.4,
-        "rasio_vol": 0.88,
-        "spread_pct": 0.00261,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:46.1 | Vol:0.21x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - BTC 5M hijau, SUI oversold 15M, histori winrate 75%."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795017332.652739
+      "timestamp": 1795017255.6835096,
+      "filled_timestamp": 1795017693.4237413,
+      "peak_verified": true,
+      "tp_order_id": "117611834"
     }
   ],
   "realized_profit_today_idr": -1684.0,
