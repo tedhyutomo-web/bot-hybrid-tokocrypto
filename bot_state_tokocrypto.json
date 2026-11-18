@@ -1,34 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 33111.0,
-      "qty": 1.86,
-      "entry_price_idr": 17770.0,
-      "tp_price_idr": 18099.0,
-      "sl_price_idr": 17566.0,
-      "highest_price_idr": 17925.0,
-      "rsi_at_entry": 19.0,
-      "buy_order_id": "221495621",
-      "entry_snapshot": {
-        "skor": 83.3,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 19.0,
-        "rsi_15m": 28.1,
-        "rasio_vol": 6.25,
-        "spread_pct": 0.00159,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:19.2 | Vol:0.41x",
-        "alasan_ai": "[gemini-3-flash-preview#K5] YA - Volume tinggi, RSI oversold, tren 1H masih bertahan UP."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795021359.6763155,
-      "filled_timestamp": 1795022064.7365575,
-      "peak_verified": true,
-      "tp_order_id": "221497226"
-    },
-    {
       "coin": "SOL",
       "style": "GRID",
       "status": "WAITING_BUY",
@@ -77,12 +49,26 @@
       },
       "sl_hold_history": [],
       "timestamp": 1795022511.6348062
+    },
+    {
+      "coin": "XRP",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 33478.0,
+      "qty": 1.86,
+      "entry_price_idr": 17999,
+      "tp_price_idr": 18332.0,
+      "sl_price_idr": 17792.0,
+      "highest_price_idr": 17999.0,
+      "filled_timestamp": 1795023020.0493438,
+      "timestamp": 1795023020.0493445,
+      "peak_verified": true
     }
   ],
-  "realized_profit_today_idr": -2023.0,
-  "completed_trades_today": 5,
+  "realized_profit_today_idr": -1739.0,
+  "completed_trades_today": 6,
   "last_reset_date": "2026-11-19",
-  "loss_to_recover_idr": 7050.0,
+  "loss_to_recover_idr": 6766.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {},
   "trade_experience_memory": [
@@ -692,6 +678,22 @@
       "rasio_vol": 0.54,
       "pnl_pct": 0.63,
       "pnl_idr": 213.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "MENANG",
+      "ts": 1795022956.6744077,
+      "waktu": "19/11 00:29",
+      "coin": "XRP",
+      "style": "GRID",
+      "skor": 83.3,
+      "tren_detail": "5M:DN/15M:DN/1H:UP",
+      "rsi_5m": 19.0,
+      "rsi_15m": 28.1,
+      "rasio_vol": 6.25,
+      "pnl_pct": 0.86,
+      "pnl_idr": 284.0,
       "sempat_tahan_sl": false
     }
   ]
