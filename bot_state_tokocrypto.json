@@ -7,9 +7,9 @@
       "capital_idr": 33749.0,
       "qty": 0.025,
       "entry_price_idr": 1349953,
-      "tp_price_idr": 1372227,
+      "tp_price_idr": 1372227.0,
       "sl_price_idr": 1335778.0,
-      "highest_price_idr": 1349953.0,
+      "highest_price_idr": 1353990.0,
       "rsi_at_entry": 54.2,
       "buy_order_id": "117639045",
       "entry_snapshot": {
