@@ -27,56 +27,6 @@
       "filled_timestamp": 1794999995.128758,
       "peak_verified": true,
       "tp_order_id": "117563215"
-    },
-    {
-      "coin": "XRP",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 33208.0,
-      "qty": 1.84,
-      "entry_price_idr": 18048,
-      "tp_price_idr": 18382.0,
-      "sl_price_idr": 17840.0,
-      "highest_price_idr": 18048,
-      "rsi_at_entry": 28.7,
-      "buy_order_id": "221441932",
-      "entry_snapshot": {
-        "skor": 82.6,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 28.7,
-        "rsi_15m": 28.1,
-        "rasio_vol": 0.61,
-        "spread_pct": 0.00039,
-        "kompas_btc": "5M:DN/15M:DN/1H:UP | Candle5M:MERAH-TERTAHAN | RSI 5M:30.1 | Vol:0.8x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - RSI oversold, Lapis-1 lengkap, histori winrate 100%, BTC tertahan."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795001653.3526793
-    },
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "WAITING_BUY",
-      "capital_idr": 32846.0,
-      "qty": 2.8e-05,
-      "entry_price_idr": 1168628000.0,
-      "tp_price_idr": 1190248000.0,
-      "sl_price_idr": 1155189000.0,
-      "highest_price_idr": 1173059000,
-      "rsi_at_entry": 39.7,
-      "buy_order_id": "274595132",
-      "entry_snapshot": {
-        "skor": 77.1,
-        "tren_detail": "5M:DN/15M:UP/1H:UP",
-        "rsi_5m": 39.7,
-        "rsi_15m": 31.3,
-        "rasio_vol": 0.97,
-        "spread_pct": 0.00093,
-        "kompas_btc": "5M:DN/15M:UP/1H:UP | Candle5M:HIJAU-NAIK | RSI 5M:39.7 | Vol:0.97x",
-        "alasan_ai": "[gemini-3-flash-preview#K1] YA - Lapis-1 lolos, RSI oversold, tren besar naik, candle hijau."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795002082.927443
     }
   ],
   "realized_profit_today_idr": 0.0,
@@ -94,6 +44,11 @@
       "until": 1795002026.3714395,
       "last_score": 84.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, tren ETH 1H-15M-5M masih turun."
+    },
+    "XRP": {
+      "until": 1795002678.3028593,
+      "last_score": 79.0,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, risiko terseret meski XRP oversold."
     }
   },
   "trade_experience_memory": [
