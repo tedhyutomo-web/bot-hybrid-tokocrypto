@@ -61,13 +61,13 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 33827.0,
-      "qty": 12.16,
-      "entry_price_idr": 2781.0,
-      "tp_price_idr": 2832.0,
-      "sl_price_idr": 2749.0,
+      "qty": 12.21,
+      "entry_price_idr": 2769.0,
+      "tp_price_idr": 2820,
+      "sl_price_idr": 2737,
       "highest_price_idr": 2791,
       "rsi_at_entry": 20.5,
-      "buy_order_id": "144202872",
+      "buy_order_id": "144203554",
       "entry_snapshot": {
         "skor": 85.1,
         "tren_detail": "5M:UP/15M:DN/1H:UP",
@@ -79,7 +79,7 @@
         "alasan_ai": "[gemini-3-flash-preview#K2] YA - Lapis-1 lolos, RSI 5M oversold, BTC 5M hijau mendukung."
       },
       "sl_hold_history": [],
-      "timestamp": 1795014319.9178076
+      "timestamp": 1795014921.8496783
     }
   ],
   "realized_profit_today_idr": -545.0,
