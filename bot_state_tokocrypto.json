@@ -74,6 +74,11 @@
       "until": 1795002026.3714395,
       "last_score": 84.8,
       "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC 5M jatuh beruntun, tren ETH 1H-15M-5M masih turun."
+    },
+    "ADA": {
+      "until": 1795013647.76525,
+      "last_score": 93.1,
+      "reason": "[gemini-3-flash-preview#K1] TUNDA - BTC jatuh beruntun, risiko terseret meski RSI ADA oversold."
     }
   },
   "trade_experience_memory": [
