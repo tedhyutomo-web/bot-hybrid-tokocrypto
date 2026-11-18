@@ -1,41 +1,13 @@
 {
-  "active_slots": [
-    {
-      "coin": "SOL",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 32624.0,
-      "qty": 0.0243,
-      "entry_price_idr": 1342531,
-      "tp_price_idr": 1367368.0,
-      "sl_price_idr": 1327092.0,
-      "highest_price_idr": 1342679.0,
-      "rsi_at_entry": 46.3,
-      "buy_order_id": "117610400",
-      "entry_snapshot": {
-        "skor": 73.8,
-        "tren_detail": "5M:DN/15M:DN/1H:UP",
-        "rsi_5m": 46.3,
-        "rsi_15m": 32.8,
-        "rasio_vol": 1.61,
-        "spread_pct": 0.00116,
-        "kompas_btc": "5M:DN/15M:DN/1H:DN | Candle5M:HIJAU-NAIK | RSI 5M:44.7 | Vol:7.98x",
-        "alasan_ai": "[gemini-3-flash-preview#K2] YA - Struktur 1H UP, body candle 100%, momentum mikro positif."
-      },
-      "sl_hold_history": [],
-      "timestamp": 1795017255.6835096,
-      "filled_timestamp": 1795017693.4237413,
-      "peak_verified": true,
-      "tp_order_id": "117611834"
-    }
-  ],
-  "realized_profit_today_idr": -1684.0,
-  "completed_trades_today": 3,
+  "active_slots": [],
+  "realized_profit_today_idr": -2236.0,
+  "completed_trades_today": 4,
   "last_reset_date": "2026-11-18",
-  "loss_to_recover_idr": 6711.0,
+  "loss_to_recover_idr": 7263.0,
   "sl_cooldown_until": {
     "DOGE": 1795019353.2392745,
-    "XRP": 1795019354.85055
+    "XRP": 1795019354.85055,
+    "SOL": 1795021750.927201
   },
   "ai_entry_hold_until": {},
   "trade_experience_memory": [
@@ -613,6 +585,22 @@
       "rasio_vol": 0.24,
       "pnl_pct": -1.79,
       "pnl_idr": -582.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "kategori": "EVAL_ENTRY",
+      "hasil": "KALAH",
+      "ts": 1795019050.9272046,
+      "waktu": "18/11 23:24",
+      "coin": "SOL",
+      "style": "GRID",
+      "skor": 73.8,
+      "tren_detail": "5M:DN/15M:DN/1H:UP",
+      "rsi_5m": 46.3,
+      "rsi_15m": 32.8,
+      "rasio_vol": 1.61,
+      "pnl_pct": -1.69,
+      "pnl_idr": -552.0,
       "sempat_tahan_sl": false
     }
   ]
