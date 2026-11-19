@@ -1,5 +1,20 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 37660,
+      "qty": 35,
+      "entry_price_idr": 1076,
+      "tp_price_idr": 1091.0,
+      "sl_price_idr": 1065.0,
+      "highest_price_idr": 1085.0,
+      "filled_timestamp": 1795118042.5665092,
+      "timestamp": 1795118042.5665092,
+      "tp_order_id": "136068061"
+    }
+  ],
   "realized_profit_today_idr": -3180.0,
   "completed_trades_today": 16,
   "last_reset_date": "2026-11-20",
