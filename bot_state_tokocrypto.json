@@ -1,20 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37660,
-      "qty": 35,
-      "entry_price_idr": 1076,
-      "tp_price_idr": 1091.0,
-      "sl_price_idr": 1065.0,
-      "highest_price_idr": 1085.0,
-      "filled_timestamp": 1795118042.5665092,
-      "timestamp": 1795118042.5665092,
-      "tp_order_id": "136068061"
-    },
-    {
       "coin": "SUI",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -50,6 +36,36 @@
           "rsi_15m": 52.4,
           "rasio_vol": 10.68,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M ekstrem oversold (11.5), potensi rebound teknikal segera."
+        }
+      ]
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 37660,
+      "qty": 35,
+      "entry_price_idr": 1076,
+      "tp_price_idr": 1091.0,
+      "sl_price_idr": 1065.0,
+      "highest_price_idr": 1085.0,
+      "filled_timestamp": 1795118042.5665092,
+      "timestamp": 1795118042.5665092,
+      "tp_order_id": "136068061",
+      "last_sl_eval_ts": 1795120746.5273747,
+      "last_sl_eval_price_idr": 1068,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold, potensi rebound mengikuti tren makro.",
+      "last_eval_was_hard_sl": false,
+      "last_eval_was_ramai_turun": true,
+      "sl_hold_history": [
+        {
+          "ts": 1795120746.5273747,
+          "pnl_bid_pct": -0.007434944237918215,
+          "tren_detail": "5M:DN/15M:DN/1H:UP",
+          "rsi_5m": 11.8,
+          "rsi_15m": 44.9,
+          "rasio_vol": 2.86,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold, potensi rebound mengikuti tren makro."
         }
       ]
     }
