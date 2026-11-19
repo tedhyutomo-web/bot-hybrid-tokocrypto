@@ -1705,7 +1705,7 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     slot["tp_order_id"] = None
                     time.sleep(1.0)
                 harga_jual_sl = bulatkan_harga_indodax(coin, min(item_sl["harga_bid_asli"], item_sl["harga_sekarang"] * 0.998))
-                berhasil_sl, harga_jual_sl, _ = eksekusi_jual_terverifikasi(coin, harga_jual_sl, qty_dimiliki, prioritas_market=item_sl["kena_hard_sl"])
+                berhasil_sl, harga_jual_sl, _ = eksekusi_jual_terverifikasi(coin, harga_jual_sl, qty_dimiliki, prioritas_market=False)
                 if berhasil_sl:
                     pnl_exit_pct = ((harga_jual_sl - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT
                     pnl_bersih = round(slot["capital_idr"] * pnl_exit_pct, 0)
