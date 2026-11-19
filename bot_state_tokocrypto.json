@@ -12,6 +12,20 @@
       "highest_price_idr": 33293000.0,
       "filled_timestamp": 1795065240.0843618,
       "timestamp": 1795065240.084362
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "WAITING_BUY",
+      "capital_idr": 54524.0,
+      "qty": 4.21,
+      "entry_price_idr": 12951,
+      "tp_price_idr": 13126.0,
+      "sl_price_idr": 12718.0,
+      "highest_price_idr": 12951,
+      "rsi_at_entry": 31.8,
+      "buy_order_id": "44602907",
+      "timestamp": 1795108220.7806058
     }
   ],
   "realized_profit_today_idr": -3180.0,
