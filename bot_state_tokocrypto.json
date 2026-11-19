@@ -27,10 +27,10 @@
       "filled_timestamp": 1795118471.4607582,
       "timestamp": 1795118471.4607582,
       "tp_order_id": "44622028",
-      "last_sl_eval_ts": 1795120218.0504043,
-      "last_sl_eval_price_idr": 13000,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (12.9), potensi pantulan teknikal segera.",
-      "last_eval_was_hard_sl": false,
+      "last_sl_eval_ts": 1795120443.7113783,
+      "last_sl_eval_price_idr": 12987,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M ekstrem oversold (11.5), potensi rebound teknikal segera.",
+      "last_eval_was_hard_sl": true,
       "last_eval_was_ramai_turun": true,
       "sl_hold_history": [
         {
@@ -41,6 +41,15 @@
           "rsi_15m": 52.4,
           "rasio_vol": 2.92,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (12.9), potensi pantulan teknikal segera."
+        },
+        {
+          "ts": 1795120443.7113783,
+          "pnl_bid_pct": -0.011041730124885775,
+          "tren_detail": "5M:UP/15M:DN/1H:UP",
+          "rsi_5m": 11.5,
+          "rsi_15m": 52.4,
+          "rasio_vol": 10.68,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M ekstrem oversold (11.5), potensi rebound teknikal segera."
         }
       ]
     }
