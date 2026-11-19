@@ -43,9 +43,9 @@
       "filled_timestamp": 1795118471.4607582,
       "timestamp": 1795118471.4607582,
       "tp_order_id": "44622028",
-      "last_sl_eval_ts": 1795121347.7426746,
-      "last_sl_eval_price_idr": 12994,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau tertahan, tren 1H UP.",
+      "last_sl_eval_ts": 1795121847.965481,
+      "last_sl_eval_price_idr": 12991,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau, tren 1H masih naik.",
       "last_eval_was_hard_sl": true,
       "last_eval_was_ramai_turun": false,
       "sl_hold_history": [
@@ -75,6 +75,15 @@
           "rsi_15m": 55.6,
           "rasio_vol": 0.0,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau tertahan, tren 1H UP."
+        },
+        {
+          "ts": 1795121847.965481,
+          "pnl_bid_pct": -0.010737130673164789,
+          "tren_detail": "5M:DN/15M:DN/1H:UP",
+          "rsi_5m": 24.7,
+          "rsi_15m": 55.0,
+          "rasio_vol": 0.0,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau, tren 1H masih naik."
         }
       ]
     }
