@@ -1,22 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 62251.0,
-      "qty": 4.76,
-      "entry_price_idr": 13078,
-      "tp_price_idr": 13255.0,
-      "sl_price_idr": 13167.0,
-      "highest_price_idr": 13255.0,
-      "rsi_at_entry": 32.4,
-      "buy_order_id": "44513233",
-      "timestamp": 1795040248.5027835,
-      "filled_timestamp": 1795040555.1108685,
-      "tp_order_id": "44513445"
-    },
-    {
       "coin": "ADA",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -33,11 +17,13 @@
       "tp_order_id": "144226564"
     }
   ],
-  "realized_profit_today_idr": -1824.0,
-  "completed_trades_today": 8,
+  "realized_profit_today_idr": -1886.0,
+  "completed_trades_today": 9,
   "last_reset_date": "2026-11-19",
-  "loss_to_recover_idr": 6851.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 6913.0,
+  "sl_cooldown_until": {
+    "SUI": 1795049489.667746
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795035622.7296956,
