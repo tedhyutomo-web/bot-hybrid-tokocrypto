@@ -9,7 +9,7 @@
       "entry_price_idr": 13287,
       "tp_price_idr": 13526.0,
       "sl_price_idr": 13074.0,
-      "highest_price_idr": 13410.0,
+      "highest_price_idr": 13428.0,
       "rsi_at_entry": 60.1,
       "buy_order_id": "44541102",
       "timestamp": 1795064110.7723124,
@@ -25,7 +25,7 @@
       "entry_price_idr": 32938000,
       "tp_price_idr": 33383000.0,
       "sl_price_idr": 32345000.0,
-      "highest_price_idr": 33105000.0,
+      "highest_price_idr": 33143000.0,
       "filled_timestamp": 1795065240.0843618,
       "timestamp": 1795065240.084362
     }
