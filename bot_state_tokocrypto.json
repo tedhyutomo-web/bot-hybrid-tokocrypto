@@ -13,9 +13,9 @@
       "filled_timestamp": 1795118042.5665092,
       "timestamp": 1795118042.5665092,
       "tp_order_id": "136068061",
-      "last_sl_eval_ts": 1795122314.837071,
+      "last_sl_eval_ts": 1795122679.173668,
       "last_sl_eval_price_idr": 1065,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold (18.8), candle hijau, potensi rebound teknikal.",
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (17.6) dan tren 1H naik.",
       "last_eval_was_hard_sl": true,
       "last_eval_was_ramai_turun": false,
       "sl_hold_history": [
@@ -45,6 +45,15 @@
           "rsi_15m": 39.5,
           "rasio_vol": 0.0,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold (18.8), candle hijau, potensi rebound teknikal."
+        },
+        {
+          "ts": 1795122679.173668,
+          "pnl_bid_pct": -0.010223048327137546,
+          "tren_detail": "5M:DN/15M:DN/1H:UP",
+          "rsi_5m": 17.6,
+          "rsi_15m": 34.2,
+          "rasio_vol": 0.01,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (17.6) dan tren 1H naik."
         }
       ]
     },
@@ -61,9 +70,9 @@
       "filled_timestamp": 1795118471.4607582,
       "timestamp": 1795118471.4607582,
       "tp_order_id": "44622028",
-      "last_sl_eval_ts": 1795122451.914172,
-      "last_sl_eval_price_idr": 12970.0,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 18.0 oversold, tren 1H naik, candle mulai hijau.",
+      "last_sl_eval_ts": 1795122753.3057098,
+      "last_sl_eval_price_idr": 12974,
+      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold parah, candle hijau, potensi rebound ke titik impas.",
       "last_eval_was_hard_sl": true,
       "last_eval_was_ramai_turun": false,
       "sl_hold_history": [
@@ -120,6 +129,15 @@
           "rsi_15m": 40.3,
           "rasio_vol": 0.0,
           "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 18.0 oversold, tren 1H naik, candle mulai hijau."
+        },
+        {
+          "ts": 1795122753.3057098,
+          "pnl_bid_pct": -0.012031678342978983,
+          "tren_detail": "5M:DN/15M:DN/1H:UP",
+          "rsi_5m": 23.3,
+          "rsi_15m": 34.4,
+          "rasio_vol": 3.97,
+          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold parah, candle hijau, potensi rebound ke titik impas."
         }
       ]
     }
