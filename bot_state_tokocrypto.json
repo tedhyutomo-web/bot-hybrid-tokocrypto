@@ -14,29 +14,27 @@
       "timestamp": 1795065240.084362
     },
     {
-      "coin": "XRP",
+      "coin": "SUI",
       "style": "SNIPER",
       "status": "HOLDING_FOR_TP",
-      "capital_idr": 54544.0,
-      "qty": 3.02,
-      "entry_price_idr": 18061,
-      "tp_price_idr": 18386.0,
-      "sl_price_idr": 17772.0,
-      "highest_price_idr": 18235.0,
-      "rsi_at_entry": 60.2,
-      "buy_order_id": "221629258",
-      "timestamp": 1795091047.4000893,
-      "filled_timestamp": 1795091116.2538552,
-      "tp_order_id": "221629444"
+      "capital_idr": 54514.0,
+      "qty": 4.05,
+      "entry_price_idr": 13427,
+      "tp_price_idr": 13669,
+      "sl_price_idr": 13212.0,
+      "highest_price_idr": 13456.0,
+      "rsi_at_entry": 56.8,
+      "buy_order_id": "44579206",
+      "timestamp": 1795098987.0443327,
+      "filled_timestamp": 1795099058.481569,
+      "tp_order_id": "44579425"
     }
   ],
-  "realized_profit_today_idr": -994.0,
-  "completed_trades_today": 13,
+  "realized_profit_today_idr": -675.0,
+  "completed_trades_today": 14,
   "last_reset_date": "2026-11-19",
-  "loss_to_recover_idr": 6021.0,
-  "sl_cooldown_until": {
-    "SUI": 1795092920.7538288
-  },
+  "loss_to_recover_idr": 5702.0,
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795035622.7296956,
