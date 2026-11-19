@@ -19,16 +19,18 @@
     {
       "coin": "SUI",
       "style": "SNIPER",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 55008.0,
       "qty": 4.13,
       "entry_price_idr": 13287,
       "tp_price_idr": 13526.0,
       "sl_price_idr": 13074.0,
-      "highest_price_idr": 13287,
+      "highest_price_idr": 13364.0,
       "rsi_at_entry": 60.1,
       "buy_order_id": "44541102",
-      "timestamp": 1795064110.7723124
+      "timestamp": 1795064110.7723124,
+      "filled_timestamp": 1795064485.8714023,
+      "tp_order_id": "44541417"
     }
   ],
   "realized_profit_today_idr": -1143.0,
