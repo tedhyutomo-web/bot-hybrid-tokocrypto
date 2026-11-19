@@ -13,6 +13,20 @@
       "filled_timestamp": 1795118042.5665092,
       "timestamp": 1795118042.5665092,
       "tp_order_id": "136068061"
+    },
+    {
+      "coin": "SUI",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 45174.0,
+      "qty": 3.44,
+      "entry_price_idr": 13132,
+      "tp_price_idr": 13309.0,
+      "sl_price_idr": 12994.0,
+      "highest_price_idr": 13234.0,
+      "filled_timestamp": 1795118471.4607582,
+      "timestamp": 1795118471.4607582,
+      "tp_order_id": "44622028"
     }
   ],
   "realized_profit_today_idr": -3180.0,
