@@ -14,18 +14,18 @@
       "timestamp": 1795065240.084362
     },
     {
-      "coin": "SOL",
+      "coin": "DOGE",
       "style": "SNIPER",
       "status": "WAITING_BUY",
-      "capital_idr": 54505.0,
-      "qty": 0.0399,
-      "entry_price_idr": 1366032,
-      "tp_price_idr": 1390621.0,
-      "sl_price_idr": 1344175.0,
-      "highest_price_idr": 1366032,
-      "rsi_at_entry": 56.5,
-      "buy_order_id": "117753743",
-      "timestamp": 1795090589.031773
+      "capital_idr": 54450,
+      "qty": 50,
+      "entry_price_idr": 1089,
+      "tp_price_idr": 1109.0,
+      "sl_price_idr": 1072.0,
+      "highest_price_idr": 1089,
+      "rsi_at_entry": 55.0,
+      "buy_order_id": "136043420",
+      "timestamp": 1795090880.954696
     }
   ],
   "realized_profit_today_idr": -994.0,
