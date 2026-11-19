@@ -1,5 +1,22 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "SNIPER",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 44948.0,
+      "qty": 0.00138,
+      "entry_price_idr": 32571000,
+      "tp_price_idr": 33157000,
+      "sl_price_idr": 32050000.0,
+      "highest_price_idr": 32770000.0,
+      "rsi_at_entry": 47.5,
+      "buy_order_id": "219250461",
+      "timestamp": 1795053548.25939,
+      "filled_timestamp": 1795053687.544681,
+      "tp_order_id": "219250739"
+    }
+  ],
   "realized_profit_today_idr": -1584.0,
   "completed_trades_today": 10,
   "last_reset_date": "2026-11-19",
