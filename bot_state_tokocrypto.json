@@ -1,38 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 42683.0,
-      "qty": 29.15,
-      "entry_price_idr": 2768,
-      "tp_price_idr": 2805.0,
-      "sl_price_idr": 2739.0,
-      "highest_price_idr": 2814.0,
-      "filled_timestamp": 1795123821.5324101,
-      "timestamp": 1795123821.5324101,
-      "tp_order_id": "144310602"
-    },
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 41342.0,
-      "qty": 0.00129,
-      "entry_price_idr": 32048000,
-      "tp_price_idr": 32481000.0,
-      "sl_price_idr": 31711000.0,
-      "highest_price_idr": 32640000.0,
-      "filled_timestamp": 1795123892.3249912,
-      "timestamp": 1795123892.3249912,
-      "tp_order_id": "219403085"
-    }
-  ],
-  "realized_profit_today_idr": -4918.0,
-  "completed_trades_today": 18,
+  "active_slots": [],
+  "realized_profit_today_idr": -4726.0,
+  "completed_trades_today": 20,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 9945.0,
+  "loss_to_recover_idr": 9753.0,
   "sl_cooldown_until": {
     "SUI": 1795125554.3433738,
     "DOGE": 1795125691.8966007
@@ -776,6 +747,26 @@
       "pnl_pct": -2.13,
       "pnl_idr": -802.0,
       "sempat_tahan_sl": true
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795127350.7267227,
+      "waktu": "20/11 05:29",
+      "coin": "ADA",
+      "style": "GRID",
+      "pnl_pct": 0.21,
+      "pnl_idr": 89.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795127356.4361265,
+      "waktu": "20/11 05:29",
+      "coin": "ETH",
+      "style": "GRID",
+      "pnl_pct": 0.25,
+      "pnl_idr": 103.0,
+      "sempat_tahan_sl": false
     }
   ]
 }
