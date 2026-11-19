@@ -34,6 +34,10 @@ jobs:
           TOKOCRYPTO_API_KEY: ${{ secrets.TOKOCRYPTO_API_KEY }}
           TOKOCRYPTO_SECRET_KEY: ${{ secrets.TOKOCRYPTO_SECRET_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+          GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+          GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
           GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
           MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
           LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'false' }}
