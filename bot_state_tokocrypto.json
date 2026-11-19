@@ -1,26 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37744.0,
-      "qty": 13.77,
-      "entry_price_idr": 2741,
-      "tp_price_idr": 2778.0,
-      "sl_price_idr": 2760.0,
-      "highest_price_idr": 2778.0,
-      "rsi_at_entry": 0.0,
-      "buy_order_id": "144225752",
-      "timestamp": 1795041092.6574697,
-      "filled_timestamp": 1795042153.914178,
-      "tp_order_id": "144226564"
-    }
-  ],
-  "realized_profit_today_idr": -1886.0,
-  "completed_trades_today": 9,
+  "active_slots": [],
+  "realized_profit_today_idr": -1584.0,
+  "completed_trades_today": 10,
   "last_reset_date": "2026-11-19",
-  "loss_to_recover_idr": 6913.0,
+  "loss_to_recover_idr": 6611.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
