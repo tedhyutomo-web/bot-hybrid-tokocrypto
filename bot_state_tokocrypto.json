@@ -18,14 +18,14 @@
       "style": "GRID",
       "status": "WAITING_BUY",
       "capital_idr": 54524.0,
-      "qty": 4.16,
-      "entry_price_idr": 13081.0,
-      "tp_price_idr": 13258.0,
-      "sl_price_idr": 12846.0,
+      "qty": 4.13,
+      "entry_price_idr": 13144.0,
+      "tp_price_idr": 13321,
+      "sl_price_idr": 12907,
       "highest_price_idr": 12951,
       "rsi_at_entry": 31.8,
-      "buy_order_id": "44605189",
-      "timestamp": 1795109047.296316
+      "buy_order_id": "44606401",
+      "timestamp": 1795109547.1741574
     }
   ],
   "realized_profit_today_idr": -3180.0,
