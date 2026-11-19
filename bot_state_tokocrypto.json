@@ -16,16 +16,18 @@
     {
       "coin": "DOGE",
       "style": "GRID",
-      "status": "WAITING_BUY",
+      "status": "HOLDING_FOR_TP",
       "capital_idr": 54100,
       "qty": 50,
       "entry_price_idr": 1082,
       "tp_price_idr": 1097.0,
       "sl_price_idr": 1063.0,
-      "highest_price_idr": 1082,
+      "highest_price_idr": 1097.0,
       "rsi_at_entry": 32.1,
       "buy_order_id": "136053616",
-      "timestamp": 1795101848.2330072
+      "timestamp": 1795101848.2330072,
+      "filled_timestamp": 1795102281.8292599,
+      "tp_order_id": "136054142"
     }
   ],
   "realized_profit_today_idr": -1982.0,
