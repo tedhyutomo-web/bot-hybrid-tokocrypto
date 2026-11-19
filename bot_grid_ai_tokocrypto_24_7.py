@@ -407,11 +407,105 @@ def apakah_order_sukses(res):
 
 def batalkan_order_indodax(coin, order_id):
     if not LIVE_TRADING_ENABLED or not order_id or str(order_id).startswith(("SIM-", "ERR-", "HOLD-")):
-        return
+        return True, {"simulasi": True}
     symbol = WATCHLIST_COINS[coin]["v2_symbol"]
     params = {"symbol": symbol, "orderId": str(order_id)}
     res = panggil_indodax_v2("/api/v2/order", method="DELETE", params=params)
     print(f"🗑️ [INDODAX V2 CANCEL] {symbol} OrderID={order_id} -> {res}")
+    sukses = isinstance(res, dict) and ("orderId" in res or str(res.get("status", "")).upper() == "CANCELED")
+    return sukses, res
+
+def cek_status_order_indodax(coin, order_id):
+    """Mengecek status asli order di Indodax: NEW, PARTIALLY_FILLED, FILLED, CANCELED, NOT_FOUND, atau UNKNOWN."""
+    if not LIVE_TRADING_ENABLED or not order_id or str(order_id).startswith(("SIM-", "ERR-", "HOLD-")):
+        return "UNKNOWN", {}
+    symbol = WATCHLIST_COINS[coin]["v2_symbol"]
+    res = panggil_indodax_v2("/api/v2/order", method="GET", params={"symbol": symbol, "orderId": str(order_id)})
+    if isinstance(res, dict):
+        if "status" in res:
+            return str(res["status"]).upper(), res
+        msg_err = str(res.get("msg", "")).lower()
+        code_err = int(res.get("code", 0) or 0)
+        if code_err in (-2013, 404) or "not found" in msg_err or "does not exist" in msg_err:
+            return "NOT_FOUND", res
+    return "UNKNOWN", res if isinstance(res, dict) else {}
+
+def ambil_open_orders_indodax(coin):
+    """Mengambil daftar Open Orders aktif untuk 1 koin dari Indodax V2."""
+    if not LIVE_TRADING_ENABLED or coin not in WATCHLIST_COINS:
+        return False, []
+    symbol = WATCHLIST_COINS[coin]["v2_symbol"]
+    res = panggil_indodax_v2("/api/v2/openOrders", method="GET", params={"symbol": symbol})
+    if isinstance(res, list):
+        return True, res
+    if isinstance(res, dict) and isinstance(res.get("data"), list):
+        return True, res["data"]
+    return False, []
+
+def ambil_trade_terakhir_indodax(coin, side_filter=None, limit=10):
+    """Mengambil riwayat trade aktual dari Indodax untuk mengetahui harga beli/jual sebenarnya."""
+    if not LIVE_TRADING_ENABLED or coin not in WATCHLIST_COINS:
+        return []
+    symbol = WATCHLIST_COINS[coin]["v2_symbol"]
+    res = panggil_indodax_v2("/api/v2/myTrades", method="GET", params={"symbol": symbol, "limit": limit})
+    daftar = res if isinstance(res, list) else (res.get("data", []) if isinstance(res, dict) and isinstance(res.get("data"), list) else [])
+    hasil = []
+    for t in daftar:
+        if not isinstance(t, dict):
+            continue
+        is_buyer = t.get("isBuyer")
+        side_raw = str(t.get("side", "")).upper()
+        side_trade = "BUY" if (is_buyer is True or side_raw == "BUY") else ("SELL" if (is_buyer is False or side_raw == "SELL") else "")
+        if side_filter and side_trade != side_filter.upper():
+            continue
+        ts_raw = float(t.get("time", t.get("timestamp", 0)) or 0)
+        ts_sec = ts_raw / 1000.0 if ts_raw > 1e12 else ts_raw
+        harga_t = float(t.get("price", 0) or 0)
+        qty_t = float(t.get("qty", t.get("quantity", 0)) or 0)
+        if harga_t > 0:
+            hasil.append({"side": side_trade, "price": harga_t, "qty": qty_t, "ts": ts_sec})
+    hasil.sort(key=lambda x: x["ts"], reverse=True)
+    return hasil
+
+def eksekusi_jual_terverifikasi(coin, harga_limit_idr, qty_dimiliki, prioritas_market=False):
+    """
+    Menjamin order jual benar-benar LAKU (tidak nyangkut di Open Orders).
+    Jika Limit Sell belum langsung terisi dalam 2 detik -> cancel & tembak Market Order.
+    """
+    if prioritas_market:
+        res_m = eksekusi_order_indodax(coin, "SELL", harga_limit_idr, qty_koin=qty_dimiliki, order_type="MARKET")
+        if apakah_order_sukses(res_m):
+            return True, harga_limit_idr, res_m
+
+    res_l = eksekusi_order_indodax(coin, "SELL", harga_limit_idr, qty_koin=qty_dimiliki, order_type="LIMIT")
+    if not apakah_order_sukses(res_l):
+        return False, harga_limit_idr, res_l
+
+    if not LIVE_TRADING_ENABLED:
+        return True, harga_limit_idr, res_l
+
+    oid = str(res_l.get("orderId", ""))
+    time.sleep(2.0)
+    status_ord, detail_ord = cek_status_order_indodax(coin, oid)
+    if status_ord == "FILLED":
+        harga_aktual = float(detail_ord.get("price", 0) or 0) or harga_limit_idr
+        return True, harga_aktual, res_l
+
+    # Order Limit ternyata nyangkut (harga Bid keburu turun) -> batalkan & paksa Market agar bersih
+    if status_ord in ("NEW", "PARTIALLY_FILLED"):
+        print(f"⚠️ [ANTI-NYANGKUT] Limit Sell {coin} #{oid} masih {status_ord}, dialihkan ke MARKET SELL...")
+        batalkan_order_indodax(coin, oid)
+        time.sleep(1.0)
+        dompet_cek = ambil_saldo_lengkap_indodax()
+        sisa_qty = format_qty_koin(coin, dompet_cek["coins_free"].get(coin, 0.0))
+        if sisa_qty <= 0:
+            return True, harga_limit_idr, res_l
+        res_m2 = eksekusi_order_indodax(coin, "SELL", harga_limit_idr, qty_koin=sisa_qty, order_type="MARKET")
+        if apakah_order_sukses(res_m2):
+            return True, harga_limit_idr, res_m2
+        return False, harga_limit_idr, res_m2
+
+    return True, harga_limit_idr, res_l
 
 def pasang_antrean_tp_di_indodax(slot, koin_free):
     coin = slot["coin"]
@@ -480,10 +574,137 @@ def hitung_tp_sl_dinamis_atr(coin, entry_idr, gaya, atr_5m_pct):
 # BAGIAN 4: AUTO-RECOVERY KOIN DOMPET INDODAX (PEMULIHAN POSISI YATIM)
 # ==============================================================================
 def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
-    log_recovery = []
+    """
+    REKONSILIASI 2-ARAH (SINGLE SOURCE OF TRUTH = INDODAX):
+    1. Audit seluruh active_slots terhadap saldo dompet & Open Orders asli Indodax.
+    2. Pulihkan koin yatim di dompet dengan harga beli asli dari riwayat myTrades Indodax.
+    """
+    log_sync = []
     if not dompet.get("terhubung"):
-        return state, log_recovery
+        return state, log_sync
 
+    now_ts = time.time()
+    slot_valid = []
+
+    # ==========================================================================
+    # TAHAP 1: AUDIT SLOT DI MEMORI BOT VS REALITA DOMPET & OPEN ORDERS INDODAX
+    # ==========================================================================
+    for slot in state.get("active_slots", []):
+        coin = slot["coin"]
+        status_slot = slot.get("status", "")
+        harga_skrg = harga_idr_map.get(coin, {}).get("last", float(slot.get("entry_price_idr", 0)))
+        k_free = dompet["coins_free"].get(coin, 0.0)
+        k_locked = dompet["coins_locked"].get(coin, 0.0)
+        total_qty_asli = format_qty_koin(coin, k_free + k_locked)
+        nilai_koin_asli = total_qty_asli * harga_skrg
+        entry_idr = float(slot.get("entry_price_idr", harga_skrg))
+        tp_idr = float(slot.get("tp_price_idr", entry_idr * 1.015))
+        umur_slot_detik = now_ts - float(slot.get("timestamp", now_ts))
+
+        # --- A. AUDIT WAITING_BUY ---
+        if status_slot == "WAITING_BUY":
+            # Jika koin sudah masuk dompet, biarkan Bagian 6 mempromosikannya ke HOLDING_FOR_TP
+            if nilai_koin_asli >= 5000.0:
+                slot_valid.append(slot)
+                continue
+
+            buy_oid = slot.get("buy_order_id")
+            status_ord, _ = cek_status_order_indodax(coin, buy_oid) if buy_oid else ("NOT_FOUND", {})
+            ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+            ada_di_open_orders = any(str(o.get("orderId", "")) == str(buy_oid) for o in daftar_oo) if ok_oo else True
+            idr_locked_kosong = float(dompet.get("idr_locked", 0.0)) < 1000.0
+
+            if umur_slot_detik > 15.0 and (
+                idr_locked_kosong
+                or status_ord in ("CANCELED", "EXPIRED", "REJECTED", "NOT_FOUND")
+                or (ok_oo and not ada_di_open_orders)
+            ):
+                log_sync.append(
+                    f"🧹 [SYNC HAPUS ANTREAN HANTU] Order beli {coin} (#{buy_oid}) sudah tidak ada di Indodax "
+                    f"(Status:{status_ord}, IDR Locked:Rp{dompet.get('idr_locked', 0):,.0f}). Slot dihapus & plafon pulih."
+                )
+                continue
+
+            slot_valid.append(slot)
+            continue
+
+        # --- B. AUDIT HOLDING_FOR_TP ---
+        if status_slot == "HOLDING_FOR_TP":
+            # 1. KOIN TIDAK ADA DI DOMPET (< Rp5.000) -> WAJIB DIBERSIHKAN (BAIK tp_order_id ADA MAUPUN KOSONG!)
+            if nilai_koin_asli < 5000.0:
+                tp_oid = slot.get("tp_order_id")
+                status_tp, detail_tp = cek_status_order_indodax(coin, tp_oid) if tp_oid else ("NOT_FOUND", {})
+
+                # Cek apakah benar-benar laku lewat order TP
+                if status_tp == "FILLED":
+                    harga_laku = float(detail_tp.get("price", 0) or 0) or tp_idr
+                    pnl_pct = ((harga_laku - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT
+                    profit_bersih = round(float(slot.get("capital_idr", 0)) * pnl_pct, 0)
+                    catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin, slot=slot, pnl_exit_pct=pnl_pct)
+                    log_sync.append(
+                        f"🎉 [TP TERVERIFIKASI INDODAX] {coin} laku di Rp{harga_laku:,.0f} "
+                        f"(PnL Bersih: Rp{profit_bersih:,.0f} | OrderTP:#{tp_oid})."
+                    )
+                    continue
+
+                # Jika bukan dari TP (misal dijual manual di app atau sell sebelumnya laku), cek myTrades aktual
+                waktu_acuan = float(slot.get("filled_timestamp", slot.get("timestamp", 0))) - 120.0
+                trades_jual = [
+                    t for t in ambil_trade_terakhir_indodax(coin, side_filter="SELL", limit=8)
+                    if t["ts"] >= waktu_acuan
+                ]
+                if trades_jual:
+                    harga_laku_manual = trades_jual[0]["price"]
+                    pnl_pct = ((harga_laku_manual - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT
+                    pnl_bersih = round(float(slot.get("capital_idr", 0)) * pnl_pct, 0)
+                    catat_hasil_transaksi_ke_recovery(state, pnl_bersih, coin, slot=slot, pnl_exit_pct=pnl_pct)
+                    log_sync.append(
+                        f"🔄 [SYNC JUAL AKTUAL INDODAX] {coin} sudah terjual di luar bot @ Rp{harga_laku_manual:,.0f} "
+                        f"(PnL Bersih: Rp{pnl_bersih:,.0f}). Slot ditutup & disinkronkan."
+                    )
+                else:
+                    # Koin benar-benar tidak ada & tidak ada trade baru -> murni slot hantu (seperti kasus ETH)
+                    log_sync.append(
+                        f"🧹 [SYNC HAPUS SLOT HANTU] {coin} tidak ditemukan di dompet Indodax (Saldo: 0). "
+                        f"Slot hantu dihapus tanpa merusak statistik Win Rate/Recovery."
+                    )
+                continue
+
+            # 2. KOIN ADA DI DOMPET -> SINKRONKAN QTY & STATUS ORDER TP
+            if total_qty_asli > 0:
+                slot["qty"] = total_qty_asli
+
+            # Jika di memori tercatat punya tp_order_id tapi koin_locked == 0 -> berarti TP dicancel manual di aplikasi!
+            if slot.get("tp_order_id") and k_locked <= 0:
+                status_tp, _ = cek_status_order_indodax(coin, slot["tp_order_id"])
+                if status_tp in ("CANCELED", "EXPIRED", "NOT_FOUND"):
+                    log_sync.append(
+                        f"🔄 [SYNC TP DIBATALKAN MANUAL] OrderTP #{slot['tp_order_id']} {coin} sudah tidak aktif di Indodax. "
+                        f"Reset tp_order_id agar bot pasang ulang otomatis."
+                    )
+                    slot["tp_order_id"] = None
+
+            # Jika tp_order_id kosong tapi di dompet ada koin_locked -> sambungkan dengan Open Order SELL yang sudah ada
+            if not slot.get("tp_order_id") and k_locked > 0:
+                ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+                if ok_oo:
+                    sell_orders = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"]
+                    if sell_orders:
+                        slot["tp_order_id"] = str(sell_orders[0].get("orderId"))
+                        harga_oo = float(sell_orders[0].get("price", 0) or 0)
+                        if harga_oo > 0:
+                            slot["tp_price_idr"] = harga_oo
+                        log_sync.append(
+                            f"🔗 [SYNC KAITKAN ORDER TP] {coin} dikaitkan ke Open Order SELL #{slot['tp_order_id']} @ Rp{slot['tp_price_idr']:,.0f}."
+                        )
+
+            slot_valid.append(slot)
+
+    state["active_slots"] = slot_valid
+
+    # ==========================================================================
+    # TAHAP 2: AUTO-RECOVERY KOIN YATIM DI DOMPET (GUNAKAN HARGA BELI ASLI!)
+    # ==========================================================================
     koin_di_state = {s["coin"] for s in state.get("active_slots", [])}
     for coin in WATCHLIST_COINS.keys():
         if coin in koin_di_state:
@@ -496,7 +717,10 @@ def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
 
         if nilai_idr >= 10000.0 and total_qty > 0:
             ref = KNOWN_ENTRY_REFERENCE.get(coin, {})
-            entry_idr = ref.get("entry_price_idr", bulatkan_harga_indodax(coin, harga_skrg))
+            # Cari harga beli asli dari riwayat myTrades Indodax agar tidak asal pakai harga sekarang
+            trades_beli = ambil_trade_terakhir_indodax(coin, side_filter="BUY", limit=5)
+            harga_beli_asli = trades_beli[0]["price"] if trades_beli else harga_skrg
+            entry_idr = ref.get("entry_price_idr", bulatkan_harga_indodax(coin, harga_beli_asli))
             style = ref.get("style", "GRID")
             tp_idr_default, sl_idr_default, _ = hitung_tp_sl_dinamis_atr(coin, entry_idr, style, 0.0035)
             tp_idr = ref.get("tp_price_idr", tp_idr_default)
@@ -513,18 +737,32 @@ def sinkronkan_koin_dompet_indodax(state, dompet, harga_idr_map):
                 "tp_price_idr": tp_idr,
                 "sl_price_idr": sl_idr,
                 "highest_price_idr": max(entry_idr, harga_skrg),
-                "filled_timestamp": time.time(),
-                "timestamp": time.time()
+                "filled_timestamp": trades_beli[0]["ts"] if trades_beli else now_ts,
+                "timestamp": now_ts
             }
-            if k_free > 0:
+
+            # Cek apakah sudah ada Open Order SELL di Indodax sebelum memasang TP baru
+            tp_terkait = None
+            if k_locked > 0:
+                ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+                if ok_oo:
+                    sell_oo = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"]
+                    if sell_oo:
+                        tp_terkait = str(sell_oo[0].get("orderId"))
+                        slot_pulih["tp_order_id"] = tp_terkait
+                        if float(sell_oo[0].get("price", 0) or 0) > 0:
+                            slot_pulih["tp_price_idr"] = float(sell_oo[0]["price"])
+
+            if not tp_terkait and k_free > 0:
                 pasang_antrean_tp_di_indodax(slot_pulih, k_free)
 
             state["active_slots"].append(slot_pulih)
-            log_recovery.append(
-                f"♻️ [AUTO-RECOVERY DOMPET] {coin} (Qty:{total_qty}) ditemukan di dompet Indodax! "
-                f"Posisi dipulihkan (Acuan: Rp{entry_idr:,.0f} -> Antrean TP: Rp{tp_idr:,.0f})."
+            sumber_acuan = "myTrades Indodax" if trades_beli else "Harga Pasar"
+            log_sync.append(
+                f"♻️ [AUTO-RECOVERY DOMPET] {coin} (Qty:{total_qty}) ditemukan di Indodax! "
+                f"Dipulihkan (Entry {sumber_acuan}: Rp{entry_idr:,.0f} -> TP: Rp{slot_pulih['tp_price_idr']:,.0f})."
             )
-    return state, log_recovery
+    return state, log_sync
 
 # ==============================================================================
 # BAGIAN 5: NATIVE INDODAX IDR CANDLESTICK API (5M+15M+1H) & KONSULTASI GEMINI
@@ -1007,7 +1245,13 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
             # 2. BATAL INSTAN & PINDAH KOIN: Jika hasil analisa terbaru menyatakan koin TIDAK LAGI layak entry
             masih_layak_entry = bool(info_pasar and info_pasar.get("siap_entry") is True and info_pasar.get("skor", 0) >= MIN_CONVICTION_SCORE)
             if not masih_layak_entry:
-                batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                sukses_batal, _ = batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                if dompet["terhubung"] and not sukses_batal:
+                    st_cek, _ = cek_status_order_indodax(coin, slot.get("buy_order_id"))
+                    if st_cek == "FILLED":
+                        log_aksi.append(f"✅ [BATAL DIGAGALKAN - SUDAH TERBELI] Order beli {coin} ternyata baru saja terisi di Indodax.")
+                        slot_tetap_aktif.append(slot)
+                        continue
                 # Kembalikan dana ke saldo bebas di memori agar langsung bisa dipakai beli koin lain detik ini juga!
                 dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
                 ada_eksekusi_penting = True
@@ -1024,7 +1268,13 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
             selisih_entry_pct = abs(entry_ideal_baru - entry_idr) / entry_idr
             if selisih_entry_pct >= DYNAMIC_ENTRY_SHIFT_PCT and umur_antre_menit >= 8.0:
                 arah_geser = "DINAIKKAN" if entry_ideal_baru > entry_idr else "DITURUNKAN"
-                batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                sukses_batal, _ = batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                if dompet["terhubung"] and not sukses_batal:
+                    st_cek, _ = cek_status_order_indodax(coin, slot.get("buy_order_id"))
+                    if st_cek == "FILLED":
+                        log_aksi.append(f"✅ [GESER DIGAGALKAN - SUDAH TERBELI] Order beli {coin} ternyata baru saja terisi di Indodax.")
+                        slot_tetap_aktif.append(slot)
+                        continue
                 time.sleep(1)
                 modal_slot = float(slot.get("capital_idr", MIN_NEW_BUY_ALLOCATION_IDR))
                 qty_baru = hitung_kuantitas_koin(coin, modal_slot, entry_ideal_baru)
@@ -1046,22 +1296,27 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     log_transaksi.append(pesan)
                     slot_tetap_aktif.append(slot)
                     continue
+                else:
+                    # Jika order lama sudah terlanjur dibatalkan tapi pasang order baru gagal, kembalikan dana ke saldo bebas
+                    dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + modal_slot
+                    log_aksi.append(f"⚠️ [GESER ENTRY GAGAL] Order lama {coin} dibatalkan, pasang ulang gagal -> dana kembali ke Rupiah.")
+                    continue
 
             # 4. Evaluasi batas waktu antre maksimal (1.5 Jam)
             if umur_antre_jam >= REVIEW_ENTRY_HOURS:
-                batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                sukses_batal, _ = batalkan_order_indodax(coin, slot.get("buy_order_id"))
+                if dompet["terhubung"] and not sukses_batal:
+                    st_cek, _ = cek_status_order_indodax(coin, slot.get("buy_order_id"))
+                    if st_cek == "FILLED":
+                        log_aksi.append(f"✅ [TIMEOUT DIGAGALKAN - SUDAH TERBELI] Order beli {coin} ternyata baru saja terisi di Indodax.")
+                        slot_tetap_aktif.append(slot)
+                        continue
                 dompet["idr_free"] = float(dompet.get("idr_free", 0.0)) + float(slot.get("capital_idr", 0.0))
                 ada_eksekusi_penting = True
                 pesan = f"🔄 [BATAL TIMEOUT ANTREAN] Order {coin} >{REVIEW_ENTRY_HOURS:.1f}j belum terjemput, dibatalkan untuk realokasi."
                 log_aksi.append(pesan)
                 log_transaksi.append(pesan)
                 continue
-
-            log_aksi.append(
-                f"⏳ [ANTRE BELI DINAMIS {umur_antre_menit:.0f}m] {coin} ({mode_slot}) di Rp{entry_idr:,.0f} (Skrg: Rp{harga_sekarang:,.0f})."
-            )
-            slot_tetap_aktif.append(slot)
-            continue
 
         # ======================================================================
         # KASUS B: KOIN SUDAH TERBELI (HOLDING_FOR_TP - POIN 1 & POIN 5)
@@ -1099,7 +1354,12 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
             pencapaian_puncak_ke_tp = kenaikan_puncak_pct / target_tp_pct
             lama_pegang_jam = (now_ts - float(slot.get("filled_timestamp", slot.get("timestamp", now_ts)))) / 3600.0
 
-            qty_dimiliki = format_qty_koin(coin, total_koin_dimiliki if total_koin_dimiliki > 0 else slot.get("qty", 0))
+            # Jika terhubung ke Indodax tapi koin sudah habis di dompet, jangan pernah dikawal lagi!
+            if dompet["terhubung"] and nilai_koin_idr < 5000:
+                log_aksi.append(f"🧹 [GUARD SALDO 0] {coin} kosong di dompet Indodax, slot dilepas.")
+                continue
+
+            qty_dimiliki = format_qty_koin(coin, total_koin_dimiliki if dompet["terhubung"] else slot.get("qty", 0))
             estimasi_nilai_jual_skrg = qty_dimiliki * harga_eksekusi_jual
 
             # ==================================================================
@@ -1182,8 +1442,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     batalkan_order_indodax(coin, slot["tp_order_id"])
                     slot["tp_order_id"] = None
                     time.sleep(2)
-                res_lock_jual = eksekusi_order_indodax(coin, "SELL", harga_eksekusi_jual, qty_koin=qty_dimiliki)
-                if apakah_order_sukses(res_lock_jual):
+                berhasil_jual, harga_eksekusi_jual, _ = eksekusi_jual_terverifikasi(coin, harga_eksekusi_jual, qty_dimiliki, prioritas_market=False)
+                if berhasil_jual:
                     profit_bersih = round(slot["capital_idr"] * (kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
                     catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin, slot=slot, pnl_exit_pct=(kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT))
                     ada_eksekusi_penting = True
@@ -1270,8 +1530,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                         batalkan_order_indodax(coin, slot["tp_order_id"])
                         slot["tp_order_id"] = None
                         time.sleep(2)
-                    res_jual = eksekusi_order_indodax(coin, "SELL", harga_eksekusi_jual, qty_koin=qty_dimiliki)
-                    if apakah_order_sukses(res_jual):
+                    berhasil_jual, harga_eksekusi_jual, _ = eksekusi_jual_terverifikasi(coin, harga_eksekusi_jual, qty_dimiliki, prioritas_market=False)
+                    if berhasil_jual:
                         profit_bersih = round(slot["capital_idr"] * (kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT), 0)
                         catat_hasil_transaksi_ke_recovery(state, profit_bersih, coin, slot=slot, pnl_exit_pct=(kenaikan_bid_pct - FEE_ROUNDTRIP_MAKER_PCT))
                         ada_eksekusi_penting = True
@@ -1445,8 +1705,8 @@ def evaluasi_dan_kawal_posisi_dinamis(state, peta_analisa, dompet):
                     slot["tp_order_id"] = None
                     time.sleep(1.0)
                 harga_jual_sl = bulatkan_harga_indodax(coin, min(item_sl["harga_bid_asli"], item_sl["harga_sekarang"] * 0.998))
-                res_sl = eksekusi_order_indodax(coin, "SELL", harga_jual_sl, qty_koin=qty_dimiliki)
-                if apakah_order_sukses(res_sl):
+                berhasil_sl, harga_jual_sl, _ = eksekusi_jual_terverifikasi(coin, harga_jual_sl, qty_dimiliki, prioritas_market=item_sl["kena_hard_sl"])
+                if berhasil_sl:
                     pnl_exit_pct = ((harga_jual_sl - entry_idr) / entry_idr) - FEE_ROUNDTRIP_MAKER_PCT
                     pnl_bersih = round(slot["capital_idr"] * pnl_exit_pct, 0)
                     catat_hasil_transaksi_ke_recovery(state, pnl_bersih, coin, slot=slot, pnl_exit_pct=pnl_exit_pct)
