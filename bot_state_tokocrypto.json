@@ -32,7 +32,7 @@
   ],
   "realized_profit_today_idr": -1982.0,
   "completed_trades_today": 15,
-  "last_reset_date": "2026-11-19",
+  "last_reset_date": "2026-11-20",
   "loss_to_recover_idr": 7009.0,
   "sl_cooldown_until": {
     "SUI": 1795104547.8831956
