@@ -1,152 +1,13 @@
 {
-  "active_slots": [
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 37660,
-      "qty": 35,
-      "entry_price_idr": 1076,
-      "tp_price_idr": 1091.0,
-      "sl_price_idr": 1065.0,
-      "highest_price_idr": 1085.0,
-      "filled_timestamp": 1795118042.5665092,
-      "timestamp": 1795118042.5665092,
-      "tp_order_id": "136068061",
-      "last_sl_eval_ts": 1795122679.173668,
-      "last_sl_eval_price_idr": 1065,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (17.6) dan tren 1H naik.",
-      "last_eval_was_hard_sl": true,
-      "last_eval_was_ramai_turun": false,
-      "sl_hold_history": [
-        {
-          "ts": 1795120746.5273747,
-          "pnl_bid_pct": -0.007434944237918215,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 11.8,
-          "rsi_15m": 44.9,
-          "rasio_vol": 2.86,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold, potensi rebound mengikuti tren makro."
-        },
-        {
-          "ts": 1795122246.0132947,
-          "pnl_bid_pct": -0.00929368029739777,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 21.4,
-          "rsi_15m": 42.9,
-          "rasio_vol": 47.57,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold (21.4), tren 1H naik, potensi rebound."
-        },
-        {
-          "ts": 1795122314.837071,
-          "pnl_bid_pct": -0.010223048327137546,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 18.8,
-          "rsi_15m": 39.5,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold (18.8), candle hijau, potensi rebound teknikal."
-        },
-        {
-          "ts": 1795122679.173668,
-          "pnl_bid_pct": -0.010223048327137546,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 17.6,
-          "rsi_15m": 34.2,
-          "rasio_vol": 0.01,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (17.6) dan tren 1H naik."
-        }
-      ]
-    },
-    {
-      "coin": "SUI",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 45174.0,
-      "qty": 3.44,
-      "entry_price_idr": 13132,
-      "tp_price_idr": 13309.0,
-      "sl_price_idr": 12994.0,
-      "highest_price_idr": 13234.0,
-      "filled_timestamp": 1795118471.4607582,
-      "timestamp": 1795118471.4607582,
-      "tp_order_id": "44622028",
-      "last_sl_eval_ts": 1795122753.3057098,
-      "last_sl_eval_price_idr": 12974,
-      "last_sl_eval_reason": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold parah, candle hijau, potensi rebound ke titik impas.",
-      "last_eval_was_hard_sl": true,
-      "last_eval_was_ramai_turun": false,
-      "sl_hold_history": [
-        {
-          "ts": 1795120218.0504043,
-          "pnl_bid_pct": -0.010051781906792567,
-          "tren_detail": "5M:UP/15M:DN/1H:UP",
-          "rsi_5m": 12.9,
-          "rsi_15m": 52.4,
-          "rasio_vol": 2.92,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M sangat oversold (12.9), potensi pantulan teknikal segera."
-        },
-        {
-          "ts": 1795120443.7113783,
-          "pnl_bid_pct": -0.011041730124885775,
-          "tren_detail": "5M:UP/15M:DN/1H:UP",
-          "rsi_5m": 11.5,
-          "rsi_15m": 52.4,
-          "rasio_vol": 10.68,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M ekstrem oversold (11.5), potensi rebound teknikal segera."
-        },
-        {
-          "ts": 1795121347.7426746,
-          "pnl_bid_pct": -0.010508681084374048,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 22.4,
-          "rsi_15m": 55.6,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau tertahan, tren 1H UP."
-        },
-        {
-          "ts": 1795121847.965481,
-          "pnl_bid_pct": -0.010737130673164789,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 24.7,
-          "rsi_15m": 55.0,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold, candle hijau, tren 1H masih naik."
-        },
-        {
-          "ts": 1795122151.304341,
-          "pnl_bid_pct": -0.012336277794699969,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 24.7,
-          "rsi_15m": 46.1,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 5M oversold (24.7) dan candle hijau, potensi rebound segera."
-        },
-        {
-          "ts": 1795122451.914172,
-          "pnl_bid_pct": -0.012031678342978983,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 18.0,
-          "rsi_15m": 40.3,
-          "rasio_vol": 0.0,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI 18.0 oversold, tren 1H naik, candle mulai hijau."
-        },
-        {
-          "ts": 1795122753.3057098,
-          "pnl_bid_pct": -0.012031678342978983,
-          "tren_detail": "5M:DN/15M:DN/1H:UP",
-          "rsi_5m": 23.3,
-          "rsi_15m": 34.4,
-          "rasio_vol": 3.97,
-          "alasan_ai": "[gemini-3-flash-preview#K1] TAHAN - RSI oversold parah, candle hijau, potensi rebound ke titik impas."
-        }
-      ]
-    }
-  ],
-  "realized_profit_today_idr": -3180.0,
-  "completed_trades_today": 16,
+  "active_slots": [],
+  "realized_profit_today_idr": -4918.0,
+  "completed_trades_today": 18,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 8207.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 9945.0,
+  "sl_cooldown_until": {
+    "SUI": 1795125554.3433738,
+    "DOGE": 1795125691.8966007
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795035622.7296956,
@@ -836,6 +697,56 @@
       "pnl_idr": -520.0
     }
   ],
-  "sl_experience_memory": [],
-  "sl_trade_outcome_memory": []
+  "sl_experience_memory": [
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1795122854.3433766,
+      "waktu": "20/11 04:14",
+      "coin": "SUI",
+      "tren_detail": "5M:DN/15M:DN/1H:UP",
+      "rsi_5m": 23.3,
+      "rsi_15m": 34.4,
+      "rasio_vol": 3.97,
+      "minus_awal_pct": -1.2,
+      "pnl_akhir_pct": -2.07,
+      "pnl_idr": -936.0
+    },
+    {
+      "kategori": "EVAL_TAHAN_SL",
+      "hasil": "GAGAL_PANTUL",
+      "ts": 1795122991.8966036,
+      "waktu": "20/11 04:16",
+      "coin": "DOGE",
+      "tren_detail": "5M:DN/15M:DN/1H:UP",
+      "rsi_5m": 17.6,
+      "rsi_15m": 34.2,
+      "rasio_vol": 0.01,
+      "minus_awal_pct": -1.02,
+      "pnl_akhir_pct": -2.13,
+      "pnl_idr": -802.0
+    }
+  ],
+  "sl_trade_outcome_memory": [
+    {
+      "hasil": "KALAH",
+      "ts": 1795122854.3433766,
+      "waktu": "20/11 04:14",
+      "coin": "SUI",
+      "style": "GRID",
+      "pnl_pct": -2.07,
+      "pnl_idr": -936.0,
+      "sempat_tahan_sl": true
+    },
+    {
+      "hasil": "KALAH",
+      "ts": 1795122991.8966036,
+      "waktu": "20/11 04:16",
+      "coin": "DOGE",
+      "style": "GRID",
+      "pnl_pct": -2.13,
+      "pnl_idr": -802.0,
+      "sempat_tahan_sl": true
+    }
+  ]
 }
