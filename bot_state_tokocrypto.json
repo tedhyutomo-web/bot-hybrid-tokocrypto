@@ -9,7 +9,7 @@
       "entry_price_idr": 16610,
       "tp_price_idr": 16834,
       "sl_price_idr": 16778.0,
-      "highest_price_idr": 16877.0,
+      "highest_price_idr": 17250.0,
       "filled_timestamp": 1795190642.6168597,
       "timestamp": 1795190642.6168597,
       "tp_order_id": null,
@@ -19,7 +19,7 @@
   ],
   "realized_profit_today_idr": -7277.0,
   "completed_trades_today": 26,
-  "last_reset_date": "2026-11-20",
+  "last_reset_date": "2026-11-21",
   "loss_to_recover_idr": 12304.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
