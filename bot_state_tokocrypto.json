@@ -1,26 +1,11 @@
 {
-  "active_slots": [
-    {
-      "coin": "ADA",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 43450.0,
-      "qty": 15.8,
-      "entry_price_idr": 2750,
-      "tp_price_idr": 2787.0,
-      "sl_price_idr": 2721.0,
-      "highest_price_idr": 2801.0,
-      "filled_timestamp": 1795139638.7268786,
-      "timestamp": 1795139638.7268786,
-      "tp_order_id": "144328255"
-    }
-  ],
-  "realized_profit_today_idr": -5186.0,
-  "completed_trades_today": 22,
+  "active_slots": [],
+  "realized_profit_today_idr": -5931.0,
+  "completed_trades_today": 23,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 10213.0,
+  "loss_to_recover_idr": 10958.0,
   "sl_cooldown_until": {
-    "DOGE": 1795144059.480682
+    "ADA": 1795146991.3705564
   },
   "ai_entry_hold_until": {
     "SUI": {
@@ -800,6 +785,16 @@
       "style": "GRID",
       "pnl_pct": 0.14,
       "pnl_idr": 58.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "KALAH",
+      "ts": 1795144291.3705597,
+      "waktu": "20/11 10:11",
+      "coin": "ADA",
+      "style": "GRID",
+      "pnl_pct": -1.71,
+      "pnl_idr": -745.0,
       "sempat_tahan_sl": false
     }
   ]
