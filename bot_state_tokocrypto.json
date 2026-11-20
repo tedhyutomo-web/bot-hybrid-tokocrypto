@@ -15,6 +15,20 @@
       "tp_order_id": null,
       "lock_115_armed": true,
       "lock_100_armed": true
+    },
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 109906.0,
+      "qty": 0.000101,
+      "entry_price_idr": 1088180000,
+      "tp_price_idr": 1102870000.0,
+      "sl_price_idr": 1076754000.0,
+      "highest_price_idr": 1088180000.0,
+      "filled_timestamp": 1795191985.0604515,
+      "timestamp": 1795191985.0604515,
+      "tp_order_id": "274947922"
     }
   ],
   "realized_profit_today_idr": -7421.0,
