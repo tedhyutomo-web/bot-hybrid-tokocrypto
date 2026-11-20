@@ -4,9 +4,7 @@
   "completed_trades_today": 23,
   "last_reset_date": "2026-11-20",
   "loss_to_recover_idr": 10958.0,
-  "sl_cooldown_until": {
-    "ADA": 1795146991.3705564
-  },
+  "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795035622.7296956,
