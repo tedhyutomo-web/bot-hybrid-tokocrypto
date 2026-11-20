@@ -1,5 +1,48 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "BTC",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 40720.0,
+      "qty": 3.6e-05,
+      "entry_price_idr": 1131100000,
+      "tp_price_idr": 1146370000.0,
+      "sl_price_idr": 1119223000.0,
+      "highest_price_idr": 1148914000.0,
+      "filled_timestamp": 1795139638.7268786,
+      "timestamp": 1795139638.7268786,
+      "tp_order_id": "274837488"
+    },
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 43450.0,
+      "qty": 15.8,
+      "entry_price_idr": 2750,
+      "tp_price_idr": 2787.0,
+      "sl_price_idr": 2721.0,
+      "highest_price_idr": 2801.0,
+      "filled_timestamp": 1795139638.7268786,
+      "timestamp": 1795139638.7268786,
+      "tp_order_id": "144328255"
+    },
+    {
+      "coin": "DOGE",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 36925,
+      "qty": 35,
+      "entry_price_idr": 1055,
+      "tp_price_idr": 1069.0,
+      "sl_price_idr": 1044.0,
+      "highest_price_idr": 1073.0,
+      "filled_timestamp": 1795139638.7268786,
+      "timestamp": 1795139638.7268786,
+      "tp_order_id": "136081807"
+    }
+  ],
   "realized_profit_today_idr": -4726.0,
   "completed_trades_today": 20,
   "last_reset_date": "2026-11-20",
