@@ -1,20 +1,6 @@
 {
   "active_slots": [
     {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 40720.0,
-      "qty": 3.6e-05,
-      "entry_price_idr": 1131100000,
-      "tp_price_idr": 1146370000.0,
-      "sl_price_idr": 1119223000.0,
-      "highest_price_idr": 1148914000.0,
-      "filled_timestamp": 1795139638.7268786,
-      "timestamp": 1795139638.7268786,
-      "tp_order_id": "274837488"
-    },
-    {
       "coin": "ADA",
       "style": "GRID",
       "status": "HOLDING_FOR_TP",
@@ -29,10 +15,10 @@
       "tp_order_id": "144328255"
     }
   ],
-  "realized_profit_today_idr": -5244.0,
-  "completed_trades_today": 21,
+  "realized_profit_today_idr": -5186.0,
+  "completed_trades_today": 22,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 10271.0,
+  "loss_to_recover_idr": 10213.0,
   "sl_cooldown_until": {
     "DOGE": 1795144059.480682
   },
@@ -804,6 +790,16 @@
       "style": "GRID",
       "pnl_pct": -1.4,
       "pnl_idr": -518.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795143393.665427,
+      "waktu": "20/11 09:56",
+      "coin": "BTC",
+      "style": "GRID",
+      "pnl_pct": 0.14,
+      "pnl_idr": 58.0,
       "sempat_tahan_sl": false
     }
   ]
