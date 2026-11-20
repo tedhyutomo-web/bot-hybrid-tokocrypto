@@ -842,5 +842,6 @@
       "pnl_idr": 144.0,
       "sempat_tahan_sl": false
     }
-  ]
+  ],
+  "grid_cycle": null
 }
