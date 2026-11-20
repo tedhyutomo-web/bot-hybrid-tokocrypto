@@ -843,5 +843,6 @@
       "sempat_tahan_sl": false
     }
   ],
-  "grid_cycle": null
+  "grid_cycle": null,
+  "grid_experience_memory": []
 }
