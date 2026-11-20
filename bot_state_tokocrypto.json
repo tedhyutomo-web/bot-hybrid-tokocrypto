@@ -1,5 +1,20 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ETH",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 42711.0,
+      "qty": 0.00134,
+      "entry_price_idr": 31874000,
+      "tp_price_idr": 32304000.0,
+      "sl_price_idr": 31539000.0,
+      "highest_price_idr": 32339000.0,
+      "filled_timestamp": 1795178043.241352,
+      "timestamp": 1795178043.241352,
+      "tp_order_id": "219533402"
+    }
+  ],
   "realized_profit_today_idr": -7623.0,
   "completed_trades_today": 24,
   "last_reset_date": "2026-11-20",
