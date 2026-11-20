@@ -27,27 +27,15 @@
       "filled_timestamp": 1795139638.7268786,
       "timestamp": 1795139638.7268786,
       "tp_order_id": "144328255"
-    },
-    {
-      "coin": "DOGE",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 36925,
-      "qty": 35,
-      "entry_price_idr": 1055,
-      "tp_price_idr": 1069.0,
-      "sl_price_idr": 1044.0,
-      "highest_price_idr": 1073.0,
-      "filled_timestamp": 1795139638.7268786,
-      "timestamp": 1795139638.7268786,
-      "tp_order_id": "136081807"
     }
   ],
-  "realized_profit_today_idr": -4726.0,
-  "completed_trades_today": 20,
+  "realized_profit_today_idr": -5244.0,
+  "completed_trades_today": 21,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 9753.0,
-  "sl_cooldown_until": {},
+  "loss_to_recover_idr": 10271.0,
+  "sl_cooldown_until": {
+    "DOGE": 1795144059.480682
+  },
   "ai_entry_hold_until": {
     "SUI": {
       "until": 1795035622.7296956,
@@ -806,6 +794,16 @@
       "style": "GRID",
       "pnl_pct": 0.25,
       "pnl_idr": 103.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "KALAH",
+      "ts": 1795141359.480685,
+      "waktu": "20/11 09:22",
+      "coin": "DOGE",
+      "style": "GRID",
+      "pnl_pct": -1.4,
+      "pnl_idr": -518.0,
       "sempat_tahan_sl": false
     }
   ]
