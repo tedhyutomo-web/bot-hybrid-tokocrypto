@@ -47,6 +47,8 @@ GRID_MAX_RSI_M5_ENTRY = 65.0           # Anti beli di pucuk (overbought) saat bu
 GRID_MIN_ATR_15M_PCT = 0.0035          # Syarat volatilitas minimal 15M agar rentang cukup melibas fee 0.55%
 GRID_RESET_BOUNCE_COUNT = 3            # Jika b3 pernah tersentuh & pantulan >= 3x -> siap reset siklus saat net untung
 GRID_WAIT_B1_TIMEOUT_MIN = 45.0        # Batas tunggu antrean awal b1 sebelum dibatalkan jika belum terjemput
+GRID_MEMORY_RETENTION_HOURS = 168.0    # Memori pengalaman siklus Grid disimpan 1 minggu (7 hari = 168 jam)
+MAX_GRID_MEMORY_ITEMS = 60             # Maksimal menyimpan 60 riwayat siklus Grid dalam 1 minggu
 
 # Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR Rupiah Indodax)
 TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi
@@ -61,7 +63,7 @@ SL_WATCH_MIN_PCT = -0.0040             # -0.40% Batas minimal Mode Siaga SL (lol
 SL_WATCH_MAX_PCT = -0.0045             # -0.45% Batas normal Mode Siaga SL berbasis 1x ATR
 EMERGENCY_SL_PCT = -0.0145             # -1.45% Batas Darurat Mutlak (Market Order, rugi bersih maks ~-2.00%)
 SL_THROTTLE_SECONDS = 300.0            # Rem Anti-Spam SL: jeda 5 menit (300 detik) antar-konsultasi AI
-SL_MEMORY_RETENTION_HOURS = 72.0       # Memori pengalaman EVAL_TAHAN_SL disimpan selama 72 jam
+SL_MEMORY_RETENTION_HOURS = 168.0      # Memori pengalaman & Win Rate disimpan 1 minggu (168 jam)
 MAX_SL_MEMORY_ITEMS = 40               # Maksimal menyimpan 40 riwayat keputusan tahan SL
 
 # Parameter Penyelamatan Profit Berlapis (Poin 1) & Entry Dinamis (Poin 3)
@@ -117,6 +119,7 @@ def muat_state_bot():
             state.setdefault("sl_experience_memory", [])
             state.setdefault("sl_trade_outcome_memory", [])
             state.setdefault("grid_cycle", None)
+            state.setdefault("grid_experience_memory", [])
             return state
         except Exception:
             pass
@@ -129,6 +132,7 @@ def muat_state_bot():
         "sl_experience_memory": [],
         "sl_trade_outcome_memory": [],
         "grid_cycle": None,
+        "grid_experience_memory": [],
         "last_reset_date": tgl_skrg
     }
 
@@ -310,6 +314,74 @@ def catat_hasil_transaksi_ke_recovery(state, pnl_bersih_idr, coin=None, slot=Non
 
     if slot is not None:
         rekam_memori_tahan_sl(state, slot, pnl_bersih_idr, pnl_exit_pct)
+
+def rekam_memori_siklus_grid(state, cycle, alasan_tutup, total_pnl_idr):
+    """Merekam riwayat siklus Grid selesai selama 1 minggu (168 jam) sebagai bahan pertimbangan koin berikutnya."""
+    if not cycle:
+        return
+    now_ts = time.time()
+    batas_kadaluarsa = now_ts - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
+    tz_wib = timezone(timedelta(hours=7))
+    waktu_str = datetime.now(tz_wib).strftime("%d/%m %H:%M")
+
+    durasi_jam = round((now_ts - float(cycle.get("created_ts", now_ts))) / 3600.0, 2)
+    memori_aktif = [
+        m for m in state.get("grid_experience_memory", [])
+        if float(m.get("ts", now_ts)) >= batas_kadaluarsa
+    ]
+    memori_aktif.append({
+        "ts": now_ts,
+        "waktu": waktu_str,
+        "coin": cycle.get("coin", "?"),
+        "alasan_tutup": alasan_tutup,  # "TP_PENUH" atau "AUTO_RESET_B3"
+        "bounce_count": int(cycle.get("bounce_count", 0)),
+        "b3_ever_touched": bool(cycle.get("b3_ever_touched", False)),
+        "durasi_jam": durasi_jam,
+        "total_pnl_idr": round(float(total_pnl_idr), 0),
+        "berhasil": float(total_pnl_idr) >= 0.0
+    })
+    state["grid_experience_memory"] = memori_aktif[-MAX_GRID_MEMORY_ITEMS:]
+
+def hitung_penyesuaian_skor_memori_grid(state, coin):
+    """
+    Menilai performa historis Grid 1 minggu terakhir untuk 1 koin:
+    - Bonus skor jika koin terbukti lancar panen & cepat selesai.
+    - Penalti skor jika koin baru saja nyangkut lama di bawah b3 atau rugi.
+    """
+    now_ts = time.time()
+    batas_kadaluarsa = now_ts - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
+    riwayat_koin = [
+        m for m in state.get("grid_experience_memory", [])
+        if float(m.get("ts", 0.0)) >= batas_kadaluarsa and m.get("coin") == coin
+    ]
+    if not riwayat_koin:
+        return 0.0, "Belum ada riwayat 7H"
+
+    delta_skor = 0.0
+    jml_lancar = 0
+    jml_berat = 0
+
+    for m in riwayat_koin:
+        pnl = float(m.get("total_pnl_idr", 0.0))
+        bounces = int(m.get("bounce_count", 0))
+        sentuh_b3 = bool(m.get("b3_ever_touched", False))
+        durasi_j = float(m.get("durasi_jam", 0.0))
+
+        if pnl > 0 and (not sentuh_b3 or durasi_j <= 24.0):
+            jml_lancar += 1
+            delta_skor += 3.0 + (2.0 if bounces >= 3 else 0.0)
+        elif pnl < 0 or (sentuh_b3 and durasi_j >= 24.0):
+            jml_berat += 1
+            delta_skor -= 5.0
+
+    # Jeda penalti ringan (-4.0) jika siklus terakhir koin ini sempat menyentuh b3 dan baru selesai < 2 jam lalu
+    terakhir = riwayat_koin[-1]
+    if terakhir.get("b3_ever_touched") and (now_ts - float(terakhir.get("ts", 0.0))) < 7200.0:
+        delta_skor -= 4.0
+
+    delta_skor = round(max(-15.0, min(12.0, delta_skor)), 1)
+    catatan = f"7H:{len(riwayat_koin)}x ({jml_lancar} lancar/{jml_berat} berat, Adj:{delta_skor:+.1f})"
+    return delta_skor, catatan
 
 # ==============================================================================
 # BAGIAN 3: KONEKSI RESMI INDODAX TRADE API V2 & CEK SPREAD ORDER BOOK
@@ -2161,7 +2233,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
             daftar_wr_koin.append(f"{ck}: {len(kw)}W/{len(kl)}L (WR {wrk:.0f}%, +{aw:.2f}%/{al:.2f}%)")
         rekap_wr_koin = " | ".join(daftar_wr_koin)
     else:
-        rekap_wr_total = "Belum ada transaksi selesai dlm 72 jam terakhir"
+        rekap_wr_total = "Belum ada transaksi selesai dlm 7 hari terakhir"
         rekap_wr_koin = "-"
 
     jml_bangkit_72j = sum(1 for m in tahan_sl_72j if m.get("hasil") == "SUKSES_BANGKIT")
@@ -2171,12 +2243,30 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
         if tahan_sl_72j else "Belum ada riwayat tahan SL"
     )
 
+# Rekap Memori Pengalaman Siklus Grid 1 Minggu (168 Jam)
+    batas_grid_7h = time.time() - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
+    mem_grid_7h = [
+        m for m in state.get("grid_experience_memory", [])
+        if float(m.get("ts", 0.0)) >= batas_grid_7h
+    ]
+    if mem_grid_7h:
+        tot_siklus = len(mem_grid_7h)
+        tot_panen_7h = sum(int(m.get("bounce_count", 0)) for m in mem_grid_7h)
+        tot_pnl_7h = sum(float(m.get("total_pnl_idr", 0.0)) for m in mem_grid_7h)
+        jml_sentuh_b3 = sum(1 for m in mem_grid_7h if m.get("b3_ever_touched"))
+        rekap_grid_7h = (
+            f"{tot_siklus} Siklus ({tot_panen_7h}x Panen | Net: Rp{tot_pnl_7h:+,.0f} | Sentuh b3: {jml_sentuh_b3}x)"
+        )
+    else:
+        rekap_grid_7h = "Belum ada siklus Grid selesai dlm 7 hari terakhir"
+
     ringkasan_pasar = (
         f"Pasar [{sumber_grafik} 5M+15M+1H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal:{status_rec_str}\n"
-        f"   -> Statistik Memori 72J (Total Bot): {rekap_wr_total} | Tahan SL: {rekap_tahan_sl}\n"
-        f"   -> Win Rate 72J Per Koin: {rekap_wr_koin}\n"
+        f"   -> Statistik Memori 7H (Total Bot): {rekap_wr_total} | Tahan SL: {rekap_tahan_sl}\n"
+        f"   -> Win Rate 7H Per Koin: {rekap_wr_koin}\n"
+        f"   -> Memori Siklus Grid 7H: {rekap_grid_7h}\n"
         f"   -> Koin Berstatus SIAP ENTRY Saat Ini ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (menunggu konfirmasi candle 5M hijau)'}"
     )
 
@@ -2274,12 +2364,13 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
             waktu_run = datetime.now(tz_wib).strftime("%Y-%m-%d %H:%M:%S WIB")
             baris_grid_md = f"- **Status Grid 3-Lapis:** {info_grid_md}\n" if GRID_MODE_ENABLED else ""
             md_summary = (
-                f"### 📊 Ringkasan Patroli & Win Rate 72 Jam ({waktu_run})\n"
+                f"### 📊 Ringkasan Patroli & Win Rate 7 Hari ({waktu_run})\n"
                 f"- **Profit Hari Ini:** Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)\n"
                 f"{baris_grid_md}"
-                f"- **Win Rate 72J (Total Bot):** {rekap_wr_total}\n"
-                f"- **Win Rate 72J (Per Koin):** {rekap_wr_koin}\n"
-                f"- **Rekor Tahan SL 72J:** {rekap_tahan_sl}\n"
+                f"- **Memori Siklus Grid 7H:** {rekap_grid_7h}\n"
+                f"- **Win Rate 7H (Total Bot):** {rekap_wr_total}\n"
+                f"- **Win Rate 7H (Per Koin):** {rekap_wr_koin}\n"
+                f"- **Rekor Tahan SL 7H:** {rekap_tahan_sl}\n"
                 f"- **Mode Recovery:** {status_rec_str.strip()}\n\n"
                 f"```text\n{teks_final}\n```\n"
             )
@@ -2372,11 +2463,16 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
             )
             return state, log_grid, log_tx, False
 
-        kandidat = sorted(
-            [v for v in peta_analisa.values() if v.get("layak_grid") is True],
-            key=lambda x: x["skor"],
-            reverse=True
-        )
+        kandidat_raw = []
+        for v in peta_analisa.values():
+            if v.get("layak_grid") is True:
+                adj_mem, note_mem = hitung_penyesuaian_skor_memori_grid(state, v["coin"])
+                item_k = dict(v)
+                item_k["skor_efektif"] = round(v["skor"] + adj_mem, 1)
+                item_k["catatan_memori_grid"] = note_mem
+                kandidat_raw.append(item_k)
+
+        kandidat = sorted(kandidat_raw, key=lambda x: x["skor_efektif"], reverse=True)
         if not kandidat:
             log_grid.append("⏸️ [GRID CASH IS KING] Belum ada koin memenuhi syarat (Sideways-Up/Uptrend di M15 & H1 + Volatilitas cukup).")
             return state, log_grid, log_tx, False
@@ -2406,7 +2502,7 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
             }
             ada_aksi = True
             pesan = (
-                f"🕸️ [BUKA SIKLUS GRID 3-LAPIS] {coin} (Skor:{pilih['skor']} | {pilih['tren_detail']}) | "
+                f"🕸️ [BUKA SIKLUS GRID 3-LAPIS] {coin} (Skor:{pilih['skor_efektif']} [{pilih['catatan_memori_grid']}] | {pilih['tren_detail']}) | "
                 f"b1:Rp{p1:,.0f}->TP:Rp{tp1:,.0f} | b2:Rp{p2:,.0f} | b3:Rp{p3:,.0f} (Order b1:#{oid_b1})"
             )
             log_grid.append(pesan)
@@ -2512,7 +2608,8 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
 
                 cycle["bounce_count"] = int(cycle.get("bounce_count", 0)) + 1
                 cycle["realized_grid_profit_idr"] = round(float(cycle.get("realized_grid_profit_idr", 0.0)) + profit_idr, 0)
-                catat_hasil_transaksi_ke_recovery(state, profit_idr, coin)
+                slot_mem = {"coin": coin, "style": f"GRID_{nama_lapis.upper()}", "capital_idr": lp["capital_idr"]}
+                catat_hasil_transaksi_ke_recovery(state, profit_idr, coin, slot=slot_mem, pnl_exit_pct=net_pct)
                 lp["sell_oid"] = None
                 ada_aksi = True
 
@@ -2538,6 +2635,7 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
         pesan = f"🏁 [SIKLUS GRID SELESAI!] {coin} total profit terealisasi: +Rp{cycle['realized_grid_profit_idr']:,.0f} ({cycle['bounce_count']}x panen). Reset ke siklus baru."
         log_grid.append(pesan)
         log_tx.append(pesan)
+        rekam_memori_siklus_grid(state, cycle, "TP_PENUH", cycle["realized_grid_profit_idr"])
         state["grid_cycle"] = None
         return state, log_grid, log_tx, True
 
@@ -2563,7 +2661,11 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
             qty_jual_semua = format_qty_koin(coin, dompet_cek["coins_free"].get(coin, total_qty_tahan) if LIVE_TRADING_ENABLED else total_qty_tahan)
             sukses_exit, harga_exit, _ = eksekusi_jual_terverifikasi(coin, bulatkan_harga_indodax(coin, harga_bid), qty_jual_semua)
             if sukses_exit:
-                catat_hasil_transaksi_ke_recovery(state, round(floating_idr - est_fee_jual, 0), coin)
+                pnl_sisa_idr = round(floating_idr - est_fee_jual, 0)
+                modal_sisa = sum(lp["capital_idr"] for lp in layers.values() if lp["status"] == "HOLDING") or GRID_CAPITAL_PER_LAYER_IDR
+                slot_reset = {"coin": coin, "style": "GRID_RESET", "capital_idr": modal_sisa}
+                catat_hasil_transaksi_ke_recovery(state, pnl_sisa_idr, coin, slot=slot_reset, pnl_exit_pct=(pnl_sisa_idr / modal_sisa))
+                rekam_memori_siklus_grid(state, cycle, "AUTO_RESET_B3", net_siklus_idr)
                 pesan = (
                     f"🏆 [AUTO-RESET SIKLUS UNTUNG] {coin} sudah {cycle['bounce_count']}x panen & pernah sentuh b3. "
                     f"Semua sisa koin ditutup @ Rp{harga_exit:,.0f} (Total Net Siklus: +Rp{net_siklus_idr:,.0f}). Reset!"
