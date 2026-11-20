@@ -1,24 +1,9 @@
 {
-  "active_slots": [
-    {
-      "coin": "ETH",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 42711.0,
-      "qty": 0.00134,
-      "entry_price_idr": 31874000,
-      "tp_price_idr": 32304000.0,
-      "sl_price_idr": 31539000.0,
-      "highest_price_idr": 32339000.0,
-      "filled_timestamp": 1795178043.241352,
-      "timestamp": 1795178043.241352,
-      "tp_order_id": "219533402"
-    }
-  ],
-  "realized_profit_today_idr": -7623.0,
-  "completed_trades_today": 24,
+  "active_slots": [],
+  "realized_profit_today_idr": -7421.0,
+  "completed_trades_today": 25,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 12650.0,
+  "loss_to_recover_idr": 12448.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
@@ -818,6 +803,16 @@
       "style": "GRID",
       "pnl_pct": -1.92,
       "pnl_idr": -1692.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795182692.8135266,
+      "waktu": "20/11 20:51",
+      "coin": "ETH",
+      "style": "GRID",
+      "pnl_pct": 0.47,
+      "pnl_idr": 202.0,
       "sempat_tahan_sl": false
     }
   ]
