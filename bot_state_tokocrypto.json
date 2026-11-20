@@ -15,26 +15,12 @@
       "tp_order_id": null,
       "lock_115_armed": true,
       "lock_100_armed": true
-    },
-    {
-      "coin": "BTC",
-      "style": "GRID",
-      "status": "HOLDING_FOR_TP",
-      "capital_idr": 109906.0,
-      "qty": 0.000101,
-      "entry_price_idr": 1088180000,
-      "tp_price_idr": 1102870000.0,
-      "sl_price_idr": 1076754000.0,
-      "highest_price_idr": 1135002000.0,
-      "filled_timestamp": 1795191985.0604515,
-      "timestamp": 1795191985.0604515,
-      "tp_order_id": "274947922"
     }
   ],
-  "realized_profit_today_idr": -7421.0,
-  "completed_trades_today": 25,
+  "realized_profit_today_idr": -7277.0,
+  "completed_trades_today": 26,
   "last_reset_date": "2026-11-20",
-  "loss_to_recover_idr": 12448.0,
+  "loss_to_recover_idr": 12304.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
@@ -844,6 +830,16 @@
       "style": "GRID",
       "pnl_pct": 0.47,
       "pnl_idr": 202.0,
+      "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795193438.1431215,
+      "waktu": "20/11 23:50",
+      "coin": "BTC",
+      "style": "GRID",
+      "pnl_pct": 0.13,
+      "pnl_idr": 144.0,
       "sempat_tahan_sl": false
     }
   ]
