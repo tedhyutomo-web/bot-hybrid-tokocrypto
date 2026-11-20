@@ -1,5 +1,20 @@
 {
-  "active_slots": [],
+  "active_slots": [
+    {
+      "coin": "ADA",
+      "style": "GRID",
+      "status": "HOLDING_FOR_TP",
+      "capital_idr": 88248.0,
+      "qty": 32.6,
+      "entry_price_idr": 2707,
+      "tp_price_idr": 2744.0,
+      "sl_price_idr": 2679.0,
+      "highest_price_idr": 2758.0,
+      "filled_timestamp": 1795175940.2262008,
+      "timestamp": 1795175940.2262008,
+      "tp_order_id": "144370912"
+    }
+  ],
   "realized_profit_today_idr": -5931.0,
   "completed_trades_today": 23,
   "last_reset_date": "2026-11-20",
