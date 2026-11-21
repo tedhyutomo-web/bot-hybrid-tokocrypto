@@ -2404,24 +2404,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
             detail_diagnosa_koin.append(
                 "   * Belum ada siklus Grid Berlapis aktif (100% Cash is King - Menunggu syarat 4H != MERAH & M15/H1/5M valid)."
             )
-                else:
-                    rincian_lapis.append(f"{nama_lp.upper()}:{st_lp} (@Rp{bp:,.0f}->TP Rp{tp:,.0f})")
 
-            info_grid_md = (
-                f"{coin} | Panen: {bounces}x (+Rp{realized_grid:,.0f}) | "
-                f"Floating: Rp{floating_grid_idr:+,.0f} | b3 Tersentuh: {b3_sentuh}"
-            )
-            detail_diagnosa_koin.append(
-                f"   * [GRID 3-LAPIS | {lama_jam:.1f}j] {coin} @ Rp{skrg:,.0f} (Bid: Rp{harga_bid:,.0f}) -> {prediksi_k}\n"
-                f"     Tren: [{tren_k}] | RSI 5M:{rsi_5m} / 15M:{rsi_15m} / 1H:{rsi_1h}\n"
-                f"     Panen Siklus: {bounces}x (+Rp{realized_grid:,.0f}) | Floating: Rp{floating_grid_idr:+,.0f} | Sentuh b3: {b3_sentuh}\n"
-                f"     Lapis: {' | '.join(rincian_lapis)}"
-            )
-        else:
-            info_grid_md = "Cash is King (Menunggu syarat Grid M15 & H1)"
-            detail_diagnosa_koin.append(
-                "   * Belum ada siklus Grid 3-Lapis aktif (100% Cash is King - Menunggu syarat Sideways-Up / Uptrend M15 & H1)."
-            )
     else:
         for slot in state.get("active_slots", []):
             coin = slot["coin"]
