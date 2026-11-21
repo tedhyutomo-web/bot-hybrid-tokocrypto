@@ -17,9 +17,9 @@
       "lock_100_armed": true
     }
   ],
-  "realized_profit_today_idr": -7277.0,
-  "completed_trades_today": 26,
-  "last_reset_date": "2026-11-21",
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0,
+  "last_reset_date": "2026-11-22",
   "loss_to_recover_idr": 12304.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
