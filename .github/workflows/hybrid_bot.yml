@@ -1,110 +1,56 @@
-name: Indodax Pro Multi-Regime Trading Bot
+name: Smart Hybrid AI Bot Tokocrypto 24/7
 
 on:
-  schedule:
-    # Jalan otomatis tiap 15 menit (cocok untuk uji anti-spoofing DOM 15 menit & pantau Virtual OCO)
-    - cron: '*/15 * * * *'
   workflow_dispatch:
-    inputs:
-      live_trading:
-        description: 'Aktifkan Live Trading? (true / false - kosongkan untuk ikut setting Repo/Default)'
-        required: false
-        default: ''
+  # Cron bawaan GitHub dinonaktifkan karena sudah dipicu presisi tiap 5 menit oleh Google Sheets:
+  # schedule:
+  #   - cron: '*/5 * * * *'
+
+concurrency:
+  group: indodax-hybrid-bot-live
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
-concurrency:
-  # Wajib agar 2 jadwal tidak berjalan bersamaan dan mencegah double-order / bentrok state.json
-  group: indodax-pro-swing-bot-lock
-  cancel-in-progress: false
-
 jobs:
-  run-trading-bot:
+  run-hybrid-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
 
     steps:
-      - name: 1. Checkout Repository
+      - name: 1. Ambil Kode & Memori Terakhir Bot dari Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: 2. Setup Python 3.11
+      - name: 2. Siapkan Mesin Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 3. Jalankan Bot Indodax Pro Multi-Regime
+      - name: 3. Jalankan Smart Dynamic Hybrid AI Bot & Kirim ke Google Sheets
         env:
-          # === KREDENSIAL INDODAX (WAJIB DI GITHUB SECRETS) ===
           INDODAX_API_KEY: ${{ secrets.INDODAX_API_KEY }}
           INDODAX_SECRET_KEY: ${{ secrets.INDODAX_SECRET_KEY }}
-          # Opsional Legacy Key v1 khusus Deadman Switch (umumnya untuk VPS, boleh kosong di GitHub Actions)
-          INDODAX_LEGACY_KEY: ${{ secrets.INDODAX_LEGACY_KEY }}
-          INDODAX_LEGACY_SECRET: ${{ secrets.INDODAX_LEGACY_SECRET }}
-
-          # === MODE & MODAL KERJA ===
-          # Default aman: false (Simulasi / Paper Trading). Ubah ke 'true' di Secrets/Variables jika siap Live!
-          LIVE_TRADING_ENABLED: ${{ github.event.inputs.live_trading || vars.LIVE_TRADING_ENABLED || secrets.LIVE_TRADING_ENABLED || 'false' }}
-          RUN_MODE: 'cycle'
-          CYCLE_WATCH_MINUTES: ${{ vars.CYCLE_WATCH_MINUTES || '4' }}
-          OCO_POLL_SECONDS: '15'
-          MAX_BOT_CAPITAL_IDR: ${{ vars.MAX_BOT_CAPITAL_IDR || secrets.MAX_BOT_CAPITAL_IDR || '1000000' }}
-
-          # === KONFIGURASI PLAN B (BEARISH & SIDEWAYS DOWNTREND) ===
-          PLAN_B_ENABLE_RELIEF_BOUNCE: ${{ vars.PLAN_B_ENABLE_RELIEF_BOUNCE || 'true' }}
-          PLAN_B_AUTO_USDT_PARKING: ${{ vars.PLAN_B_AUTO_USDT_PARKING || 'false' }}
-          SPOT_CORE_HOLDING_IDR: ${{ vars.SPOT_CORE_HOLDING_IDR || '0' }}
-
-          # === FILTER LIKUIDITAS & RISIKO ===
-          ENFORCE_PEAK_LIQUIDITY_WINDOW: ${{ vars.ENFORCE_PEAK_LIQUIDITY_WINDOW || 'false' }}
-          ALLOW_WEEKEND_NEW_ENTRIES: ${{ vars.ALLOW_WEEKEND_NEW_ENTRIES || 'false' }}
-          RISK_PER_TRADE_PCT: ${{ vars.RISK_PER_TRADE_PCT || '0.01' }}
-          MIN_NET_RRR_REQUIRED: ${{ vars.MIN_NET_RRR_REQUIRED || '2.00' }}
-
-          # === OPSIONAL GEMINI AI ADVISORY (off | shadow | entry_filter) ===
-          # Catatan: AI tidak pernah menyentuh Stop Loss / Hard Risk Layer
-          GEMINI_ADVISORY_MODE: ${{ vars.GEMINI_ADVISORY_MODE || 'off' }}
+          TOKOCRYPTO_API_KEY: ${{ secrets.TOKOCRYPTO_API_KEY }}
+          TOKOCRYPTO_SECRET_KEY: ${{ secrets.TOKOCRYPTO_SECRET_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
           GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
           GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
-
-          # === TELEMETRI (OPSIONAL DI GITHUB SECRETS) ===
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
-
-          # === LOKASI FILE MEMORI & AUDIT ===
-          STATE_FILE: 'indodax_pro_state.json'
-          SQLITE_DB_FILE: 'indodax_pro_audit.db'
+          MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
+          LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'false' }}
+          ACTIVE_WATCH_MINUTES: '4'
+          WATCH_INTERVAL_SECONDS: '60'
         run: |
-          python3 indodax_pro_swing_bot.py
+          python bot_grid_ai_tokocrypto_24_7.py
 
-      - name: 4. Checkpoint SQLite WAL agar Bersih Sebelum Commit
-        if: always()
+      - name: 4. Simpan Memori Posisi Aktif (bot_state_tokocrypto.json) agar Bot Tidak Lupa
         run: |
-          python3 - <<'EOF'
-          import os, sqlite3
-          db = "indodax_pro_audit.db"
-          if os.path.exists(db):
-              conn = sqlite3.connect(db)
-              conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-              conn.close()
-          EOF
-
-      - name: 5. Simpan Memori State & Audit DB ke Repository
-        if: always()
-        run: |
-          git config --local user.name "Indodax Pro Bot"
-          git config --local user.email "bot@users.noreply.github.com"
-          git add -f indodax_pro_state.json indodax_pro_audit.db 2>/dev/null || true
-          if git diff --staged --quiet; then
-            echo "Tidak ada perubahan state/audit untuk di-commit."
-          else
-            git commit -m "chore(bot): update state & audit log [skip ci]"
-            git pull --rebase --autostash origin ${{ github.ref_name }}
-            git push origin HEAD:${{ github.ref_name }}
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f bot_state_tokocrypto.json ]; then
+            git add bot_state_tokocrypto.json
+            git diff --staged --quiet || (git commit -m "Auto-update memori posisi bot Indodax V2" && git pull --rebase -X theirs origin main && git push)
           fi
