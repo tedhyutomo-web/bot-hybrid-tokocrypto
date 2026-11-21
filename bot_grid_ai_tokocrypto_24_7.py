@@ -42,15 +42,23 @@ SL_COOLDOWN_MINUTES = 45               # Masa tenang 45 menit untuk koin yang ba
 # ==============================================================================
 GRID_MODE_ENABLED = True               # True = aktifkan Grid 3-Lapis; False = mode scalping lama
 GRID_CAPITAL_PER_LAYER_IDR = 33000.0   # Modal Rp100.000 dibagi 3 lapis rata (~Rp33.000/lapis)
-GRID_STEP_PCT = 0.0150                 # Jarak antar grid 1.50% (Net profit ~0.95% per pantulan, b3 di -3.00%)
+GRID_STEP_PCT = 0.0150                 # Default / Lampu Hijau: jarak antar grid 1.50% (b3 di -3.00%)
+GRID_STEP_GREEN_PCT = 0.0150           # Jarak grid saat 4H Lampu Hijau (1.50%)
+GRID_STEP_YELLOW_PCT = 0.0200          # Jarak grid diperlebar saat 4H Lampu Kuning (2.00%, b3 di -4.00%)
+GRID_MAX_TIERS = 3                     # Maksimal jumlah lapis (3 lapis x ~Rp100rb = Rp300rb; otomatis cek saldo IDR)
+GRID_NEXT_TIER_DROP_GREEN_PCT = 0.0300 # Pemicu siaga Lapis 2/3: turun >= 3.00% di bawah b3 lapis terakhir (Hijau)
+GRID_NEXT_TIER_DROP_YELLOW_PCT = 0.0400# Pemicu siaga Lapis 2/3 diperlebar ke 4.00% saat 4H Lampu Kuning
+GRID_SWING_LOWER_B1_TO_L1_TP = False   # False = b1 lapis bawah TP lokal (kas cepat cair); True = ikut swing ke TP b1 Lapis 1
+GRID_4H_CRASH_RSI = 30.0               # Batas RSI 4H untuk veto Lampu Merah (Crash Ekstrem)
+GRID_4H_CRASH_VOL_RATIO = 1.60         # Lonjakan volume jual 4H untuk deteksi freefall / crash
 GRID_MAX_RSI_M5_ENTRY = 65.0           # Anti beli di pucuk (overbought) saat buka b1
 GRID_MIN_ATR_15M_PCT = 0.0035          # Syarat volatilitas minimal 15M agar rentang cukup melibas fee 0.55%
-GRID_RESET_BOUNCE_COUNT = 3            # Jika b3 pernah tersentuh & pantulan >= 3x -> siap reset siklus saat net untung
+GRID_RESET_BOUNCE_COUNT = 3            # Referensi memori pantulan
 GRID_WAIT_B1_TIMEOUT_MIN = 45.0        # Batas tunggu antrean awal b1 sebelum dibatalkan jika belum terjemput
 GRID_MEMORY_RETENTION_HOURS = 168.0    # Memori pengalaman siklus Grid disimpan 1 minggu (7 hari = 168 jam)
 MAX_GRID_MEMORY_ITEMS = 60             # Maksimal menyimpan 60 riwayat siklus Grid dalam 1 minggu
 GRID_ALLOWED_COINS = {"BTC", "ETH", "XRP"}  # Khusus 3 aset likuiditas teratas Indodax (anti-slippage & aman Swing Hold)
-GRID_LIMIT_TIF = "MOC"                             # Maker-Only Cancel (otomatis tolak jika terancam jadi Taker; ubah ke "GTC" jika perlu)
+GRID_LIMIT_TIF = "MOC"                 # Maker-Only Cancel (otomatis tolak jika terancam jadi Taker)
 
 # Parameter Target TP & SL Dinamis (Menyesuaikan Volatilitas ATR Rupiah Indodax)
 TP_GRID_MIN_PCT = 0.0135               # +1.35% Target TP minimal mode Grid saat pasar sepi
@@ -982,8 +990,37 @@ def deteksi_rezim_pasar(closes, highs, lows):
         "atr_pct": round(hitung_atr_pct(closes, highs, lows, 14), 5)
     }
 
+def evaluasi_lampu_4h(c4h, h4h, l4h, v4h, h4_info):
+    """
+    Menerjemahkan kondisi 4H menjadi pengatur mode 3 lampu:
+    - MERAH  : Downtrend + Crash/Freefall ekstrem (Veto penuh).
+    - KUNING : Downtrend normal (Lapis 1 tetap boleh masuk, jarak grid diperlebar ke 2.00%).
+    - HIJAU  : Uptrend / Sideways (Eksekusi normal, jarak grid 1.50%).
+    """
+    rezim_4h = h4_info["rezim"]
+    rsi_4h = h4_info["rsi"]
+    vol_rata_4h = sum(v4h[-20:-1]) / 19.0 if len(v4h) >= 20 else (v4h[-1] or 1.0)
+    rasio_vol_4h = v4h[-1] / (vol_rata_4h or 1.0)
+    candle_4h_merah = c4h[-1] < c4h[-2]
+    drop_1_candle_pct = ((c4h[-1] - c4h[-2]) / c4h[-2]) if c4h[-2] > 0 else 0.0
+    dua_merah_4h = (len(c4h) >= 3) and (c4h[-1] < c4h[-2] < c4h[-3])
+
+    crash_ekstrem = (
+        rezim_4h == "DOWNTREND"
+        and (
+            rsi_4h < GRID_4H_CRASH_RSI
+            or (candle_4h_merah and rasio_vol_4h >= GRID_4H_CRASH_VOL_RATIO and (drop_1_candle_pct <= -0.025 or dua_merah_4h))
+        )
+    )
+
+    if crash_ekstrem:
+        return "MERAH", round(rasio_vol_4h, 2)
+    if rezim_4h == "DOWNTREND":
+        return "KUNING", round(rasio_vol_4h, 2)
+    return "HIJAU", round(rasio_vol_4h, 2)
+
 def analisa_teknikal_lengkap_pasar(harga_idr_map):
-    """Analisa multi-timeframe 100% Native Indodax (M5 + M15 + H1 + Rem Makro H4)."""
+    """Analisa multi-timeframe 100% Native Indodax (5M Trigger + 15M/1H Struktur + 4H 3-Mode Cuaca)."""
     peta_analisa = {}
     for coin, info in WATCHLIST_COINS.items():
         if GRID_MODE_ENABLED and coin not in GRID_ALLOWED_COINS:
@@ -998,12 +1035,11 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         harga_ask = data_ticker.get("sell", harga_idr)
         spread_pct = data_ticker.get("spread_pct", 0.0)
 
-        # Ambil langsung chart masing-masing timeframe dari Indodax (5M, 15M, 1H, 4H)
         ohlc_5m = ambil_data_ohlc_indodax(coin, info, tf="5", jumlah_candle=80)
         ohlc_15m = ambil_data_ohlc_indodax(coin, info, tf="15", jumlah_candle=80)
         ohlc_1h = ambil_data_ohlc_indodax(coin, info, tf="60", jumlah_candle=80)
         ohlc_4h = ambil_data_ohlc_indodax(coin, info, tf="240", jumlah_candle=80)
-        time.sleep(0.15)  # Jeda sopan anti rate-limit Indodax
+        time.sleep(0.15)
 
         if not ohlc_5m or not ohlc_15m or not ohlc_1h or not ohlc_4h:
             continue
@@ -1017,6 +1053,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         m15 = deteksi_rezim_pasar(c15, h15, l15)
         h1 = deteksi_rezim_pasar(c1h, h1h, l1h)
         h4 = deteksi_rezim_pasar(c4h, h4h, l4h)
+        lampu_4h, vol_4h_ratio = evaluasi_lampu_4h(c4h, h4h, l4h, v4h, h4)
 
         spread_aman = spread_pct <= MAX_SPREAD_INDODAX_PCT
         vol_rata_5m = sum(v5[-20:-1]) / 19.0 if len(v5) >= 20 else (v5[-1] or 1.0)
@@ -1024,70 +1061,83 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         candle_5m_hijau = c5[-1] >= c5[-2]
         candle_jatuh_beruntun = (c5[-1] < c5[-2] < c5[-3])
 
-        # SYARAT ENTRY GRID (4 rezim di M15 & H1 + Rem Makro H4 tidak DOWNTREND + Anti-Pucuk + Volatilitas)
         rezim_boleh = ("UPTREND", "SIDEWAYS_UP")
-        h4_aman = h4["rezim"] != "DOWNTREND"
+        h4_tidak_crash = (lampu_4h != "MERAH")
         h1_aman = h1["rezim"] in rezim_boleh
         m15_aman = m15["rezim"] in rezim_boleh
-        tidak_pucuk = m5["rsi"] <= GRID_MAX_RSI_M5_ENTRY and m15["rsi"] <= 68.0
         volatilitas_cukup = m15["atr_pct"] >= GRID_MIN_ATR_15M_PCT
         koin_diizinkan = (coin in GRID_ALLOWED_COINS)
 
+        # Pembagian peran 5M Trigger & 4H Pengatur Agresivitas
+        if lampu_4h == "HIJAU":
+            grid_step_aktif = GRID_STEP_GREEN_PCT
+            trigger_5m_ok = (m5["rsi"] <= GRID_MAX_RSI_M5_ENTRY) and (m15["rsi"] <= 68.0) and (not candle_jatuh_beruntun)
+            struktur_ok = m15_aman and h1_aman
+        elif lampu_4h == "KUNING":
+            # 4H Downtrend Normal: tetap boleh masuk Lapis 1 dgn grid lebar 2.00%, tapi syarat 5M lebih disiplin
+            grid_step_aktif = GRID_STEP_YELLOW_PCT
+            trigger_5m_ok = candle_5m_hijau and (m5["rsi"] <= 55.0) and (not candle_jatuh_beruntun)
+            struktur_ok = m15_aman and (h1_aman or m15["rezim"] == "UPTREND")
+        else:
+            grid_step_aktif = GRID_STEP_YELLOW_PCT
+            trigger_5m_ok = False
+            struktur_ok = False
+
         layak_grid = bool(
             koin_diizinkan
-            and h4_aman
-            and h1_aman
-            and m15_aman
-            and tidak_pucuk
+            and h4_tidak_crash
+            and struktur_ok
+            and trigger_5m_ok
             and volatilitas_cukup
             and spread_aman
-            and not candle_jatuh_beruntun
         )
 
-        # Skor prioritas pemilihan koin terbaik untuk Grid
+        # Syarat buka Lapis 2 / Lapis 3 (momen sideways-uptrend / uptrend baru setelah turun >= 3% di bawah b3)
+        layak_lapis_baru = bool(
+            koin_diizinkan
+            and h4_tidak_crash
+            and m15_aman
+            and candle_5m_hijau
+            and (not candle_jatuh_beruntun)
+            and (m5["rsi"] <= GRID_MAX_RSI_M5_ENTRY)
+            and spread_aman
+        )
+
         skor_grid = 50.0
-        if h4["rezim"] == "UPTREND":
-            skor_grid += 8.0
-        elif h4["rezim"] == "SIDEWAYS_UP":
-            skor_grid += 5.0
+        if lampu_4h == "HIJAU":
+            skor_grid += 10.0 if h4["rezim"] == "UPTREND" else 6.0
+        elif lampu_4h == "KUNING":
+            skor_grid += 2.0
         if h1["rezim"] == "UPTREND":
             skor_grid += 12.0
         elif h1["rezim"] == "SIDEWAYS_UP":
             skor_grid += 10.0
         if m15["rezim"] == "SIDEWAYS_UP":
-            skor_grid += 15.0  # Sideways cenderung naik adalah kondisi favorit Grid
+            skor_grid += 15.0
         elif m15["rezim"] == "UPTREND":
             skor_grid += 10.0
         if 35.0 <= m5["rsi"] <= 55.0:
-            skor_grid += 10.0  # Bonus beli di pullback sehat (bukan pucuk)
+            skor_grid += 10.0
         if not layak_grid:
             skor_grid = min(skor_grid, 45.0)
 
-        # Evaluasi peluang swing balik naik (dipakai saat harga sedang di bawah b3)
-        peluang_rebound_b3 = bool(
-            h1["rsi"] <= 48.0
-            or m15["rsi"] <= 38.0
-            or h4["rezim"] in ("UPTREND", "SIDEWAYS_UP")
-            or h1["rezim"] in ("UPTREND", "SIDEWAYS_UP")
-            or candle_5m_hijau
-        )
-
         if layak_grid:
-            prediksi = f"🟢 LAYAK GRID ({m15['rezim']} 15M | {h1['rezim']} 1H | {h4['rezim']} 4H | ATR15M:{m15['atr_pct']*100:.2f}%)"
-        elif not h4_aman:
-            prediksi = f"🔴 REM MAKRO H4 ({h4['rezim']} 4H - Tahan Entry di Bear Market)"
-        elif h1["rezim"] in ("DOWNTREND", "SIDEWAYS_DOWN") or m15["rezim"] in ("DOWNTREND", "SIDEWAYS_DOWN"):
-            prediksi = f"🔴 BLOKIR GRID ({m15['rezim']} 15M / {h1['rezim']} 1H - Hindari Downtrend)"
-        elif not tidak_pucuk:
-            prediksi = f"🟡 TUNDA GRID (Overbought RSI 5M:{m5['rsi']} - Tunggu Pullback)"
+            ikon_lampu = "🟢" if lampu_4h == "HIJAU" else "🟡"
+            prediksi = f"{ikon_lampu} LAYAK GRID [{lampu_4h} Step:{grid_step_aktif*100:.1f}%] ({m15['rezim']} 15M | {h1['rezim']} 1H | {h4['rezim']} 4H)"
+        elif lampu_4h == "MERAH":
+            prediksi = f"🔴 VETO CRASH 4H (RSI4H:{h4['rsi']}, Vol4H:{vol_4h_ratio}x - Stop Entry Freefall)"
+        elif not struktur_ok:
+            prediksi = f"🔴 BLOKIR GRID ({m15['rezim']} 15M / {h1['rezim']} 1H | 4H:{lampu_4h})"
+        elif not trigger_5m_ok:
+            prediksi = f"🟡 TUNGGU TRIGGER 5M (RSI5M:{m5['rsi']} | 4H:{lampu_4h})"
         elif not volatilitas_cukup:
-            prediksi = f"🟡 PASAR TERLALU SEPI (ATR 15M:{m15['atr_pct']*100:.2f}% < {GRID_MIN_ATR_15M_PCT*100:.2f}%)"
+            prediksi = f"🟡 PASAR SEPI (ATR15M:{m15['atr_pct']*100:.2f}% < {GRID_MIN_ATR_15M_PCT*100:.2f}%)"
         else:
             prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}%)"
 
-        entry_ideal_idr = bulatkan_harga_indodax(coin, harga_bid)  # Pakai harga Bid agar 100% Maker
-        tp_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 + GRID_STEP_PCT))
-        sl_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 - (GRID_STEP_PCT * 2.0)))
+        entry_ideal_idr = bulatkan_harga_indodax(coin, harga_bid)
+        tp_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 + grid_step_aktif))
+        sl_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 - (grid_step_aktif * 2.0)))
 
         peta_analisa[coin] = {
             "coin": coin,
@@ -1097,16 +1147,18 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             "harga_ask": harga_ask,
             "spread_pct": spread_pct,
             "high_2jam_idr": round(max(h5[-24:]), 0),
-            "tren": "UPTREND" if (h1_aman and h4_aman) else "SIDEWAYS/DOWN",
+            "tren": "UPTREND" if (h1_aman and h4_tidak_crash) else "SIDEWAYS/DOWN",
             "tren_5m_naik": m5["rezim"] in rezim_boleh,
             "tren_15m_naik": m15_aman,
             "candle_5m_hijau": candle_5m_hijau,
             "candle_jatuh_beruntun": candle_jatuh_beruntun,
-            "tren_detail": f"5M:{m5['rezim']}|15M:{m15['rezim']}|1H:{h1['rezim']}|4H:{h4['rezim']}",
+            "tren_detail": f"5M:{m5['rezim']}|15M:{m15['rezim']}|1H:{h1['rezim']}|4H:{h4['rezim']}[{lampu_4h}]",
             "rezim_5m": m5["rezim"],
             "rezim_15m": m15["rezim"],
             "rezim_1h": h1["rezim"],
             "rezim_4h": h4["rezim"],
+            "lampu_4h": lampu_4h,
+            "grid_step_aktif": grid_step_aktif,
             "rsi": m5["rsi"],
             "rsi_15m": m15["rsi"],
             "rsi_1h": h1["rsi"],
@@ -1119,13 +1171,13 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             "entry_ideal_idr": entry_ideal_idr,
             "tp_ideal_idr": tp_ideal_idr,
             "sl_ideal_idr": sl_ideal_idr,
-            "tp_target_pct": round(GRID_STEP_PCT * 100.0, 2),
+            "tp_target_pct": round(grid_step_aktif * 100.0, 2),
             "gaya": "GRID_3L" if layak_grid else "WAIT",
             "skor": round(skor_grid, 1),
             "prediksi": prediksi,
             "siap_entry": layak_grid,
             "layak_grid": layak_grid,
-            "peluang_rebound_b3": peluang_rebound_b3,
+            "layak_lapis_baru": layak_lapis_baru,
             "bobot_alokasi": round(skor_grid, 2)
         }
     return peta_analisa
@@ -2288,7 +2340,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
         rekap_grid_7h = "Belum ada siklus Grid selesai dlm 7 hari terakhir"
 
     ringkasan_pasar = (
-        f"Pasar [{sumber_grafik} 5M+15M+1H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
+        f"Pasar [{sumber_grafik} 5M+15M+1H+4H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M: {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal:{status_rec_str}\n"
         f"   -> Statistik Memori 7H (Total Bot): {rekap_wr_total} | Tahan SL: {rekap_tahan_sl}\n"
@@ -2305,34 +2357,53 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
         if cycle:
             coin = cycle["coin"]
             info = peta_analisa.get(coin, {})
-            layers = cycle.get("layers", {})
-            p1_ref = float(layers.get("b1", {}).get("buy_price", 0.0))
+            tiers = cycle.get("tiers", [])
+            p1_ref = float(tiers[0]["layers"]["b1"]["buy_price"]) if tiers else 0.0
+            target_finis = float(cycle.get("target_finish_tp_idr", p1_ref * 1.015))
             skrg = info.get("harga_idr", p1_ref)
             harga_bid = info.get("harga_bid", skrg)
             tren_k = info.get("tren_detail", "-")
             prediksi_k = info.get("prediksi", "-")
-            rsi_5m = info.get("rsi", "-")
-            rsi_15m = info.get("rsi_15m", "-")
-            rsi_1h = info.get("rsi_1h", "-")
+            lampu_4h = info.get("lampu_4h", "-")
             bounces = int(cycle.get("bounce_count", 0))
             realized_grid = float(cycle.get("realized_grid_profit_idr", 0.0))
-            b3_sentuh = "PERNAH" if cycle.get("b3_ever_touched") else "BELUM"
-            lama_jam = (time.time() - float(cycle.get("created_ts", time.time()))) / 3600.0
+            durasi_str = format_durasi_siklus(time.time() - float(cycle.get("created_ts", time.time())))
 
             floating_grid_idr = 0.0
-            rincian_lapis = []
-            for nama_lp in ("b1", "b2", "b3"):
-                lp = layers.get(nama_lp, {})
-                st_lp = lp.get("status", "-")
-                bp = float(lp.get("buy_price", 0.0))
-                tp = float(lp.get("tp_price", 0.0))
-                qty_lp = float(lp.get("qty", 0.0))
-                if st_lp == "HOLDING" and bp > 0:
-                    pnl_lp_pct = ((harga_bid - bp) / bp) * 100.0
-                    floating_grid_idr += (harga_bid - bp) * qty_lp
-                    rincian_lapis.append(
-                        f"{nama_lp.upper()}:HOLD ({pnl_lp_pct:+.2f}% | Beli Rp{bp:,.0f}->TP Rp{tp:,.0f})"
-                    )
+            baris_tiap_lapis = []
+            for t in tiers:
+                rincian_b = []
+                for nama_lp in ("b1", "b2", "b3"):
+                    lp = t["layers"].get(nama_lp, {})
+                    st_lp = lp.get("status", "-")
+                    bp = float(lp.get("buy_price", 0.0))
+                    tp = float(lp.get("tp_price", 0.0))
+                    qty_lp = float(lp.get("qty", 0.0))
+                    if st_lp == "HOLDING" and bp > 0:
+                        pnl_lp_pct = ((harga_bid - bp) / bp) * 100.0
+                        floating_grid_idr += (harga_bid - bp) * qty_lp
+                        rincian_b.append(f"{nama_lp.upper()}:HOLD({pnl_lp_pct:+.2f}%|TP Rp{tp:,.0f})")
+                    else:
+                        rincian_b.append(f"{nama_lp.upper()}:{st_lp}(@Rp{bp:,.0f})")
+                baris_tiap_lapis.append(
+                    f"     Lapis {t['tier_no']} [{t.get('mode_4h', '-')}|Step {t.get('step_pct', 0.015)*100:.1f}%]: {' | '.join(rincian_b)}"
+                )
+
+            info_grid_md = (
+                f"{coin} | Lapis Aktif: {len(tiers)}/{GRID_MAX_TIERS} | Durasi: {durasi_str} | "
+                f"Panen: {bounces}x (+Rp{realized_grid:,.0f}) | Floating: Rp{floating_grid_idr:+,.0f} | Finis TP: Rp{target_finis:,.0f}"
+            )
+            detail_diagnosa_koin.append(
+                f"   * [GRID BERLAPIS | Lapis {len(tiers)}/{GRID_MAX_TIERS} | {durasi_str}] {coin} @ Rp{skrg:,.0f} (4H:{lampu_4h}) -> {prediksi_k}\n"
+                f"     Tren: [{tren_k}] | Target Finis (TP b1 L1): Rp{target_finis:,.0f}\n"
+                f"     Panen Siklus: {bounces}x (+Rp{realized_grid:,.0f}) | Floating: Rp{floating_grid_idr:+,.0f}\n"
+                + "\n".join(baris_tiap_lapis)
+            )
+        else:
+            info_grid_md = "Cash is King (Menunggu syarat Grid Lapis 1)"
+            detail_diagnosa_koin.append(
+                "   * Belum ada siklus Grid Berlapis aktif (100% Cash is King - Menunggu syarat 4H != MERAH & M15/H1/5M valid)."
+            )
                 else:
                     rincian_lapis.append(f"{nama_lp.upper()}:{st_lp} (@Rp{bp:,.0f}->TP Rp{tp:,.0f})")
 
@@ -2379,7 +2450,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa):
 
     teks_final = (
         f"🟢 [{judul_mode} | Profit Hari Ini: Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)]\n"
-        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI CANDLESTICK RUPIAH INDODAX (5M + 15M + 1H):\n"
+        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI CANDLESTICK RUPIAH INDODAX (5M + 15M + 1H + 4H):\n"
         f"{teks_diagnosa}\n"
         f"   -> {ringkasan_pasar}"
     )
@@ -2458,14 +2529,40 @@ def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=N
 # ==============================================================================
 # MESIN GRID 3-LAPIS PERSISTEN (b1, b2, b3) + AUTO-RESET + SWING HOLD BAWAH b3
 # ==============================================================================
+def format_durasi_siklus(detik_total):
+    """Mengubah durasi detik menjadi format 'X hari, Y jam, Z menit'."""
+    detik = max(0, int(detik_total))
+    hari = detik // 86400
+    sisa = detik % 86400
+    jam = sisa // 3600
+    menit = (sisa % 3600) // 60
+    return f"{hari} hari, {jam} jam, {menit} menit"
+
+def _buat_struktur_tier_baru(coin, tier_no, p1, step_pct, mode_4h, oid_b1, qty_b1, now_ts, target_tp_b1_override=None):
+    tp1 = target_tp_b1_override if target_tp_b1_override else bulatkan_harga_indodax(coin, p1 * (1.0 + step_pct))
+    p2 = bulatkan_harga_indodax(coin, p1 * (1.0 - step_pct))
+    p3 = bulatkan_harga_indodax(coin, p1 * (1.0 - (step_pct * 2.0)))
+    return {
+        "tier_no": tier_no,
+        "mode_4h": mode_4h,
+        "step_pct": step_pct,
+        "created_ts": now_ts,
+        "status": "ACTIVE",
+        "layers": {
+            "b1": {"buy_price": p1, "tp_price": tp1, "status": "WAIT_BUY", "buy_oid": oid_b1, "sell_oid": None, "qty": qty_b1, "capital_idr": round(qty_b1 * p1, 0)},
+            "b2": {"buy_price": p2, "tp_price": p1,  "status": "ARMED",    "buy_oid": None,   "sell_oid": None, "qty": 0.0,    "capital_idr": GRID_CAPITAL_PER_LAYER_IDR},
+            "b3": {"buy_price": p3, "tp_price": p2,  "status": "ARMED",    "buy_oid": None,   "sell_oid": None, "qty": 0.0,    "capital_idr": GRID_CAPITAL_PER_LAYER_IDR},
+        }
+    }
+
 def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
     """
-    Mengelola 1 siklus Grid 3-Lapis (b1, b2, b3 @ ~Rp33.000) secara persisten:
-    - b1 terbeli -> pasang Limit Sell b1 (+1.50%) + Limit Buy b2 (-1.50%) + Limit Buy b3 (-3.00%).
-    - b2 terbeli -> pasang Limit Sell di b1. Jika laku -> pasang ulang Limit Buy b2.
-    - b3 terbeli -> pasang Limit Sell di b2. Jika laku -> pasang ulang Limit Buy b3.
-    - Jika harga < b3 & teknikal melihat peluang balik ke b2/b1 -> TAHAN (Swing Hold) tanpa cut loss.
-    - Jika b3 pernah tersentuh & pantulan >= 3x lalu harga balik ke >= b2 dengan total siklus untung -> Jual semua & reset.
+    Mesin Grid Berlapis + DCA + Swing Tanpa SL (Garis Finis = TP b1 Lapis 1):
+    - 4H Lampu Hijau -> jarak grid 1.50%, pemicu lapis baru -3.00% di bawah b3.
+    - 4H Lampu Kuning -> jarak grid 2.00%, pemicu lapis baru -4.00% di bawah b3.
+    - 4H Lampu Merah -> Veto penuh (tahan buka lapis baru sampai crash selesai).
+    - Jika jatuh di bawah b3 lapis terakhir -> aktifkan siaga lapis berikutnya & buka lapis baru saat M15 sideways-up/uptrend.
+    - Siklus selesai tuntas ketika TP b1 Lapis 1 tercapai & tidak ada sisa koin HOLDING.
     """
     log_grid = []
     log_tx = []
@@ -2473,25 +2570,34 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
     now_ts = time.time()
     cycle = state.get("grid_cycle")
 
+    # Migrasi otomatis jika ada state grid lama (format 1 lapis)
+    if cycle and "tiers" not in cycle and "layers" in cycle:
+        tp1_l1 = cycle["layers"]["b1"]["tp_price"]
+        cycle["target_finish_tp_idr"] = tp1_l1
+        cycle["tiers"] = [{
+            "tier_no": 1,
+            "mode_4h": "HIJAU",
+            "step_pct": GRID_STEP_GREEN_PCT,
+            "created_ts": cycle.get("created_ts", now_ts),
+            "status": "ACTIVE",
+            "layers": cycle.pop("layers")
+        }]
+
     # ==========================================================================
-    # TAHAP A: BELUM ADA SIKLUS GRID AKTIF -> CARI KOIN TERBAIK SESUAI 4 SYARAT
+    # TAHAP A: BELUM ADA SIKLUS -> BUKA LAPIS 1 (4H 3-MODE + MEMORI 7 HARI)
     # ==========================================================================
     if not cycle:
         info_btc = peta_analisa.get("BTC", {})
-        btc_downtrend_keras = (
-            info_btc.get("rezim_4h") == "DOWNTREND"
-            or (info_btc.get("rezim_1h") == "DOWNTREND" and info_btc.get("rsi_15m", 50.0) < 35.0)
-        )
-        if btc_downtrend_keras:
+        if info_btc.get("lampu_4h") == "MERAH":
             log_grid.append(
-                f"⏸️ [GRID WAIT] Kompas BTC sedang DOWNTREND (1H:{info_btc.get('rezim_1h')} / 4H:{info_btc.get('rezim_4h')} | RSI15M:{info_btc.get('rsi_15m')}), tahan di Rupiah."
+                f"🔴 [VETO CRASH BTC 4H] Kompas BTC Lampu MERAH (RSI4H:{info_btc.get('rsi_4h')} | {info_btc.get('tren_detail')}), tahan 100% di Rupiah."
             )
             return state, log_grid, log_tx, False
 
         modal_dibutuhkan = GRID_CAPITAL_PER_LAYER_IDR * 3.0
         if dompet.get("terhubung") and dompet.get("idr_free", 0.0) < (modal_dibutuhkan * 0.95):
             log_grid.append(
-                f"⏸️ [GRID MODAL KURANG] Saldo IDR bebas Rp{dompet.get('idr_free', 0):,.0f} < Rp{modal_dibutuhkan:,.0f} (3 lapis)."
+                f"⏸️ [GRID MODAL KURANG] Saldo IDR bebas Rp{dompet.get('idr_free', 0):,.0f} < Rp{modal_dibutuhkan:,.0f} (1 lapis)."
             )
             return state, log_grid, log_tx, False
 
@@ -2506,223 +2612,263 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet):
 
         kandidat = sorted(kandidat_raw, key=lambda x: x["skor_efektif"], reverse=True)
         if not kandidat:
-            log_grid.append("⏸️ [GRID CASH IS KING] Belum ada koin memenuhi syarat (Sideways-Up/Uptrend di M15 & H1 + Volatilitas cukup).")
+            log_grid.append("⏸️ [GRID CASH IS KING] Belum ada koin memenuhi syarat Lapis 1 (4H tidak Crash + M15/H1/5M valid).")
             return state, log_grid, log_tx, False
 
         pilih = kandidat[0]
         coin = pilih["coin"]
+        step_l1 = pilih["grid_step_aktif"]
+        mode_4h = pilih["lampu_4h"]
         p1 = bulatkan_harga_indodax(coin, pilih["harga_bid"])
-        tp1 = bulatkan_harga_indodax(coin, p1 * (1.0 + GRID_STEP_PCT))
-        p2 = bulatkan_harga_indodax(coin, p1 * (1.0 - GRID_STEP_PCT))
-        p3 = bulatkan_harga_indodax(coin, p1 * (1.0 - (GRID_STEP_PCT * 2.0)))
-
         qty_b1 = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, p1)
+
         res_b1 = eksekusi_order_indodax(coin, "BUY", p1, qty_koin=qty_b1, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
         if apakah_order_sukses(res_b1):
             oid_b1 = str(res_b1.get("orderId"))
+            tier_1 = _buat_struktur_tier_baru(coin, 1, p1, step_l1, mode_4h, oid_b1, qty_b1, now_ts)
+            tp1_l1 = tier_1["layers"]["b1"]["tp_price"]
             state["grid_cycle"] = {
                 "coin": coin,
                 "created_ts": now_ts,
+                "target_finish_tp_idr": tp1_l1,
                 "b3_ever_touched": False,
                 "bounce_count": 0,
                 "realized_grid_profit_idr": 0.0,
-                "layers": {
-                    "b1": {"buy_price": p1, "tp_price": tp1, "status": "WAIT_BUY", "buy_oid": oid_b1, "sell_oid": None, "qty": qty_b1, "capital_idr": round(qty_b1 * p1, 0)},
-                    "b2": {"buy_price": p2, "tp_price": p1,  "status": "ARMED",    "buy_oid": None,   "sell_oid": None, "qty": 0.0,    "capital_idr": GRID_CAPITAL_PER_LAYER_IDR},
-                    "b3": {"buy_price": p3, "tp_price": p2,  "status": "ARMED",    "buy_oid": None,   "sell_oid": None, "qty": 0.0,    "capital_idr": GRID_CAPITAL_PER_LAYER_IDR},
-                }
+                "tiers": [tier_1]
             }
             ada_aksi = True
+            l1 = tier_1["layers"]
             pesan = (
-                f"🕸️ [BUKA SIKLUS GRID 3-LAPIS] {coin} (Skor:{pilih['skor_efektif']} [{pilih['catatan_memori_grid']}] | {pilih['tren_detail']}) | "
-                f"b1:Rp{p1:,.0f}->TP:Rp{tp1:,.0f} | b2:Rp{p2:,.0f} | b3:Rp{p3:,.0f} (Order b1:#{oid_b1})"
+                f"🕸️ [BUKA LAPIS 1 | 4H:{mode_4h} Step:{step_l1*100:.1f}%] {coin} "
+                f"(Skor:{pilih['skor_efektif']} [{pilih['catatan_memori_grid']}] | {pilih['tren_detail']}) | "
+                f"b1:Rp{l1['b1']['buy_price']:,.0f}->FINIS TP:Rp{tp1_l1:,.0f} | "
+                f"b2:Rp{l1['b2']['buy_price']:,.0f} | b3:Rp{l1['b3']['buy_price']:,.0f} (Order:#{oid_b1})"
             )
             log_grid.append(pesan)
             log_tx.append(pesan)
         return state, log_grid, log_tx, ada_aksi
 
     # ==========================================================================
-    # TAHAP B: KAWAL SIKLUS GRID AKTIF (VERIFIKASI ORDER LANGSUNG KE INDODAX)
+    # TAHAP B: KAWAL SEMUA LAPIS AKTIF (MULTI-TIER GRID + DCA + SWING)
     # ==========================================================================
     coin = cycle["coin"]
     info = peta_analisa.get(coin, {})
-    harga_skrg = info.get("harga_idr", cycle["layers"]["b1"]["buy_price"])
-    harga_bid = info.get("harga_bid", harga_skrg)
-    layers = cycle["layers"]
+    tiers = cycle["tiers"]
+    harga_skrg = info.get("harga_idr", tiers[0]["layers"]["b1"]["buy_price"])
+    lampu_4h = info.get("lampu_4h", "HIJAU")
+    target_finis_tp = float(cycle.get("target_finish_tp_idr", tiers[0]["layers"]["b1"]["tp_price"]))
 
-    # 1. Cek jika b1 masih WAIT_BUY (belum terjemput)
-    if layers["b1"]["status"] == "WAIT_BUY":
-        st_b1, _ = cek_status_order_indodax(coin, layers["b1"]["buy_oid"])
-        terisi_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg <= layers["b1"]["buy_price"])
-        if st_b1 == "FILLED" or terisi_sim:
-            dompet_baru = ambil_saldo_lengkap_indodax()
-            qty_b1_aktual = format_qty_koin(
-                coin,
-                min(layers["b1"]["qty"], dompet_baru["coins_free"].get(coin, layers["b1"]["qty"]))
-                if LIVE_TRADING_ENABLED else layers["b1"]["qty"]
-            )
-            layers["b1"]["qty"] = qty_b1_aktual
-            layers["b1"]["status"] = "HOLDING"
+    tier_dihapus_idx = []
+    for idx_t, tier in enumerate(tiers):
+        if tier.get("status") == "DONE":
+            continue
+        t_no = tier["tier_no"]
+        layers = tier["layers"]
 
-            # Pasang Limit Sell TP untuk b1
-            res_tp1 = eksekusi_order_indodax(coin, "SELL", layers["b1"]["tp_price"], qty_koin=qty_b1_aktual, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
-            if apakah_order_sukses(res_tp1):
-                layers["b1"]["sell_oid"] = str(res_tp1.get("orderId"))
-
-            # Langsung pasang jaring Limit Buy b2 & b3 di order book Indodax (100% Maker)
-            for nama_lapis in ("b2", "b3"):
-                lp = layers[nama_lapis]
-                q_lp = hitung_kuantitas_koin(coin, lp["capital_idr"], lp["buy_price"])
-                res_lp = eksekusi_order_indodax(coin, "BUY", lp["buy_price"], qty_koin=q_lp, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
-                if apakah_order_sukses(res_lp):
-                    lp["status"] = "WAIT_BUY"
-                    lp["buy_oid"] = str(res_lp.get("orderId"))
-                    lp["qty"] = q_lp
-                    lp["capital_idr"] = round(q_lp * lp["buy_price"], 0)
-
-            ada_aksi = True
-            pesan = f"✅ [GRID b1 TERBELI] {coin} aktif! TP b1 @ Rp{layers['b1']['tp_price']:,.0f}, jaring Limit Buy b2 & b3 terpasang."
-            log_grid.append(pesan)
-            log_tx.append(pesan)
-            return state, log_grid, log_tx, ada_aksi
-
-        # Jika b1 belum terjemput terlalu lama atau tren sudah rusak -> batal bersih
-        umur_m = (now_ts - float(cycle.get("created_ts", now_ts))) / 60.0
-        if umur_m >= GRID_WAIT_B1_TIMEOUT_MIN or not info.get("layak_grid", False):
-            batalkan_order_indodax(coin, layers["b1"]["buy_oid"])
-            state["grid_cycle"] = None
-            ada_aksi = True
-            pesan = f"🔄 [BATAL ANTREAN b1] {coin} belum terjemput ({umur_m:.0f}m) / rezim berubah. Reset ke Rupiah."
-            log_grid.append(pesan)
-            log_tx.append(pesan)
-            return state, log_grid, log_tx, ada_aksi
-
-        log_grid.append(f"⏳ [GRID ANTRE b1 {umur_m:.0f}m] {coin} @ Rp{layers['b1']['buy_price']:,.0f} (Skrg: Rp{harga_skrg:,.0f})")
-        return state, log_grid, log_tx, False
-
-    # 2. Cek status terbeli (WAIT_BUY -> HOLDING) untuk b2 dan b3
-    for nama_lapis in ("b2", "b3"):
-        lp = layers[nama_lapis]
-        if lp["status"] == "WAIT_BUY" and lp.get("buy_oid"):
-            st_buy, _ = cek_status_order_indodax(coin, lp["buy_oid"])
-            terisi_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg <= lp["buy_price"])
-            if st_buy == "FILLED" or terisi_sim:
+        # 1. Cek jika b1 lapis ini masih WAIT_BUY
+        if layers["b1"]["status"] == "WAIT_BUY":
+            st_b1, _ = cek_status_order_indodax(coin, layers["b1"]["buy_oid"])
+            terisi_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg <= layers["b1"]["buy_price"])
+            if st_b1 == "FILLED" or terisi_sim:
                 dompet_baru = ambil_saldo_lengkap_indodax()
-                qty_aktual = format_qty_koin(
+                qty_b1_aktual = format_qty_koin(
                     coin,
-                    min(lp["qty"], dompet_baru["coins_free"].get(coin, lp["qty"]))
-                    if LIVE_TRADING_ENABLED else lp["qty"]
+                    min(layers["b1"]["qty"], dompet_baru["coins_free"].get(coin, layers["b1"]["qty"]))
+                    if LIVE_TRADING_ENABLED else layers["b1"]["qty"]
                 )
-                lp["qty"] = qty_aktual
-                lp["status"] = "HOLDING"
-                lp["buy_oid"] = None
-                if nama_lapis == "b3":
-                    cycle["b3_ever_touched"] = True
+                layers["b1"]["qty"] = qty_b1_aktual
+                layers["b1"]["status"] = "HOLDING"
 
-                res_sell = eksekusi_order_indodax(coin, "SELL", lp["tp_price"], qty_koin=qty_aktual, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
-                if apakah_order_sukses(res_sell):
-                    lp["sell_oid"] = str(res_sell.get("orderId"))
+                res_tp1 = eksekusi_order_indodax(coin, "SELL", layers["b1"]["tp_price"], qty_koin=qty_b1_aktual, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
+                if apakah_order_sukses(res_tp1):
+                    layers["b1"]["sell_oid"] = str(res_tp1.get("orderId"))
+
+                for nama_lp in ("b2", "b3"):
+                    lp = layers[nama_lp]
+                    q_lp = hitung_kuantitas_koin(coin, lp["capital_idr"], lp["buy_price"])
+                    res_lp = eksekusi_order_indodax(coin, "BUY", lp["buy_price"], qty_koin=q_lp, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
+                    if apakah_order_sukses(res_lp):
+                        lp["status"] = "WAIT_BUY"
+                        lp["buy_oid"] = str(res_lp.get("orderId"))
+                        lp["qty"] = q_lp
+                        lp["capital_idr"] = round(q_lp * lp["buy_price"], 0)
+
                 ada_aksi = True
-                pesan = f"🟢 [GRID {nama_lapis.upper()} TERBELI] {coin} @ Rp{lp['buy_price']:,.0f} -> Pasang TP @ Rp{lp['tp_price']:,.0f}."
+                pesan = f"✅ [LAPIS {t_no} b1 TERBELI] {coin} aktif! TP b1 @ Rp{layers['b1']['tp_price']:,.0f}, jaring b2 & b3 terpasang."
                 log_grid.append(pesan)
                 log_tx.append(pesan)
+                continue
 
-    # 3. Cek status terjual profit (HOLDING -> TP FILLED) untuk b1, b2, b3
-    for nama_lapis in ("b3", "b2", "b1"):
-        lp = layers[nama_lapis]
-        if lp["status"] == "HOLDING" and lp.get("sell_oid"):
-            st_sell, _ = cek_status_order_indodax(coin, lp["sell_oid"])
-            terjual_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg >= lp["tp_price"])
-            if st_sell == "FILLED" or terjual_sim:
-                gross_pct = (lp["tp_price"] - lp["buy_price"]) / lp["buy_price"]
-                net_pct = gross_pct - FEE_ROUNDTRIP_MAKER_PCT
-                profit_idr = round(lp["capital_idr"] * net_pct, 0)
-
-                cycle["bounce_count"] = int(cycle.get("bounce_count", 0)) + 1
-                cycle["realized_grid_profit_idr"] = round(float(cycle.get("realized_grid_profit_idr", 0.0)) + profit_idr, 0)
-                slot_mem = {"coin": coin, "style": f"GRID_{nama_lapis.upper()}", "capital_idr": lp["capital_idr"]}
-                catat_hasil_transaksi_ke_recovery(state, profit_idr, coin, slot=slot_mem, pnl_exit_pct=net_pct)
-                lp["sell_oid"] = None
+            umur_m = (now_ts - float(tier.get("created_ts", now_ts))) / 60.0
+            syarat_masih_ok = info.get("layak_grid", False) if t_no == 1 else info.get("layak_lapis_baru", False)
+            if umur_m >= GRID_WAIT_B1_TIMEOUT_MIN or not syarat_masih_ok:
+                batalkan_order_indodax(coin, layers["b1"]["buy_oid"])
+                tier_dihapus_idx.append(idx_t)
                 ada_aksi = True
-
-                if nama_lapis == "b1":
-                    lp["status"] = "DONE"
-                    pesan = f"🎉 [GRID b1 TP PENUH!] {coin} laku @ Rp{lp['tp_price']:,.0f} (Net:+Rp{profit_idr:,.0f} | Total Pantul:{cycle['bounce_count']}x)."
-                else:
-                    # Pasang ulang jaring Limit Buy untuk b2/b3 agar siap tangkap pantulan berikutnya
-                    q_ulang = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, lp["buy_price"])
-                    res_re = eksekusi_order_indodax(coin, "BUY", lp["buy_price"], qty_koin=q_ulang, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
-                    lp["status"] = "WAIT_BUY" if apakah_order_sukses(res_re) else "ARMED"
-                    lp["buy_oid"] = str(res_re.get("orderId")) if apakah_order_sukses(res_re) else None
-                    lp["qty"] = q_ulang
-                    pesan = f"💰 [PANEN GRID {nama_lapis.upper()}!] {coin} laku @ Rp{lp['tp_price']:,.0f} (+Rp{profit_idr:,.0f} | Pantul #{cycle['bounce_count']}). Jaring dipasang ulang."
+                pesan = f"🔄 [BATAL ANTREAN b1 LAPIS {t_no}] {coin} belum terjemput ({umur_m:.0f}m) / rezim berubah."
                 log_grid.append(pesan)
                 log_tx.append(pesan)
+                continue
 
-    # 4. Jika b1 sudah TP dan b2/b3 tidak ada yang nyangkut -> TUTUP & RESET SIKLUS BERSIH
-    if layers["b1"]["status"] == "DONE" and layers["b2"]["status"] != "HOLDING" and layers["b3"]["status"] != "HOLDING":
-        for nama_lapis in ("b2", "b3"):
-            if layers[nama_lapis].get("buy_oid"):
-                batalkan_order_indodax(coin, layers[nama_lapis]["buy_oid"])
-        pesan = f"🏁 [SIKLUS GRID SELESAI!] {coin} total profit terealisasi: +Rp{cycle['realized_grid_profit_idr']:,.0f} ({cycle['bounce_count']}x panen). Reset ke siklus baru."
-        log_grid.append(pesan)
-        log_tx.append(pesan)
-        rekam_memori_siklus_grid(state, cycle, "TP_PENUH", cycle["realized_grid_profit_idr"])
+            log_grid.append(f"⏳ [ANTRE b1 LAPIS {t_no} {umur_m:.0f}m] {coin} @ Rp{layers['b1']['buy_price']:,.0f} (Skrg: Rp{harga_skrg:,.0f})")
+            continue
+
+        # 2. Cek status terbeli (WAIT_BUY -> HOLDING) untuk b2 dan b3
+        for nama_lp in ("b2", "b3"):
+            lp = layers[nama_lp]
+            if lp["status"] == "WAIT_BUY" and lp.get("buy_oid"):
+                st_buy, _ = cek_status_order_indodax(coin, lp["buy_oid"])
+                terisi_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg <= lp["buy_price"])
+                if st_buy == "FILLED" or terisi_sim:
+                    dompet_baru = ambil_saldo_lengkap_indodax()
+                    qty_aktual = format_qty_koin(
+                        coin,
+                        min(lp["qty"], dompet_baru["coins_free"].get(coin, lp["qty"]))
+                        if LIVE_TRADING_ENABLED else lp["qty"]
+                    )
+                    lp["qty"] = qty_aktual
+                    lp["status"] = "HOLDING"
+                    lp["buy_oid"] = None
+                    if t_no == 1 and nama_lp == "b3":
+                        cycle["b3_ever_touched"] = True
+
+                    res_sell = eksekusi_order_indodax(coin, "SELL", lp["tp_price"], qty_koin=qty_aktual, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
+                    if apakah_order_sukses(res_sell):
+                        lp["sell_oid"] = str(res_sell.get("orderId"))
+                    ada_aksi = True
+                    pesan = f"🟢 [LAPIS {t_no} {nama_lp.upper()} TERBELI] {coin} @ Rp{lp['buy_price']:,.0f} -> Pasang TP @ Rp{lp['tp_price']:,.0f}."
+                    log_grid.append(pesan)
+                    log_tx.append(pesan)
+
+        # 3. Cek status terjual profit (HOLDING -> TP FILLED) untuk b3, b2, b1
+        for nama_lp in ("b3", "b2", "b1"):
+            lp = layers[nama_lp]
+            if lp["status"] == "HOLDING" and lp.get("sell_oid"):
+                st_sell, _ = cek_status_order_indodax(coin, lp["sell_oid"])
+                terjual_sim = (not LIVE_TRADING_ENABLED) and (harga_skrg >= lp["tp_price"])
+                if st_sell == "FILLED" or terjual_sim:
+                    gross_pct = (lp["tp_price"] - lp["buy_price"]) / lp["buy_price"]
+                    net_pct = gross_pct - FEE_ROUNDTRIP_MAKER_PCT
+                    profit_idr = round(lp["capital_idr"] * net_pct, 0)
+
+                    cycle["bounce_count"] = int(cycle.get("bounce_count", 0)) + 1
+                    cycle["realized_grid_profit_idr"] = round(float(cycle.get("realized_grid_profit_idr", 0.0)) + profit_idr, 0)
+                    slot_mem = {"coin": coin, "style": f"GRID_L{t_no}_{nama_lp.upper()}", "capital_idr": lp["capital_idr"]}
+                    catat_hasil_transaksi_ke_recovery(state, profit_idr, coin, slot=slot_mem, pnl_exit_pct=net_pct)
+                    lp["sell_oid"] = None
+                    ada_aksi = True
+
+                    if nama_lp == "b1":
+                        lp["status"] = "DONE"
+                        pesan = f"🎉 [LAPIS {t_no} b1 TP!] {coin} laku @ Rp{lp['tp_price']:,.0f} (Net:+Rp{profit_idr:,.0f} | Total Pantul:{cycle['bounce_count']}x)."
+                    else:
+                        q_ulang = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, lp["buy_price"])
+                        res_re = eksekusi_order_indodax(coin, "BUY", lp["buy_price"], qty_koin=q_ulang, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
+                        lp["status"] = "WAIT_BUY" if apakah_order_sukses(res_re) else "ARMED"
+                        lp["buy_oid"] = str(res_re.get("orderId")) if apakah_order_sukses(res_re) else None
+                        lp["qty"] = q_ulang
+                        pesan = f"💰 [PANEN LAPIS {t_no} {nama_lp.upper()}!] {coin} laku @ Rp{lp['tp_price']:,.0f} (+Rp{profit_idr:,.0f} | Pantul #{cycle['bounce_count']}). Jaring dipasang ulang."
+                    log_grid.append(pesan)
+                    log_tx.append(pesan)
+
+        # Jika lapis bawah (t_no >= 2) b1 sudah TP dan b2/b3 tidak holding -> cairkan lapis bawah ke kas
+        if t_no >= 2 and layers["b1"]["status"] == "DONE" and layers["b2"]["status"] != "HOLDING" and layers["b3"]["status"] != "HOLDING":
+            for nama_lp in ("b2", "b3"):
+                if layers[nama_lp].get("buy_oid"):
+                    batalkan_order_indodax(coin, layers[nama_lp]["buy_oid"])
+                    layers[nama_lp]["buy_oid"] = None
+                    layers[nama_lp]["status"] = "DONE"
+            tier["status"] = "DONE"
+            ada_aksi = True
+            pesan = f"✅ [LAPIS {t_no} TUNTAS -> SWING KE LAPIS 1] Modal Lapis {t_no} kembali ke Rupiah, mengawal Lapis 1 ke Finis Rp{target_finis_tp:,.0f}."
+            log_grid.append(pesan)
+            log_tx.append(pesan)
+
+    # Bersihkan antrean b1 yang dibatalkan
+    for idx_del in sorted(tier_dihapus_idx, reverse=True):
+        tiers.pop(idx_del)
+    if not tiers:
         state["grid_cycle"] = None
         return state, log_grid, log_tx, True
 
-    # 5. ATURAN RESET AMAN: Jika b3 pernah tersentuh & sudah >= 3x panen, lalu harga balik ke >= b2 dengan Net Siklus UNTUNG
-    if cycle.get("b3_ever_touched") and cycle.get("bounce_count", 0) >= GRID_RESET_BOUNCE_COUNT and harga_bid >= layers["b2"]["buy_price"]:
-        floating_idr = 0.0
-        total_qty_tahan = 0.0
-        for lp in layers.values():
-            if lp["status"] == "HOLDING":
-                floating_idr += (harga_bid - lp["buy_price"]) * lp["qty"]
-                total_qty_tahan += lp["qty"]
-        est_fee_jual = (total_qty_tahan * harga_bid) * (FEE_ROUNDTRIP_MAKER_PCT * 0.6)
-        net_siklus_idr = cycle["realized_grid_profit_idr"] + floating_idr - est_fee_jual
-
-        if net_siklus_idr > 0 and total_qty_tahan > 0:
-            for lp in layers.values():
+    # ==========================================================================
+    # TAHAP C: CEK GARIS FINIS SIKLUS (TP b1 LAPIS 1 SELESAI & ZERO HOLDING)
+    # ==========================================================================
+    lapis_1_done = (tiers[0]["layers"]["b1"]["status"] == "DONE")
+    ada_yang_holding = any(
+        lp["status"] == "HOLDING"
+        for t in tiers
+        for lp in t["layers"].values()
+    )
+    if lapis_1_done and not ada_yang_holding:
+        for t in tiers:
+            for lp in t["layers"].values():
                 if lp.get("buy_oid"):
                     batalkan_order_indodax(coin, lp["buy_oid"])
-                if lp.get("sell_oid"):
-                    batalkan_order_indodax(coin, lp["sell_oid"])
-            time.sleep(1.0)
-            dompet_cek = ambil_saldo_lengkap_indodax()
-            qty_jual_semua = format_qty_koin(coin, dompet_cek["coins_free"].get(coin, total_qty_tahan) if LIVE_TRADING_ENABLED else total_qty_tahan)
-            sukses_exit, harga_exit, _ = eksekusi_jual_terverifikasi(coin, bulatkan_harga_indodax(coin, harga_bid), qty_jual_semua)
-            if sukses_exit:
-                pnl_sisa_idr = round(floating_idr - est_fee_jual, 0)
-                modal_sisa = sum(lp["capital_idr"] for lp in layers.values() if lp["status"] == "HOLDING") or GRID_CAPITAL_PER_LAYER_IDR
-                slot_reset = {"coin": coin, "style": "GRID_RESET", "capital_idr": modal_sisa}
-                catat_hasil_transaksi_ke_recovery(state, pnl_sisa_idr, coin, slot=slot_reset, pnl_exit_pct=(pnl_sisa_idr / modal_sisa))
-                rekam_memori_siklus_grid(state, cycle, "AUTO_RESET_B3", net_siklus_idr)
+        durasi_str = format_durasi_siklus(now_ts - float(cycle.get("created_ts", now_ts)))
+        pesan = (
+            f"🏁 [SIKLUS GRID BERLAPIS FINIS!] {coin} mencapai Garis Finis TP b1 Lapis 1 (Rp{target_finis_tp:,.0f}) | "
+            f"Durasi: {durasi_str} | Total Lapis Terbuka: {len(tiers)} | "
+            f"Total Pantulan: {cycle['bounce_count']}x | Total Profit Bersih: +Rp{cycle['realized_grid_profit_idr']:,.0f}."
+        )
+        log_grid.append(pesan)
+        log_tx.append(pesan)
+        rekam_memori_siklus_grid(state, cycle, "TP_PENUH_L1", cycle["realized_grid_profit_idr"])
+        state["grid_cycle"] = None
+        return state, log_grid, log_tx, True
+
+    # ==========================================================================
+    # TAHAP D: CEK PEMICU BUKA LAPIS BARU (TURUN >= 3% / 4% DI BAWAH b3 TERAKHIR)
+    # ==========================================================================
+    tier_terakhir = tiers[-1]
+    lapis_berikutnya = len(tiers) + 1
+    b3_terakhir = tier_terakhir["layers"]["b3"]
+    drop_trigger_pct = GRID_NEXT_TIER_DROP_YELLOW_PCT if lampu_4h == "KUNING" else GRID_NEXT_TIER_DROP_GREEN_PCT
+    harga_pemicu_lapis_baru = b3_terakhir["buy_price"] * (1.0 - drop_trigger_pct)
+
+    if len(tiers) < GRID_MAX_TIERS and b3_terakhir["status"] == "HOLDING" and harga_skrg <= harga_pemicu_lapis_baru:
+        modal_lapis_baru = GRID_CAPITAL_PER_LAYER_IDR * 3.0
+        dompet_skrg = ambil_saldo_lengkap_indodax() if LIVE_TRADING_ENABLED else dompet
+        saldo_cukup = (not LIVE_TRADING_ENABLED) or (dompet_skrg.get("idr_free", 0.0) >= modal_lapis_baru * 0.95)
+
+        if not saldo_cukup:
+            log_grid.append(
+                f"💎 [SWING HOLD | SALDO IDR KURANG UNTUK LAPIS {lapis_berikutnya}] {coin} Rp{harga_skrg:,.0f} "
+                f"(Butuh Rp{modal_lapis_baru:,.0f}, Tersedia Rp{dompet_skrg.get('idr_free', 0):,.0f}). Tahan menunggu swing."
+            )
+        elif info.get("layak_lapis_baru"):
+            step_baru = info.get("grid_step_aktif", GRID_STEP_GREEN_PCT)
+            p1_baru = bulatkan_harga_indodax(coin, info.get("harga_bid", harga_skrg))
+            qty_b1_baru = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, p1_baru)
+            res_nb = eksekusi_order_indodax(coin, "BUY", p1_baru, qty_koin=qty_b1_baru, order_type="LIMIT", time_in_force=GRID_LIMIT_TIF)
+            if apakah_order_sukses(res_nb):
+                oid_nb = str(res_nb.get("orderId"))
+                tp_override = target_finis_tp if GRID_SWING_LOWER_B1_TO_L1_TP else None
+                tier_baru = _buat_struktur_tier_baru(coin, lapis_berikutnya, p1_baru, step_baru, lampu_4h, oid_nb, qty_b1_baru, now_ts, tp_override)
+                tiers.append(tier_baru)
+                ada_aksi = True
+                lb = tier_baru["layers"]
                 pesan = (
-                    f"🏆 [AUTO-RESET SIKLUS UNTUNG] {coin} sudah {cycle['bounce_count']}x panen & pernah sentuh b3. "
-                    f"Semua sisa koin ditutup @ Rp{harga_exit:,.0f} (Total Net Siklus: +Rp{net_siklus_idr:,.0f}). Reset!"
+                    f"🧱 [BUKA LAPIS {lapis_berikutnya} (DCA+GRID) | 4H:{lampu_4h} Step:{step_baru*100:.1f}%] {coin} "
+                    f"b1:Rp{lb['b1']['buy_price']:,.0f}->TP:Rp{lb['b1']['tp_price']:,.0f} | "
+                    f"b2:Rp{lb['b2']['buy_price']:,.0f} | b3:Rp{lb['b3']['buy_price']:,.0f} (Order:#{oid_nb})"
                 )
                 log_grid.append(pesan)
                 log_tx.append(pesan)
-                state["grid_cycle"] = None
-                return state, log_grid, log_tx, True
-
-    # 6. ATURAN SWING HOLD DI BAWAH b3 (TIDAK CUT LOSS PAKSA SAAT MASIH ADA PELUANG REBOUND)
-    harga_b3 = layers["b3"]["buy_price"]
-    if harga_skrg < harga_b3:
-        jarak_bawah_b3_pct = ((harga_skrg - harga_b3) / harga_b3) * 100.0
-        peluang_naik = info.get("peluang_rebound_b3", True)
-        status_rebound = "ADA PELUANG REBOUND KE b2/b1" if peluang_naik else "TEKANAN JUAL MASIH KUAT (TETAP SWING HOLD)"
-        log_grid.append(
-            f"💎 [SWING HOLD BAWAH b3] {coin} di Rp{harga_skrg:,.0f} ({jarak_bawah_b3_pct:+.2f}% dari b3) | "
-            f"RSI 15M:{info.get('rsi_15m', '-')} / 1H:{info.get('rsi_1h', '-')} | {status_rebound}. "
-            f"Antrean TP b3@Rp{layers['b3']['tp_price']:,.0f} & b2@Rp{layers['b2']['tp_price']:,.0f} tetap aktif menunggu swing."
-        )
+        else:
+            log_grid.append(
+                f"⏳ [SIAGA LAPIS {lapis_berikutnya}] {coin} Rp{harga_skrg:,.0f} <= pemicu Rp{harga_pemicu_lapis_baru:,.0f} "
+                f"(-{drop_trigger_pct*100:.0f}% dr b3 L{tier_terakhir['tier_no']}). Menunggu momen SIDEWAYS_UP/UPTREND M15 & 4H!=MERAH."
+            )
     else:
-        ringkas = " | ".join([f"{k}:{v['status']}" for k, v in layers.items()])
+        durasi_jalan = format_durasi_siklus(now_ts - float(cycle.get("created_ts", now_ts)))
+        ringkas_lapis = " || ".join(
+            [f"L{t['tier_no']}[{' '.join(k+':'+v['status'] for k, v in t['layers'].items())}]" for t in tiers]
+        )
         log_grid.append(
-            f"🕸️ [KAWAL GRID {coin}] Skrg:Rp{harga_skrg:,.0f} | {ringkas} | "
-            f"Panen:{cycle['bounce_count']}x (+Rp{cycle['realized_grid_profit_idr']:,.0f})"
+            f"🕸️ [KAWAL GRID {coin} | Lapis {len(tiers)}/{GRID_MAX_TIERS} | {durasi_jalan}] "
+            f"Skrg:Rp{harga_skrg:,.0f} -> Finis:Rp{target_finis_tp:,.0f} | "
+            f"Panen:{cycle['bounce_count']}x (+Rp{cycle['realized_grid_profit_idr']:,.0f}) | {ringkas_lapis}"
         )
 
     return state, log_grid, log_tx, ada_aksi
