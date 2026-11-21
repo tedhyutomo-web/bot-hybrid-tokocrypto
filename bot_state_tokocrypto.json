@@ -885,9 +885,12 @@
             "qty": 0.0011,
             "capital_idr": 32865.0
           }
-        }
+        },
+        "realized_tier_profit_idr": 0.0
       }
-    ]
+    ],
+    "completed_tiers": [],
+    "completed_tiers_count": 0
   },
   "grid_experience_memory": []
 }
