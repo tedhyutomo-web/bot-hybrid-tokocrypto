@@ -67,8 +67,7 @@ GRID_ALLOWED_COINS = {"BTC", "ETH", "XRP"}
 GRID_LIMIT_TIF = "MOC"                 # Prioritas Maker-Only Cancel dengan fallback aman ke GTC bila ditolak
 
 # Validasi Gemini AI & Proteksi Invalidation Grid
-GRID_USE_GEMINI_VALIDATION = os.getenv("GRID_USE_GEMINI_VALIDATION", "true").lower() == "true"
-GRID_GEMINI_FALLBACK_ALLOW = os.getenv("GRID_GEMINI_FALLBACK_ALLOW", "false").lower() == "true"
+GRID_MIN_SCORE_ENTRY = 65.0            # Syarat skor efektif minimal (setelah penyesuaian memori 7H) untuk buka Lapis 1
 GRID_INVALIDATION_ENABLED = True       # Aktifkan penjaga drawdown ekstrem agar modal tidak terkunci selamanya
 GRID_INVALIDATION_DD_PCT = -0.12       # Batas floating drawdown ekstrem (-12%) saat semua lapis penuh & 4H MERAH
 GRID_INVALIDATION_AUTO_CUT = os.getenv("GRID_INVALIDATION_AUTO_CUT", "true").lower() == "true"
@@ -115,7 +114,6 @@ STATE_FILE = "bot_state_tokocrypto.json"
 
 INDODAX_API_KEY = os.getenv("INDODAX_API_KEY", os.getenv("TOKOCRYPTO_API_KEY", "")).strip()
 INDODAX_SECRET_KEY = os.getenv("INDODAX_SECRET_KEY", os.getenv("TOKOCRYPTO_SECRET_KEY", "")).strip()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GOOGLE_SHEETS_WEBHOOK_URL = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
 LIVE_TRADING_ENABLED = os.getenv("LIVE_TRADING_ENABLED", "false").lower() == "true"
 
@@ -1850,7 +1848,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None):
         else:
             info_grid_md = "Cash is King (Menunggu syarat Grid Lapis 1)"
             detail_diagnosa_koin.append(
-                "   * Belum ada siklus Grid aktif (100% Cash is King - Menunggu syarat 4H != MERAH, M15/H1/5M valid & persetujuan Gemini AI)."
+                f"   * Belum ada siklus Grid aktif (100% Cash is King - Menunggu 4H != MERAH, M15/H1/5M valid & Skor >= {GRID_MIN_SCORE_ENTRY})."
             )
     else:
         for slot in state.get("active_slots", []):
@@ -2046,40 +2044,6 @@ def _promosikan_b1_dan_pasang_jaring(coin, tier, qty_aktual, harga_eksekusi, inf
             lp["status"] = "ARMED"
             lp["buy_oid"] = None
 
-def _validasi_grid_dengan_gemini(peta_analisa, state, coin, tier_no, p1, step_pct, note_memori):
-    """Validasi 1x panggilan Gemini AI sebelum membuka Lapis Grid baru (L1, L2, atau L3)."""
-    if not GRID_USE_GEMINI_VALIDATION:
-        return True, "[AI-BYPASS] Validasi Gemini dimatikan di konfigurasi."
-
-    info = peta_analisa.get(coin, {})
-    info_btc = peta_analisa.get("BTC", {})
-    status_kompas_btc = f"{info_btc.get('tren_detail', 'N/A')} (RSI 5M:{info_btc.get('rsi', '-')}, RSI 4H:{info_btc.get('rsi_4h', '-')})"
-    defisit_rec = float(state.get("loss_to_recover_idr", 0.0))
-
-    tp1 = bulatkan_harga_indodax(coin, p1 * (1.0 + step_pct))
-    p3 = bulatkan_harga_indodax(coin, p1 * (1.0 - (step_pct * 2.0)))
-    tugas = [{
-        "id": f"GRID_L{tier_no}_{coin}",
-        "jenis": "GRID_ENTRY",
-        "default_jika_error": GRID_GEMINI_FALLBACK_ALLOW,
-        "alasan_fallback": (
-            f"YA - Quant Fallback menyetujui buka Lapis {tier_no} {coin}."
-            if GRID_GEMINI_FALLBACK_ALLOW else
-            f"TUNDA - Kuota Gemini limit, buka Lapis {tier_no} {coin} ditahan."
-        ),
-        "deskripsi": (
-            f"TIPE: GRID_ENTRY | Buka Lapis {tier_no} {coin} (4H:{info.get('lampu_4h', '-')}, Step:{step_pct*100:.1f}%) | "
-            f"b1:Rp{p1:,.0f} -> Finis TP b1:Rp{tp1:,.0f} | b3:Rp{p3:,.0f} | "
-            f"Tren:{info.get('tren_detail', '-')} | RSI 5M:{info.get('rsi', '-')}, 15M:{info.get('rsi_15m', '-')}, "
-            f"1H:{info.get('rsi_1h', '-')}, 4H:{info.get('rsi_4h', '-')} | "
-            f"DistEMA20_15M:{info.get('jarak_ema20_15m_pct', 0):+.2f}% | ATR15M:{info.get('atr_15m_pct', 0)*100:.2f}% | "
-            f"Spread:{info.get('spread_pct', 0)*100:.2f}% | Memori:{note_memori}."
-        )
-    }]
-    hasil = konsultasi_batch_terpadu_gemini(tugas, status_kompas_btc, defisit_rec)
-    setuju, alasan, _ = hasil.get(tugas[0]["id"], (GRID_GEMINI_FALLBACK_ALLOW, "[QUANT-FALLBACK]", True))
-    return setuju, alasan
-
 def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None):
     """
     Mesin Grid 3-Lapis Per-Tier:
@@ -2145,9 +2109,16 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
                 item_k["catatan_memori_grid"] = note_mem
                 kandidat_raw.append(item_k)
 
-        kandidat = sorted(kandidat_raw, key=lambda x: x["skor_efektif"], reverse=True)
+        kandidat = sorted(
+            [k for k in kandidat_raw if k["skor_efektif"] >= GRID_MIN_SCORE_ENTRY],
+            key=lambda x: x["skor_efektif"],
+            reverse=True
+        )
         if not kandidat:
-            log_grid.append("⏸️ [GRID CASH IS KING] Belum ada koin memenuhi syarat Lapis 1 (4H!=MERAH, M15/H1/5M valid & anti-pucuk).")
+            log_grid.append(
+                f"⏸️ [GRID CASH IS KING] Belum ada koin memenuhi syarat Lapis 1 "
+                f"(4H!=MERAH, M15/H1/5M valid, anti-pucuk & Skor >= {GRID_MIN_SCORE_ENTRY})."
+            )
             return state, log_grid, log_tx, False
 
         pilih = kandidat[0]
@@ -2156,14 +2127,6 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
         mode_4h = pilih["lampu_4h"]
         p1 = bulatkan_harga_indodax(coin, pilih["harga_bid"])
         qty_b1 = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, p1)
-
-        # Validasi Gemini AI sebelum membuka Lapis 1
-        setuju_ai, alasan_ai = _validasi_grid_dengan_gemini(
-            peta_analisa, state, coin, 1, p1, step_l1, pilih["catatan_memori_grid"]
-        )
-        if not setuju_ai:
-            log_grid.append(f"⏸️ [GEMINI TUNDA LAPIS 1 {coin}] {alasan_ai}")
-            return state, log_grid, log_tx, False
 
         ok_b1, res_b1, harga_b1_pasang, tif_b1 = pasang_order_grid_aman(
             coin, "BUY", p1, qty_b1, info_pasar=pilih, paksa_gtc_fallback=True
@@ -2188,7 +2151,7 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
                 f"🕸️ [BUKA LAPIS 1 ({tif_b1}) | 4H:{mode_4h} Step:{step_l1*100:.1f}%] {coin} "
                 f"(Skor:{pilih['skor_efektif']} [{pilih['catatan_memori_grid']}]) | "
                 f"b1:Rp{l1['b1']['buy_price']:,.0f}->FINIS TP L1:Rp{l1['b1']['tp_price']:,.0f} | "
-                f"b2:Rp{l1['b2']['buy_price']:,.0f} | b3:Rp{l1['b3']['buy_price']:,.0f} (Order:#{oid_b1}) | AI: {alasan_ai}"
+                f"b2:Rp{l1['b2']['buy_price']:,.0f} | b3:Rp{l1['b3']['buy_price']:,.0f} (Order:#{oid_b1})"
             )
             log_grid.append(pesan)
             log_tx.append(pesan)
@@ -2623,32 +2586,24 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
         elif info.get("layak_lapis_baru"):
             step_baru = info.get("grid_step_aktif", GRID_STEP_GREEN_PCT)
             p1_baru = bulatkan_harga_indodax(coin, harga_bid)
-            _, note_mem = hitung_penyesuaian_skor_memori_grid(state, coin)
-
-            setuju_ai, alasan_ai = _validasi_grid_dengan_gemini(
-                peta_analisa, state, coin, lapis_berikutnya, p1_baru, step_baru, note_mem
+            qty_b1_baru = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, p1_baru)
+            ok_nb, res_nb, harga_nb_pasang, tif_nb = pasang_order_grid_aman(
+                coin, "BUY", p1_baru, qty_b1_baru, info_pasar=info, paksa_gtc_fallback=True
             )
-            if not setuju_ai:
-                log_grid.append(f"⏸️ [GEMINI TUNDA LAPIS {lapis_berikutnya} {coin}] {alasan_ai}")
-            else:
-                qty_b1_baru = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, p1_baru)
-                ok_nb, res_nb, harga_nb_pasang, tif_nb = pasang_order_grid_aman(
-                    coin, "BUY", p1_baru, qty_b1_baru, info_pasar=info, paksa_gtc_fallback=True
+            if ok_nb:
+                oid_nb = str(res_nb.get("orderId"))
+                qty_nb_ok = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, harga_nb_pasang) if harga_nb_pasang != p1_baru else qty_b1_baru
+                tier_baru = _buat_struktur_tier_baru(coin, lapis_berikutnya, harga_nb_pasang, step_baru, lampu_4h, oid_nb, qty_nb_ok, now_ts)
+                tiers.append(tier_baru)
+                ada_aksi = True
+                lb = tier_baru["layers"]
+                pesan = (
+                    f"🧱 [BUKA LAPIS {lapis_berikutnya} ({tif_nb}) | 4H:{lampu_4h} Step:{step_baru*100:.1f}%] {coin} "
+                    f"b1:Rp{lb['b1']['buy_price']:,.0f}->FINIS TP L{lapis_berikutnya}:Rp{lb['b1']['tp_price']:,.0f} | "
+                    f"b2:Rp{lb['b2']['buy_price']:,.0f} | b3:Rp{lb['b3']['buy_price']:,.0f} (Order:#{oid_nb})"
                 )
-                if ok_nb:
-                    oid_nb = str(res_nb.get("orderId"))
-                    qty_nb_ok = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, harga_nb_pasang) if harga_nb_pasang != p1_baru else qty_b1_baru
-                    tier_baru = _buat_struktur_tier_baru(coin, lapis_berikutnya, harga_nb_pasang, step_baru, lampu_4h, oid_nb, qty_nb_ok, now_ts)
-                    tiers.append(tier_baru)
-                    ada_aksi = True
-                    lb = tier_baru["layers"]
-                    pesan = (
-                        f"🧱 [BUKA LAPIS {lapis_berikutnya} ({tif_nb}) | 4H:{lampu_4h} Step:{step_baru*100:.1f}%] {coin} "
-                        f"b1:Rp{lb['b1']['buy_price']:,.0f}->FINIS TP L{lapis_berikutnya}:Rp{lb['b1']['tp_price']:,.0f} | "
-                        f"b2:Rp{lb['b2']['buy_price']:,.0f} | b3:Rp{lb['b3']['buy_price']:,.0f} (Order:#{oid_nb}) | AI: {alasan_ai}"
-                    )
-                    log_grid.append(pesan)
-                    log_tx.append(pesan)
+                log_grid.append(pesan)
+                log_tx.append(pesan)
         else:
             log_grid.append(
                 f"⏳ [SIAGA LAPIS {lapis_berikutnya}] {coin} Rp{harga_skrg:,.0f} <= pemicu Rp{harga_pemicu_lapis_baru:,.0f} "
@@ -2735,30 +2690,20 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
 
     return state, butuh_siaga, alasan_siaga, ada_transaksi_nyata, peta_analisa_pasar, harga_live_map
 
-def cek_status_koneksi_gemini_awal():
-    global _MODEL_GEMINI_AKTIF
-    daftar_kunci = ambil_daftar_kunci_api_gemini()
-    if not daftar_kunci:
-        print("⚠️ [STATUS GEMINI AI]: BELUM TERHUBUNG (GEMINI_API_KEY kosong / belum terbaca dari Secrets)")
-        return
-    daftar_model = dapatkan_daftar_model_gemini()
-    if daftar_model:
-        model_utama = daftar_model[0]
-        model_cadangan = daftar_model[1] if len(daftar_model) > 1 else "-"
-        _MODEL_GEMINI_AKTIF = model_utama
-        print(
-            f"✅ [STATUS GEMINI AI SIAP | Model Utama: {model_utama} | Cadangan: {model_cadangan} | "
-            f"Penalaran: {_LEVEL_PENALARAN_AKTIF} | Jumlah API Key: {len(daftar_kunci)} | "
-            f"Validasi Grid: {'AKTIF' if GRID_USE_GEMINI_VALIDATION else 'OFF'}]"
-        )
-    else:
-        print("❌ [STATUS GEMINI AI GAGAL TERHUBUNG] Tidak dapat memuat daftar model dari Google API.")
+def cetak_status_awal_quant():
+    mode_str = "LIVE TRADING" if LIVE_TRADING_ENABLED else "SIMULASI"
+    cut_str = f"AUTO-CUT {GRID_INVALIDATION_DD_PCT*100:.0f}%" if GRID_INVALIDATION_AUTO_CUT else "SWING HOLD"
+    print(
+        f"⚙️ [PURE QUANT GRID BOT SIAP | Mode: {mode_str} | Maks Lapis: {GRID_MAX_TIERS} | "
+        f"Modal/Jaring: Rp{GRID_CAPITAL_PER_LAYER_IDR:,.0f} | Skor Min: {GRID_MIN_SCORE_ENTRY} | "
+        f"Invalidation: {cut_str} | 100% Deterministik Tanpa LLM]"
+    )
 
 if __name__ == "__main__":
     waktu_mulai = time.time()
     batas_waktu_siaga = waktu_mulai + (ACTIVE_WATCH_MINUTES * 60)
 
-    cek_status_koneksi_gemini_awal()
+    cetak_status_awal_quant()
     state = muat_state_bot()
     state, butuh_siaga, alasan_siaga, _, peta_analisa_terakhir, harga_live_terakhir = jalankan_satu_siklus_penuh(
         state, paksa_kirim_sheets=False
