@@ -861,29 +861,29 @@
           "b1": {
             "buy_price": 31122000,
             "tp_price": 31744000,
-            "status": "WAIT_BUY",
+            "status": "HOLDING",
             "buy_oid": "219809086",
-            "sell_oid": null,
+            "sell_oid": "219809715",
             "qty": 0.00106,
             "capital_idr": 32989.0
           },
           "b2": {
             "buy_price": 30500000,
             "tp_price": 31122000,
-            "status": "ARMED",
-            "buy_oid": null,
+            "status": "WAIT_BUY",
+            "buy_oid": "219809716",
             "sell_oid": null,
-            "qty": 0.0,
-            "capital_idr": 33000.0
+            "qty": 0.00108,
+            "capital_idr": 32940.0
           },
           "b3": {
             "buy_price": 29877000,
             "tp_price": 30500000,
-            "status": "ARMED",
-            "buy_oid": null,
+            "status": "WAIT_BUY",
+            "buy_oid": "219809717",
             "sell_oid": null,
-            "qty": 0.0,
-            "capital_idr": 33000.0
+            "qty": 0.0011,
+            "capital_idr": 32865.0
           }
         }
       }
