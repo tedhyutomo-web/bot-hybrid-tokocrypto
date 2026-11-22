@@ -17,10 +17,10 @@
       "lock_100_armed": true
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": 101.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-23",
-  "loss_to_recover_idr": 11813.0,
+  "loss_to_recover_idr": 11712.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
@@ -853,56 +853,21 @@
       "sempat_tahan_sl": false
     }
   ],
-  "grid_cycle": {
-    "coin": "ETH",
-    "created_ts": 1795272248.2605104,
-    "target_finish_tp_idr": 31744000,
-    "b3_ever_touched": false,
-    "bounce_count": 1,
-    "realized_grid_profit_idr": 491.0,
-    "tiers": [
-      {
-        "tier_no": 1,
-        "mode_4h": "KUNING",
-        "step_pct": 0.02,
-        "created_ts": 1795272248.2605104,
-        "status": "ACTIVE",
-        "layers": {
-          "b1": {
-            "buy_price": 31122000,
-            "tp_price": 31744000,
-            "status": "HOLDING",
-            "buy_oid": "219809086",
-            "sell_oid": "219809715",
-            "qty": 0.00106,
-            "capital_idr": 32989.0
-          },
-          "b2": {
-            "buy_price": 30500000,
-            "tp_price": 31122000,
-            "status": "WAIT_BUY",
-            "buy_oid": "219902317",
-            "sell_oid": null,
-            "qty": 0.00108,
-            "capital_idr": 32940.0
-          },
-          "b3": {
-            "buy_price": 29877000,
-            "tp_price": 30500000,
-            "status": "WAIT_BUY",
-            "buy_oid": "219809717",
-            "sell_oid": null,
-            "qty": 0.0011,
-            "capital_idr": 32865.0
-          }
-        },
-        "realized_tier_profit_idr": 491.0
-      }
-    ],
-    "completed_tiers": [],
-    "completed_tiers_count": 0
-  },
-  "grid_experience_memory": [],
+  "grid_cycle": null,
+  "grid_experience_memory": [
+    {
+      "ts": 1795378445.6862571,
+      "waktu": "23/11 03:14",
+      "coin": "ETH",
+      "alasan_tutup": "SYNC_MANUAL_SELESAI",
+      "bounce_count": 2,
+      "completed_tiers_count": 1,
+      "b3_ever_touched": false,
+      "durasi_jam": 29.5,
+      "total_pnl_idr": 592.0,
+      "berhasil": true
+    }
+  ],
   "swing_positions": [],
   "swing_pending_entries": [],
   "swing_trade_history": [],
@@ -917,10 +882,25 @@
   "budget_ledger": {
     "grid_equity_idr": 100000.0,
     "swing_equity_idr": 100000.0,
-    "reserve_surplus_idr": 112902.0,
+    "reserve_surplus_idr": 14108.0,
     "last_swing_cap_setting": 100000.0,
-    "last_grid_tiers_count": 1,
+    "last_grid_tiers_count": 0,
     "last_wallet_idr_free": 214108.0,
-    "last_sync_ts": 1795378164.6223114
-  }
+    "last_sync_ts": 1795378462.8181183
+  },
+  "grid_trade_history": [
+    {
+      "ts": 1795378444.9525251,
+      "waktu": "23/11 03:14",
+      "coin": "ETH",
+      "tier": "L1_B1",
+      "buy_price_idr": 31122000.0,
+      "sell_price_idr": 31388000.0,
+      "qty_sold": 0.00106,
+      "capital_sold_idr": 32989.0,
+      "dust_qty": 0.0,
+      "pnl_idr": 101.0,
+      "pnl_pct": 0.3
+    }
+  ]
 }
