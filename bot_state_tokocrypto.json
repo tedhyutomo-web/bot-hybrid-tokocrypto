@@ -17,10 +17,10 @@
       "lock_100_armed": true
     }
   ],
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": 491.0,
+  "completed_trades_today": 1,
   "last_reset_date": "2026-11-22",
-  "loss_to_recover_idr": 12304.0,
+  "loss_to_recover_idr": 11813.0,
   "sl_cooldown_until": {},
   "ai_entry_hold_until": {
     "SUI": {
@@ -841,6 +841,16 @@
       "pnl_pct": 0.13,
       "pnl_idr": 144.0,
       "sempat_tahan_sl": false
+    },
+    {
+      "hasil": "MENANG",
+      "ts": 1795336750.0469904,
+      "waktu": "22/11 15:39",
+      "coin": "ETH",
+      "style": "GRID_L1_B2",
+      "pnl_pct": 1.49,
+      "pnl_idr": 491.0,
+      "sempat_tahan_sl": false
     }
   ],
   "grid_cycle": {
@@ -848,8 +858,8 @@
     "created_ts": 1795272248.2605104,
     "target_finish_tp_idr": 31744000,
     "b3_ever_touched": false,
-    "bounce_count": 0,
-    "realized_grid_profit_idr": 0.0,
+    "bounce_count": 1,
+    "realized_grid_profit_idr": 491.0,
     "tiers": [
       {
         "tier_no": 1,
@@ -870,9 +880,9 @@
           "b2": {
             "buy_price": 30500000,
             "tp_price": 31122000,
-            "status": "HOLDING",
-            "buy_oid": null,
-            "sell_oid": "219873300",
+            "status": "WAIT_BUY",
+            "buy_oid": "219902317",
+            "sell_oid": null,
             "qty": 0.00108,
             "capital_idr": 32940.0
           },
@@ -886,7 +896,7 @@
             "capital_idr": 32865.0
           }
         },
-        "realized_tier_profit_idr": 0.0
+        "realized_tier_profit_idr": 491.0
       }
     ],
     "completed_tiers": [],
