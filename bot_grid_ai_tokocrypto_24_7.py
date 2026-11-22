@@ -699,11 +699,12 @@ def cek_status_order_indodax(coin, order_id):
     symbol = WATCHLIST_COINS[coin]["v2_symbol"]
     res = panggil_indodax_v2("/api/v2/order", method="GET", params={"symbol": symbol, "orderId": str(order_id)})
     if isinstance(res, dict):
-        if "status" in res:
-            return str(res["status"]).upper(), res
-        msg_err = str(res.get("msg", "")).lower()
+        data_ord = res.get("data") if isinstance(res.get("data"), dict) else res
+        if "status" in data_ord:
+            return str(data_ord["status"]).upper(), data_ord
+        msg_err = str(res.get("msg", res.get("message", ""))).lower()
         code_err = int(res.get("code", 0) or 0)
-        if code_err in (-2013, 404) or "not found" in msg_err or "does not exist" in msg_err:
+        if code_err in (-2013, 404, 400) or "not found" in msg_err or "does not exist" in msg_err or "invalid" in msg_err:
             return "NOT_FOUND", res
     return "UNKNOWN", res if isinstance(res, dict) else {}
 
@@ -1069,10 +1070,12 @@ def eksekusi_jual_darurat_swing(coin, best_bid, qty_jual, pairs_meta=None):
 # ==============================================================================
 def rekonsiliasi_grid_dengan_indodax(state, dompet, harga_idr_map):
     """
-    Rekonsiliasi 2-arah khusus Mode Grid (Single Source of Truth = Indodax):
-    1. Memastikan tidak ada posisi HOLDING hantu jika koin sudah habis terjual manual di aplikasi.
-    2. Mengaitkan ulang Open Order SELL yang masih hidup jika sell_oid di memori kosong.
-    3. Memberi peringatan jika ada koin yatim di dompet saat tidak ada siklus Grid aktif.
+    Rekonsiliasi 100% Real-Time Mode Grid (Single Source of Truth = Aplikasi Indodax):
+    - Tidak pernah mengandalkan memori JSON semata; wajib mencocokkan saldo dompet aktual,
+      daftar openOrders asli, dan riwayat myTrades dari Indodax.
+    - Jika koin sudah terjual manual di aplikasi Indodax (saldo < Rp5.000 & tidak ada di openOrders),
+      otomatis catat profit real dari myTrades dan tutup lapis/siklus agar bot langsung bersih.
+    - Jika order beli (WAIT_BUY) sudah tidak ada di openOrders atau IDR locked = 0, otomatis bersihkan.
     """
     log_sync = []
     if not dompet.get("terhubung"):
@@ -1086,11 +1089,10 @@ def rekonsiliasi_grid_dengan_indodax(state, dompet, harga_idr_map):
             if qty_tot * harga_c >= MIN_LIMIT_ORDER_INDODAX_IDR:
                 log_sync.append(
                     f"⚠️ [SYNC GRID PERINGATAN] Terdeteksi koin {c_cek} (Qty:{qty_tot} ~Rp{qty_tot*harga_c:,.0f}) "
-                    f"di dompet Indodax tanpa siklus Grid aktif. Cek aplikasi Indodax agar tidak bentrok modal."
+                    f"di dompet Indodax tanpa siklus Grid aktif."
                 )
         return state, log_sync
 
-    # Pastikan format multi-tier sebelum rekonsiliasi
     if "tiers" not in cycle and "layers" in cycle:
         cycle["tiers"] = [{
             "tier_no": 1,
@@ -1105,115 +1107,600 @@ def rekonsiliasi_grid_dengan_indodax(state, dompet, harga_idr_map):
 
     coin = cycle["coin"]
     harga_skrg = harga_idr_map.get(coin, {}).get("last", 0.0)
-    k_free = dompet["coins_free"].get(coin, 0.0)
-    k_locked = dompet["coins_locked"].get(coin, 0.0)
+    k_free = float(dompet["coins_free"].get(coin, 0.0))
+    k_locked = float(dompet["coins_locked"].get(coin, 0.0))
+    idr_locked = float(dompet.get("idr_locked", 0.0))
     total_qty_dompet = format_qty_koin(coin, k_free + k_locked)
     nilai_dompet_idr = total_qty_dompet * harga_skrg
 
     ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+    open_buy_orders = [o for o in daftar_oo if str(o.get("side", "")).upper() == "BUY"] if ok_oo else []
     open_sell_orders = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"] if ok_oo else []
+    open_buy_ids = {str(o.get("orderId", "")) for o in open_buy_orders if o.get("orderId")}
+    open_sell_ids = {str(o.get("orderId", "")) for o in open_sell_orders if o.get("orderId")}
+
+    # 1. VERIFIKASI REAL OPEN ORDERS SELL: kaitkan jika ada, reset jika sudah batal di aplikasi
     terpakai_sell_oids = {
         str(lp.get("sell_oid"))
         for t in cycle.get("tiers", [])
         for lp in t["layers"].values()
-        if lp.get("sell_oid")
+        if lp.get("sell_oid") and (not ok_oo or str(lp.get("sell_oid")) in open_sell_ids)
     }
-
-    # 1. Kaitkan Open Order SELL yang belum tercatat di state (anti-duplikat TP)
     for t in cycle.get("tiers", []):
         for nama_lp, lp in t["layers"].items():
-            if lp["status"] == "HOLDING" and not lp.get("sell_oid") and open_sell_orders:
-                for oo in open_sell_orders:
-                    oid_oo = str(oo.get("orderId", ""))
-                    if oid_oo and oid_oo not in terpakai_sell_oids:
-                        harga_oo = float(oo.get("price", 0) or 0)
-                        if harga_oo > 0 and abs(harga_oo - float(lp["tp_price"])) / max(1.0, float(lp["tp_price"])) <= 0.015:
-                            lp["sell_oid"] = oid_oo
-                            lp["tp_price"] = bulatkan_harga_indodax(coin, harga_oo)
-                            terpakai_sell_oids.add(oid_oo)
-                            log_sync.append(
-                                f"🔗 [SYNC GRID KAITKAN TP] L{t['tier_no']} {nama_lp.upper()} {coin} dikaitkan ke Open Order SELL #{oid_oo} @ Rp{lp['tp_price']:,.0f}."
-                            )
-                            break
+            if lp["status"] == "HOLDING":
+                oid_s = str(lp.get("sell_oid") or "")
+                # Jika sell_oid di memori sudah tidak ada di openOrders Indodax & koin MASIH ada di dompet -> reset agar Self-Healing pasang ulang
+                if oid_s and nilai_dompet_idr >= 5000.0 and ((ok_oo and oid_s not in open_sell_ids) or k_locked <= 0):
+                    st_cek, _ = cek_status_order_indodax(coin, oid_s)
+                    if st_cek != "FILLED":
+                        lp["sell_oid"] = None
+                        log_sync.append(f"🔄 [SYNC GRID TP BATAL] Order TP #{oid_s} L{t['tier_no']} {nama_lp.upper()} {coin} sudah tidak aktif di Indodax, direset.")
+                # Jika sell_oid kosong tapi ada Open Order SELL cocok di Indodax -> kaitkan
+                if not lp.get("sell_oid") and open_sell_orders and nilai_dompet_idr >= 5000.0:
+                    for oo in open_sell_orders:
+                        oid_oo = str(oo.get("orderId", ""))
+                        if oid_oo and oid_oo not in terpakai_sell_oids:
+                            harga_oo = float(oo.get("price", 0) or 0)
+                            if harga_oo > 0 and abs(harga_oo - float(lp["tp_price"])) / max(1.0, float(lp["tp_price"])) <= 0.020:
+                                lp["sell_oid"] = oid_oo
+                                lp["tp_price"] = bulatkan_harga_indodax(coin, harga_oo)
+                                terpakai_sell_oids.add(oid_oo)
+                                log_sync.append(f"🔗 [SYNC GRID KAITKAN TP] L{t['tier_no']} {nama_lp.upper()} {coin} dikaitkan ke SELL #{oid_oo} @ Rp{lp['tp_price']:,.0f}.")
+                                break
 
-    # 2. Deteksi jika seluruh koin di dompet sudah habis (< Rp5.000) sementara ada lapisan HOLDING tanpa sell_oid
+    # 2. VERIFIKASI REAL DOMPET KOSONG (< Rp5.000): jika koin sudah TIDAK ADA di Indodax, tutup SEMUA HOLDING (walau punya sell_oid!)
     ada_holding = any(lp["status"] == "HOLDING" for t in cycle.get("tiers", []) for lp in t["layers"].values())
     if ada_holding and nilai_dompet_idr < 5000.0 and (not open_sell_orders):
-        # Biarkan lapisan yang punya sell_oid dicek dulu di kelola_siklus_grid_3_lapis (siapa tahu baru FILLED TP).
-        # Hanya bersihkan lapisan HOLDING yang tidak punya sell_oid sama sekali & saldonya 0 di dompet.
+        trades_jual_all = ambil_trade_terakhir_indodax(coin, side_filter="SELL", limit=10)
         for t in cycle.get("tiers", []):
+            t.setdefault("realized_tier_profit_idr", 0.0)
             for nama_lp, lp in t["layers"].items():
-                if lp["status"] == "HOLDING" and not lp.get("sell_oid"):
-                    trades_jual = [
-                        tr for tr in ambil_trade_terakhir_indodax(coin, side_filter="SELL", limit=5)
-                        if tr["ts"] >= float(t.get("created_ts", 0)) - 120.0
-                    ]
-                    if trades_jual:
-                        harga_laku = trades_jual[0]["price"]
+                if lp["status"] == "HOLDING":
+                    oid_s = lp.get("sell_oid")
+                    harga_laku = 0.0
+                    qty_laku = float(lp.get("qty", 0.0))
+
+                    # Cek apakah order TP sempat FILLED
+                    if oid_s:
+                        st_s, det_s = cek_status_order_indodax(coin, oid_s)
+                        if st_s == "FILLED":
+                            ex_q, ex_p = ekstrak_eksekusi_order(det_s, fallback_price=lp["tp_price"])
+                            harga_laku = ex_p
+                            if ex_q > 0:
+                                qty_laku = ex_q
+
+                    # Jika bukan TP order (misal TP manual di aplikasi Indodax), ambil langsung dari myTrades Indodax
+                    if harga_laku <= 0:
+                        trades_cocok = [tr for tr in trades_jual_all if tr["ts"] >= float(t.get("created_ts", 0)) - 120.0]
+                        if trades_cocok:
+                            harga_laku = trades_cocok[0]["price"]
+                            if trades_cocok[0]["qty"] > 0:
+                                qty_laku = min(qty_laku, trades_cocok[0]["qty"]) if qty_laku > 0 else trades_cocok[0]["qty"]
+
+                    if harga_laku > 0 and qty_laku > 0:
+                        cap_terjual = round(qty_laku * float(lp["buy_price"]), 0)
                         net_pct = ((harga_laku - float(lp["buy_price"])) / max(1.0, float(lp["buy_price"]))) - FEE_ROUNDTRIP_MAKER_PCT
-                        pnl_idr = round(float(lp["capital_idr"]) * net_pct, 0)
+                        pnl_idr = round(cap_terjual * net_pct, 0)
+                        cycle["bounce_count"] = int(cycle.get("bounce_count", 0)) + 1
                         cycle["realized_grid_profit_idr"] = round(float(cycle.get("realized_grid_profit_idr", 0.0)) + pnl_idr, 0)
-                        catat_hasil_transaksi_ke_recovery(state, pnl_idr, coin, slot={"coin": coin, "style": f"GRID_L{t['tier_no']}_{nama_lp.upper()}", "capital_idr": lp["capital_idr"]}, pnl_exit_pct=net_pct)
+                        t["realized_tier_profit_idr"] = round(float(t.get("realized_tier_profit_idr", 0.0)) + pnl_idr, 0)
+                        catat_hasil_transaksi_ke_recovery(state, pnl_idr, coin)
+                        _catat_riwayat_jual_grid(state, coin, t["tier_no"], nama_lp, float(lp["buy_price"]), harga_laku, qty_laku, cap_terjual, pnl_idr, net_pct, dust_qty=0.0)
                         log_sync.append(
-                            f"🔄 [SYNC GRID JUAL MANUAL] L{t['tier_no']} {nama_lp.upper()} {coin} terjual di luar bot @ Rp{harga_laku:,.0f} (PnL: Rp{pnl_idr:+,.0f})."
+                            f"🔄 [SYNC GRID JUAL MANUAL] L{t['tier_no']} {nama_lp.upper()} {coin} terjual {qty_laku:g} di Indodax @ Rp{harga_laku:,.0f} (Net: Rp{pnl_idr:+,.0f})."
                         )
                     else:
                         log_sync.append(
-                            f"🧹 [SYNC GRID BERSIHKAN HANTU] L{t['tier_no']} {nama_lp.upper()} {coin} tidak ada di dompet (Saldo: 0), status ditutup."
+                            f"🧹 [SYNC GRID DOMPET KOSONG] L{t['tier_no']} {nama_lp.upper()} {coin} sudah tidak ada di dompet Indodax (Saldo: 0), posisi ditutup."
                         )
                     lp["status"] = "DONE"
                     lp["qty"] = 0.0
+                    lp["sell_oid"] = None
+
+    # 3. VERIFIKASI REAL ORDER BELI (WAIT_BUY): cocokkan dgn openOrders BUY & idr_locked nyata
+    for t in cycle.get("tiers", []):
+        layers = t["layers"]
+        for nama_lp in ("b1", "b2", "b3"):
+            lp = layers[nama_lp]
+            if lp["status"] == "WAIT_BUY":
+                oid_b = str(lp.get("buy_oid") or "")
+                hilang_di_indodax = (ok_oo and oid_b not in open_buy_ids) or (idr_locked < 1000.0)
+                if hilang_di_indodax:
+                    # Pastikan bukan baru saja FILLED (cek status & saldo koin)
+                    st_b, _ = cek_status_order_indodax(coin, oid_b) if oid_b else ("NOT_FOUND", {})
+                    if st_b == "FILLED":
+                        continue
+                    lp["buy_oid"] = None
+                    if layers["b1"]["status"] == "HOLDING" and nilai_dompet_idr >= 5000.0 and nama_lp != "b1":
+                        lp["status"] = "ARMED"
+                        log_sync.append(f"🔄 [SYNC GRID ANTREAN HILANG] Buy L{t['tier_no']} {nama_lp.upper()} {coin} (#{oid_b}) tidak ada di Indodax -> RE-ARM.")
+                    else:
+                        lp["status"] = "DONE"
+                        lp["qty"] = 0.0
+                        log_sync.append(f"🧹 [SYNC GRID ANTREAN BATAL] Buy L{t['tier_no']} {nama_lp.upper()} {coin} (#{oid_b}) sudah tidak ada di Indodax -> DONE.")
+
+    # 4. BERSIHKAN LAPIS / SIKLUS YANG SUDAH 100% SELESAI DI DOMPET NYATA
+    tiers_sisa = []
+    for t in cycle.get("tiers", []):
+        lps = t["layers"]
+        semua_bukan_holding = all(lps[k]["status"] != "HOLDING" for k in ("b1", "b2", "b3"))
+        b1_selesai = lps["b1"]["status"] == "DONE"
+        if b1_selesai and semua_bukan_holding:
+            for k in ("b2", "b3"):
+                if lps[k].get("buy_oid"):
+                    batalkan_order_indodax(coin, lps[k]["buy_oid"])
+                    lps[k]["buy_oid"] = None
+                lps[k]["status"] = "DONE"
+            t["status"] = "DONE"
+            cycle["completed_tiers_count"] = int(cycle.get("completed_tiers_count", 0)) + 1
+            continue
+        tiers_sisa.append(t)
+
+    cycle["tiers"] = tiers_sisa
+    if not cycle["tiers"]:
+        if int(cycle.get("completed_tiers_count", 0)) > 0:
+            rekam_memori_siklus_grid(state, cycle, "SYNC_MANUAL_SELESAI", float(cycle.get("realized_grid_profit_idr", 0.0)))
+        state["grid_cycle"] = None
+        log_sync.append(f"🏁 [SYNC GRID SIKLUS BERSIH] Siklus {coin} selesai sesuai dompet aktual Indodax. Grid siap fokus ke {','.join(sorted(GRID_ALLOWED_COINS))}.")
 
     return state, log_sync
 
+
 def rekonsiliasi_swing_dengan_indodax(state, dompet, harga_idr_map):
-    """Rekonsiliasi 2-arah khusus Mini Swing (Non-BTC) terhadap dompet & open orders Indodax."""
+    """
+    Rekonsiliasi 100% Real-Time Mode Mini Swing (Single Source of Truth = Aplikasi Indodax):
+    - Memverifikasi pending MOC langsung ke openOrders & idr_locked aktual Indodax.
+    - Memverifikasi posisi aktif langsung ke saldo dompet aktual (coins_free + coins_locked),
+      openOrders SELL, dan myTrades (tidak pernah menyisakan posisi hantu meski tp1/tp2_oid masih tercatat).
+    """
     log_sync = []
     if not dompet.get("terhubung") or not SWING_MODE_ENABLED:
         return state, log_sync
 
-    # 1. Bersihkan pending entry yang sudah tidak ada di Indodax & koin tidak masuk dompet
+    idr_locked = float(dompet.get("idr_locked", 0.0))
+    cache_oo = {}
+
+    def _get_oo(c):
+        if c not in cache_oo:
+            cache_oo[c] = ambil_open_orders_indodax(c)
+        return cache_oo[c]
+
+    # 1. Verifikasi Pending Entry MOC terhadap openOrders & saldo koin nyata
     pending_valid = []
     for p in state.get("swing_pending_entries", []):
         coin = p["coin"]
-        oid = p.get("buy_oid")
-        st, det = cek_status_order_indodax(coin, oid)
-        k_tot = dompet["coins_free"].get(coin, 0.0) + dompet["coins_locked"].get(coin, 0.0)
+        oid = str(p.get("buy_oid") or "")
+        k_tot = float(dompet["coins_free"].get(coin, 0.0)) + float(dompet["coins_locked"].get(coin, 0.0))
         harga = harga_idr_map.get(coin, {}).get("last", p["entry_price_idr"])
-        if st in ("CANCELED", "EXPIRED", "REJECTED", "NOT_FOUND") and (k_tot * harga) < 5000.0:
-            log_sync.append(f"🧹 [SYNC SWING] Pending MOC {coin} #{oid} berstatus {st}, dibersihkan.")
+
+        ok_oo, daftar_oo = _get_oo(coin)
+        open_buy_ids = {str(o.get("orderId", "")) for o in daftar_oo if str(o.get("side", "")).upper() == "BUY"}
+        hilang_di_indodax = (ok_oo and oid not in open_buy_ids) or (idr_locked < 1000.0)
+
+        if hilang_di_indodax:
+            if (k_tot * harga) >= 5000.0:
+                pending_valid.append(p)
+                continue
+            st_b, _ = cek_status_order_indodax(coin, oid) if oid else ("NOT_FOUND", {})
+            if st_b == "FILLED":
+                pending_valid.append(p)
+                continue
+            log_sync.append(f"🧹 [SYNC SWING ANTREAN HILANG] Pending MOC {coin} #{oid} sudah tidak ada di Indodax (Status:{st_b}), dihapus.")
             continue
         pending_valid.append(p)
     state["swing_pending_entries"] = pending_valid
 
-    # 2. Pastikan posisi aktif Mini Swing sinkron dengan saldo koin nyata di dompet
+    # 2. Verifikasi Posisi Aktif Mini Swing terhadap Saldo Dompet & openOrders SELL Nyata
     pos_valid = []
     for pos in state.get("swing_positions", []):
         coin = pos["coin"]
         harga = harga_idr_map.get(coin, {}).get("last", pos["entry_price_idr"])
-        k_free = dompet["coins_free"].get(coin, 0.0)
-        k_locked = dompet["coins_locked"].get(coin, 0.0)
+        k_free = float(dompet["coins_free"].get(coin, 0.0))
+        k_locked = float(dompet["coins_locked"].get(coin, 0.0))
         k_tot = format_qty_koin(coin, k_free + k_locked)
         nilai_idr = k_tot * harga
 
-        if nilai_idr < 5000.0 and not pos.get("tp1_oid") and not pos.get("tp2_oid"):
-            trades_jual = [
-                t for t in ambil_trade_terakhir_indodax(coin, side_filter="SELL", limit=5)
-                if t["ts"] >= float(pos.get("filled_ts", 0.0)) - 120.0
-            ]
-            if trades_jual:
-                p_laku = trades_jual[0]["price"]
-                pnl_pct = ((1.0 - SWING_FEE_BUY_MAKER) * (p_laku / pos["entry_price_idr"]) * (1.0 - SWING_FEE_SELL_MAKER)) - 1.0
-                pnl_idr = round(float(pos.get("remaining_capital_idr", pos["capital_idr"])) * pnl_pct, 0)
+        ok_oo, daftar_oo = _get_oo(coin)
+        open_sell_ids = {str(o.get("orderId", "")) for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"}
+
+        # A. Koin sudah HABIS di dompet Indodax (< Rp5.000) & tidak ada order jual aktif -> tutup posisi & catat PnL real!
+        ada_sell_hidup = ok_oo and any(str(pos.get(k) or "") in open_sell_ids for k in ("tp1_oid", "tp2_oid", "stale_oid"))
+        if nilai_idr < 5000.0 and not ada_sell_hidup:
+            harga_laku = 0.0
+            qty_laku = float(pos.get("qty_remaining", 0.0))
+            alasan_sync = "SYNC_MANUAL_SELL"
+
+            # Cek dulu apakah order TP2 / TP1 / Stale yang sempat FILLED
+            for k_oid, lbl in (("tp2_oid", "TP2_FULL_TARGET"), ("stale_oid", "STALE_TIMESTOP_MAKER"), ("tp1_oid", "TP1_SCALE_OUT")):
+                if pos.get(k_oid):
+                    st_o, det_o = cek_status_order_indodax(coin, pos[k_oid])
+                    if st_o == "FILLED":
+                        ex_q, ex_p = ekstrak_eksekusi_order(det_o, fallback_price=harga)
+                        harga_laku = ex_p
+                        if ex_q > 0:
+                            qty_laku = ex_q
+                        alasan_sync = lbl
+                        break
+
+            # Jika dijual manual lewat aplikasi Indodax -> baca langsung dari myTrades
+            if harga_laku <= 0:
+                trades_jual = [
+                    t for t in ambil_trade_terakhir_indodax(coin, side_filter="SELL", limit=8)
+                    if t["ts"] >= float(pos.get("filled_ts", 0.0)) - 120.0
+                ]
+                if trades_jual:
+                    harga_laku = trades_jual[0]["price"]
+                    if trades_jual[0]["qty"] > 0:
+                        qty_laku = min(qty_laku, trades_jual[0]["qty"]) if qty_laku > 0 else trades_jual[0]["qty"]
+
+            if harga_laku > 0 and qty_laku > 0:
+                entry_p = float(pos["entry_price_idr"])
+                cap_sold = round(qty_laku * entry_p, 0)
+                pnl_pct = ((1.0 - SWING_FEE_BUY_MAKER) * (harga_laku / entry_p) * (1.0 - SWING_FEE_SELL_MAKER)) - 1.0
+                pnl_idr = round(cap_sold * pnl_pct, 0)
                 catat_pnl_ledger_swing(state, pnl_idr)
                 catat_hasil_transaksi_ke_recovery(state, pnl_idr, coin)
-                log_sync.append(f"🔄 [SYNC SWING JUAL MANUAL] {coin} terjual @ Rp{p_laku:,} (PnL: Rp{pnl_idr:+,.0f}).")
+                _catat_riwayat_swing(state, pos, alasan_sync, pnl_idr, pnl_pct, qty_laku, harga_laku, cap_sold, 0.0)
+                log_sync.append(f"🔄 [SYNC SWING JUAL MANUAL] {coin} terjual {qty_laku:g} di Indodax @ Rp{harga_laku:,} (Net: Rp{pnl_idr:+,.0f}).")
             else:
-                log_sync.append(f"🧹 [SYNC SWING] Posisi hantu {coin} dihapus (Saldo: 0).")
+                log_sync.append(f"🧹 [SYNC SWING DOMPET KOSONG] {coin} sudah tidak ada di dompet Indodax (Saldo: 0), posisi ditutup.")
             continue
+
+        # B. Koin MASIH ada di dompet -> sinkronkan qty & bersihkan order TP yang sudah dibatalkan manual
+        if k_tot > 0:
+            pos["qty_remaining"] = k_tot
+            pos["remaining_capital_idr"] = round(k_tot * float(pos["entry_price_idr"]), 0)
+        if ok_oo:
+            for k_oid in ("tp1_oid", "tp2_oid", "stale_oid"):
+                oid_cek = str(pos.get(k_oid) or "")
+                if oid_cek and oid_cek not in open_sell_ids:
+                    st_c, _ = cek_status_order_indodax(coin, oid_cek)
+                    if st_c != "FILLED":
+                        pos[k_oid] = None
+                        log_sync.append(f"🔄 [SYNC SWING ORDER BATAL] {coin} {k_oid} #{oid_cek} sudah tidak aktif di Indodax, direset.")
         pos_valid.append(pos)
+
     state["swing_positions"] = pos_valid
     return state, log_sync
+
+def adopsi_atau_batal_beli_manual_grid(state, dompet, peta_analisa, harga_idr_map):
+    """
+    Opsi 1 (Mode Grid BTC):
+    1. Jika ada BTC terbeli manual di dompet (>= Rp25rb) saat belum ada siklus Grid -> otomatis adopsi jadi Lapis 1 b1 HOLDING + pasang TP b1.
+    2. Jika ada Open Order BUY manual BTC yang tidak dikenal bot:
+       - Jika pasar lolos syarat Grid (4H != MERAH, layak_grid, skor >= min) & belum ada siklus -> adopsi jadi Lapis 1 b1 WAIT_BUY.
+       - Jika melanggar filter risiko (4H MERAH / pucuk / skor kurang / bentrok siklus aktif) -> BATALKAN otomatis.
+    """
+    log_m, log_tx = [], []
+    ada_aksi = False
+    if not LIVE_TRADING_ENABLED or not dompet.get("terhubung") or not GRID_MODE_ENABLED:
+        return state, log_m, log_tx, ada_aksi
+
+    now_ts = time.time()
+    cycle = state.get("grid_cycle")
+
+    for coin in sorted(GRID_ALLOWED_COINS):
+        harga_skrg = harga_idr_map.get(coin, {}).get("last", 0.0)
+        info = peta_analisa.get(coin, {})
+        k_free = float(dompet["coins_free"].get(coin, 0.0))
+        k_locked = float(dompet["coins_locked"].get(coin, 0.0))
+        qty_tot = format_qty_koin(coin, k_free + k_locked)
+        nilai_idr = qty_tot * harga_skrg
+
+        # A. KOIN BTC SUDAH TERBELI MANUAL DI DOMPET (BELUM ADA SIKLUS GRID) -> ADOPSI & KAWAL TP
+        if not cycle and qty_tot > 0 and nilai_idr >= MIN_LIMIT_ORDER_INDODAX_IDR:
+            trades_beli = ambil_trade_terakhir_indodax(coin, side_filter="BUY", limit=5)
+            harga_beli_asli = bulatkan_harga_indodax(coin, trades_beli[0]["price"] if trades_beli else harga_skrg)
+            step_l1 = float(info.get("grid_step_aktif", GRID_STEP_GREEN_PCT))
+            mode_4h = info.get("lampu_4h", "HIJAU")
+
+            tier_1 = _buat_struktur_tier_baru(coin, 1, harga_beli_asli, step_l1, mode_4h, None, qty_tot, now_ts, buy_tif_b1="GTC")
+            b1 = tier_1["layers"]["b1"]
+            b1["status"] = "HOLDING"
+            b1["buy_oid"] = None
+            b1["qty"] = qty_tot
+            b1["capital_idr"] = round(qty_tot * harga_beli_asli, 0)
+
+            # Kaitkan jika user sudah pasang order jual manual, jika belum langsung pasang TP b1
+            ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+            open_sells = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"] if ok_oo else []
+            if open_sells:
+                b1["sell_oid"] = str(open_sells[0].get("orderId"))
+                h_oo = float(open_sells[0].get("price", 0) or 0)
+                if h_oo > 0:
+                    b1["tp_price"] = bulatkan_harga_indodax(coin, h_oo)
+            elif k_free > 0:
+                q_tp = format_qty_koin(coin, k_free)
+                if (q_tp * harga_skrg) >= MIN_LIMIT_ORDER_INDODAX_IDR:
+                    ok_tp, res_tp, h_tp, tif_tp = pasang_order_grid_aman(
+                        coin, "SELL", b1["base_tp_price"], q_tp, info_pasar=info, paksa_gtc_fallback=True
+                    )
+                    if ok_tp:
+                        b1["sell_oid"] = str(res_tp.get("orderId"))
+                        b1["tp_price"] = h_tp
+                        b1["sell_tif"] = tif_tp
+
+            state["grid_cycle"] = {
+                "coin": coin,
+                "created_ts": trades_beli[0]["ts"] if trades_beli else now_ts,
+                "b3_ever_touched": False,
+                "bounce_count": 0,
+                "completed_tiers_count": 0,
+                "realized_grid_profit_idr": 0.0,
+                "tiers": [tier_1],
+                "completed_tiers": []
+            }
+            cycle = state["grid_cycle"]
+            ada_aksi = True
+            pesan = (
+                f"♻️ [ADOPSI GRID BELI MANUAL] {coin} Qty:{qty_tot:g} @ Rp{harga_beli_asli:,.0f} (myTrades) -> "
+                f"Dikawal Lapis 1 b1 HOLDING, TP b1 @ Rp{b1['tp_price']:,.0f} (b2/b3 disiapkan otomatis)."
+            )
+            log_m.append(pesan)
+            log_tx.append(pesan)
+            continue
+
+        # B. CEK OPEN ORDER BUY MANUAL BTC DI INDODAX (HANYA JIKA ADA IDR LOCKED)
+        if float(dompet.get("idr_locked", 0.0)) >= 1000.0:
+            ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+            if not ok_oo:
+                continue
+            known_buy_oids = set()
+            if cycle and cycle.get("coin") == coin:
+                for t in cycle.get("tiers", []):
+                    for lp in t.get("layers", {}).values():
+                        if lp.get("buy_oid"):
+                            known_buy_oids.add(str(lp["buy_oid"]))
+
+            for oo in daftar_oo:
+                if str(oo.get("side", "")).upper() != "BUY":
+                    continue
+                oid_oo = str(oo.get("orderId", ""))
+                if not oid_oo or oid_oo in known_buy_oids:
+                    continue
+
+                harga_oo = bulatkan_harga_indodax(coin, float(oo.get("price", 0) or 0))
+                qty_oo = format_qty_koin(coin, float(oo.get("origQty", oo.get("quantity", oo.get("qty", 0))) or 0))
+                adj_mem, _ = hitung_penyesuaian_skor_memori_grid(state, coin)
+                skor_eff = float(info.get("skor", 0.0)) + adj_mem
+                aman_grid = bool(
+                    not cycle
+                    and info.get("layak_grid") is True
+                    and info.get("lampu_4h") != "MERAH"
+                    and skor_eff >= GRID_MIN_SCORE_ENTRY
+                )
+
+                if aman_grid and harga_oo > 0 and qty_oo > 0:
+                    step_l1 = float(info.get("grid_step_aktif", GRID_STEP_GREEN_PCT))
+                    mode_4h = info.get("lampu_4h", "HIJAU")
+                    tier_1 = _buat_struktur_tier_baru(coin, 1, harga_oo, step_l1, mode_4h, oid_oo, qty_oo, now_ts, buy_tif_b1="MOC")
+                    state["grid_cycle"] = {
+                        "coin": coin,
+                        "created_ts": now_ts,
+                        "b3_ever_touched": False,
+                        "bounce_count": 0,
+                        "completed_tiers_count": 0,
+                        "realized_grid_profit_idr": 0.0,
+                        "tiers": [tier_1],
+                        "completed_tiers": []
+                    }
+                    cycle = state["grid_cycle"]
+                    known_buy_oids.add(oid_oo)
+                    ada_aksi = True
+                    log_m.append(
+                        f"🤝 [ADOPSI ANTREAN MANUAL GRID] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,.0f} lolos filter -> dikawal sbg Lapis 1 b1."
+                    )
+                else:
+                    alasan = "Siklus Grid sudah aktif" if cycle else info.get("prediksi", f"Tidak lolos filter Grid (Skor:{skor_eff:.1f})")
+                    batalkan_order_indodax(coin, oid_oo)
+                    ada_aksi = True
+                    log_m.append(
+                        f"🛑 [BATAL BELI MANUAL GRID] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,.0f} dibatalkan otomatis ({alasan})."
+                    )
+
+    return state, log_m, log_tx, ada_aksi
+
+
+def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info, harga_idr_map, pairs_meta):
+    """
+    Opsi 1 (Mode Mini Swing Non-BTC):
+    1. Jika ada koin SWING_ALLOWED_COINS terbeli manual di dompet (>= Rp25rb) -> adopsi jadi swing_positions,
+       hitung SL/TP1/TP2 berbasis ATR 4H real, pasang Limit Sell MOC & kawal dgn Virtual OCO Guardian.
+    2. Jika ada Open Order BUY manual pada koin SWING_ALLOWED_COINS:
+       - Jika lolos filter 1D-4H-1H, Order Book, Circuit Breaker, Slot & Net RRR -> adopsi ke swing_pending_entries.
+       - Jika melanggar filter risiko -> BATALKAN otomatis via API Indodax.
+    """
+    log_m, log_tx = [], []
+    ada_aksi = False
+    if not LIVE_TRADING_ENABLED or not dompet.get("terhubung") or not SWING_MODE_ENABLED:
+        return state, log_m, log_tx, ada_aksi
+
+    now_ts = time.time()
+    rezim = analisa_swing.get("rezim", "SIDEWAYS")
+    semua_koin = analisa_swing.get("semua_koin", {})
+    kandidat_map = analisa_swing.get("kandidat", {})
+    cb = state.get("swing_circuit_breaker", {})
+    cb_cooling = now_ts < float(cb.get("cooling_off_until", 0.0))
+    max_slots = SWING_MAX_SLOTS_BULLISH if rezim == "BULLISH" else (SWING_MAX_SLOTS_SIDEWAYS if rezim == "SIDEWAYS" else SWING_MAX_SLOTS_BEARISH)
+
+    grid_coin = (state.get("grid_cycle") or {}).get("coin")
+    koin_pos_aktif = {x["coin"] for x in state.get("swing_positions", [])}
+    known_pending_oids = {str(x.get("buy_oid", "")) for x in state.get("swing_pending_entries", [])}
+    koin_pending = {x["coin"] for x in state.get("swing_pending_entries", [])}
+    idr_locked = float(dompet.get("idr_locked", 0.0))
+
+    for coin in sorted(SWING_ALLOWED_COINS):
+        if coin == "BTC" or coin == grid_coin or coin not in WATCHLIST_COINS:
+            continue
+
+        harga_skrg = harga_idr_map.get(coin, {}).get("last", 0.0)
+        k_free = float(dompet["coins_free"].get(coin, 0.0))
+        k_locked = float(dompet["coins_locked"].get(coin, 0.0))
+        qty_tot = format_qty_swing(coin, k_free + k_locked, pairs_meta)
+        nilai_idr = qty_tot * harga_skrg
+        info_k = semua_koin.get(coin, {})
+
+        # A. KOIN NON-BTC SUDAH TERBELI MANUAL DI DOMPET -> ADOPSI & KAWAL VIRTUAL OCO
+        if coin not in koin_pos_aktif and coin not in koin_pending and qty_tot > 0 and nilai_idr >= MIN_LIMIT_ORDER_INDODAX_IDR:
+            trades_beli = ambil_trade_terakhir_indodax(coin, side_filter="BUY", limit=5)
+            entry_asli = bulatkan_harga_swing(coin, trades_beli[0]["price"] if trades_beli else harga_skrg, pairs_meta)
+            atr_4h = float(info_k.get("atr_4h", 0.0))
+
+            if atr_4h > 0 and entry_asli > 0:
+                d_sl = max(SWING_SL_FLOOR_PCT, min(SWING_SL_CAP_PCT, (1.5 * atr_4h) / entry_asli))
+            else:
+                d_sl = 0.030
+
+            sl_p = bulatkan_harga_swing(coin, entry_asli * (1.0 - d_sl), pairs_meta)
+            if rezim == "BULLISH":
+                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.5 * d_sl)), pairs_meta)
+                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (3.0 * d_sl)), pairs_meta)
+                tp1_ratio = 0.50
+            elif rezim == "SIDEWAYS":
+                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.35 * d_sl)), pairs_meta)
+                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (2.5 * d_sl)), pairs_meta)
+                tp1_ratio = 0.60
+            else:
+                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.5 * d_sl)), pairs_meta)
+                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (2.6 * d_sl)), pairs_meta)
+                tp1_ratio = 0.65
+
+            nilai_pos = round(qty_tot * entry_asli, 0)
+            partial_ok = nilai_pos >= SWING_MIN_PARTIAL_SPLIT_IDR
+            pos_baru = {
+                "coin": coin,
+                "rezim": rezim,
+                "setup_label": "MANUAL_ADOPT",
+                "entry_price_idr": entry_asli,
+                "virtual_sl_idr": sl_p,
+                "initial_sl_idr": sl_p,
+                "tp1_price_idr": tp1_p,
+                "tp2_price_idr": tp2_p,
+                "tp1_ratio": tp1_ratio,
+                "tp1_filled": False,
+                "partial_enabled": partial_ok,
+                "capital_idr": nilai_pos,
+                "remaining_capital_idr": nilai_pos,
+                "qty_total": qty_tot,
+                "qty_remaining": qty_tot,
+                "dust_accumulated_in": 0.0,
+                "tp1_oid": None,
+                "tp2_oid": None,
+                "stale_oid": None,
+                "stale_started_ts": 0.0,
+                "highest_post_tp1": max(entry_asli, harga_skrg),
+                "atr_4h_ref": atr_4h,
+                "filled_ts": trades_beli[0]["ts"] if trades_beli else now_ts
+            }
+
+            # Cek apakah user sudah memasang order SELL manual di Indodax
+            ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+            open_sells = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"] if ok_oo else []
+            if open_sells:
+                pos_baru["partial_enabled"] = False
+                pos_baru["tp2_oid"] = str(open_sells[0].get("orderId"))
+                h_oo = float(open_sells[0].get("price", 0) or 0)
+                if h_oo > 0:
+                    pos_baru["tp2_price_idr"] = bulatkan_harga_swing(coin, h_oo, pairs_meta)
+            elif k_free > 0:
+                qty_free_fmt = format_qty_swing(coin, k_free, pairs_meta)
+                if pos_baru["partial_enabled"]:
+                    q_tp1 = format_qty_swing(coin, qty_free_fmt * tp1_ratio, pairs_meta)
+                    if ((qty_free_fmt - q_tp1) * tp2_p) < (MIN_LIMIT_ORDER_INDODAX_IDR * 1.05):
+                        pos_baru["partial_enabled"] = False
+                    else:
+                        res_tp1 = eksekusi_order_swing_moc(coin, "SELL", tp1_p, q_tp1, pairs_meta=pairs_meta)
+                        if apakah_order_sukses(res_tp1):
+                            pos_baru["tp1_oid"] = str(res_tp1.get("orderId"))
+                            pos_baru["qty_tp1"] = q_tp1
+                if not pos_baru["partial_enabled"] and (qty_free_fmt * tp2_p) >= MIN_LIMIT_ORDER_INDODAX_IDR:
+                    res_tp2 = eksekusi_order_swing_moc(coin, "SELL", tp2_p, qty_free_fmt, pairs_meta=pairs_meta)
+                    if apakah_order_sukses(res_tp2):
+                        pos_baru["tp2_oid"] = str(res_tp2.get("orderId"))
+
+            state["swing_positions"].append(pos_baru)
+            koin_pos_aktif.add(coin)
+            ada_aksi = True
+            pesan = (
+                f"♻️ [ADOPSI SWING BELI MANUAL] {coin} Qty:{qty_tot:g} @ Rp{entry_asli:,} (myTrades) -> "
+                f"Dikawal Virtual OCO (V-SL:Rp{sl_p:,} | TP1:Rp{tp1_p:,} | TP2:Rp{pos_baru['tp2_price_idr']:,})."
+            )
+            log_m.append(pesan)
+            log_tx.append(pesan)
+
+        # B. CEK OPEN ORDER BUY MANUAL NON-BTC DI INDODAX (HANYA JIKA ADA IDR LOCKED)
+        if idr_locked >= 1000.0:
+            ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
+            if not ok_oo:
+                continue
+            for oo in daftar_oo:
+                if str(oo.get("side", "")).upper() != "BUY":
+                    continue
+                oid_oo = str(oo.get("orderId", ""))
+                if not oid_oo or oid_oo in known_pending_oids:
+                    continue
+
+                harga_oo = bulatkan_harga_swing(coin, float(oo.get("price", 0) or 0), pairs_meta)
+                qty_oo = format_qty_swing(coin, float(oo.get("origQty", oo.get("quantity", oo.get("qty", 0))) or 0), pairs_meta)
+                modal_oo = round(harga_oo * qty_oo, 0)
+                total_terisi = len(state.get("swing_positions", [])) + len(state.get("swing_pending_entries", []))
+
+                alasan_batal = ""
+                plan_ok = None
+                if cb_cooling:
+                    alasan_batal = "Circuit Breaker Mini Swing sedang cooling-off"
+                elif coin in koin_pos_aktif or coin in koin_pending:
+                    alasan_batal = f"Koin {coin} sudah aktif di Mini Swing"
+                elif total_terisi >= max_slots:
+                    alasan_batal = f"Slot penuh ({total_terisi}/{max_slots}) pada rezim {rezim}"
+                elif coin not in kandidat_map:
+                    alasan_batal = f"Tidak lolos filter 1D-4H-1H/ATR/OB pada rezim {rezim}"
+                else:
+                    kand_uji = dict(kandidat_map[coin])
+                    kand_uji["harga_bid"] = harga_oo
+                    plan_ok, msg_plan = hitung_parameter_entry_dan_sizing_swing(
+                        kand_uji,
+                        max(float(vault_info["swing_equity_idr"]), modal_oo * 2.0),
+                        max(float(vault_info["swing_free_idr"]), modal_oo),
+                        bool(cb.get("half_size_active", False)),
+                        pairs_meta
+                    )
+                    if not plan_ok:
+                        alasan_batal = msg_plan
+
+                if not alasan_batal and plan_ok and qty_oo > 0:
+                    state["swing_pending_entries"].append({
+                        "coin": coin,
+                        "rezim": rezim,
+                        "setup_label": f"MANUAL_{kandidat_map[coin]['setup_label']}",
+                        "buy_oid": oid_oo,
+                        "entry_price_idr": harga_oo,
+                        "sl_price_idr": plan_ok["sl_price_idr"],
+                        "tp1_price_idr": plan_ok["tp1_price_idr"],
+                        "tp2_price_idr": plan_ok["tp2_price_idr"],
+                        "tp1_ratio": plan_ok["tp1_ratio"],
+                        "capital_idr": modal_oo,
+                        "qty": qty_oo,
+                        "atr_4h_entry": plan_ok["atr_4h_entry"],
+                        "partial_enabled": modal_oo >= SWING_MIN_PARTIAL_SPLIT_IDR,
+                        "net_rrr": plan_ok["net_rrr"],
+                        "created_ts": now_ts
+                    })
+                    known_pending_oids.add(oid_oo)
+                    koin_pending.add(coin)
+                    ada_aksi = True
+                    log_m.append(
+                        f"🤝 [ADOPSI ANTREAN MANUAL SWING] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,} lolos 1D-4H-1H & RRR ({plan_ok['net_rrr']}:1) -> dikawal bot."
+                    )
+                else:
+                    batalkan_order_indodax(coin, oid_oo)
+                    ada_aksi = True
+                    log_m.append(
+                        f"🛑 [BATAL BELI MANUAL SWING] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,} dibatalkan otomatis ({alasan_batal})."
+                    )
+
+    return state, log_m, log_tx, ada_aksi
 
 # ==============================================================================
 # BAGIAN 5: NATIVE INDODAX OHLC (RSI WILDER + ANTI-INCOMPLETE CANDLE) & GEMINI
@@ -2530,6 +3017,9 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
     total_terisi = len(state["swing_positions"]) + len(state["swing_pending_entries"])
     koin_aktif = {x["coin"] for x in state["swing_positions"]} | {x["coin"] for x in state["swing_pending_entries"]}
 
+    if state.get("grid_cycle") and state["grid_cycle"].get("coin"):
+        koin_aktif.add(state["grid_cycle"]["coin"])
+
     if total_terisi >= max_slots:
         log_sw.append(f"⏸️ [SWING SLOT PENUH] {total_terisi}/{max_slots} slot aktif pada rezim {rezim}.")
         return state, log_sw, log_tx, ada_aksi
@@ -3661,6 +4151,8 @@ def saring_log_eksekusi_terbeli_terjual(daftar_log):
         "TERBELI MOC]",
         "PARTIAL FILL]",
         "SUDAH TERISI]",
+        "ADOPSI GRID BELI MANUAL]",
+        "ADOPSI SWING BELI MANUAL]",
         # Benar-benar TERJUAL (Grid & Mini Swing)
         "TP b1 TERCAPAI",
         "[PANEN ",
@@ -3709,6 +4201,16 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     log_grid, log_tx_grid, ada_aksi_grid = [], [], False
     if GRID_MODE_ENABLED:
         peta_analisa_pasar = analisa_teknikal_lengkap_pasar(harga_live_map)
+        state, log_mg, log_tx_mg, ada_mg = adopsi_atau_batal_beli_manual_grid(
+            state, dompet_asli, peta_analisa_pasar, harga_live_map
+        )
+        log_grid.extend(log_mg)
+        log_tx_grid.extend(log_tx_mg)
+        if ada_mg:
+            ada_aksi_grid = True
+            if LIVE_TRADING_ENABLED:
+                dompet_asli = ambil_saldo_lengkap_indodax()
+            vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
         _, tiers_sblm = hitung_modal_terpakai_grid(state)
         prof_sblm = float(state["grid_cycle"].get("realized_grid_profit_idr", 0.0)) if state.get("grid_cycle") else 0.0
 
@@ -3727,9 +4229,12 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
         dompet_grid["idr_free"] = min(float(dompet_asli.get("idr_free", 0.0)), cap_free_grid)
         try:
             _ACTIVE_GRID_IDR_FREE_CAP = cap_free_grid
-            state, log_grid, log_tx_grid, ada_aksi_grid = kelola_siklus_grid_3_lapis(
+            state, log_g2, log_tx_g2, ada_g2 = kelola_siklus_grid_3_lapis(
                 state, peta_analisa_pasar, dompet_grid, harga_live_map=harga_live_map
             )
+            log_grid.extend(log_g2)
+            log_tx_grid.extend(log_tx_g2)
+            ada_aksi_grid = ada_aksi_grid or ada_g2
         finally:
             _ACTIVE_GRID_IDR_FREE_CAP = None
 
@@ -3744,9 +4249,23 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
     if SWING_MODE_ENABLED:
         order_ref = max(MIN_NEW_BUY_ALLOCATION_IDR, vault_info["swing_equity_idr"] * 0.40)
         analisa_swing = analisa_teknikal_mini_swing(harga_live_map, pairs_meta, order_size_ref_idr=order_ref)
-        state, log_swing, log_tx_swing, ada_aksi_swing = kelola_siklus_mini_swing(
+        state, log_ms, log_tx_ms, ada_ms = adopsi_atau_batal_beli_manual_swing(
+            state, dompet_asli, analisa_swing, vault_info, harga_live_map, pairs_meta
+        )
+        log_swing.extend(log_ms)
+        log_tx_swing.extend(log_tx_ms)
+        if ada_ms:
+            ada_aksi_swing = True
+            if LIVE_TRADING_ENABLED:
+                dompet_asli = ambil_saldo_lengkap_indodax()
+            vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
+
+        state, log_s2, log_tx_s2, ada_s2 = kelola_siklus_mini_swing(
             state, analisa_swing, vault_info, dompet_asli, harga_live_map, pairs_meta
         )
+        log_swing.extend(log_s2)
+        log_tx_swing.extend(log_tx_s2)
+        ada_aksi_swing = ada_aksi_swing or ada_s2
         if ada_aksi_swing and LIVE_TRADING_ENABLED:
             dompet_asli = ambil_saldo_lengkap_indodax()
         vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
