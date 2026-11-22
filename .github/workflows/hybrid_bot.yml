@@ -31,18 +31,19 @@ jobs:
         env:
           INDODAX_API_KEY: ${{ secrets.INDODAX_API_KEY }}
           INDODAX_SECRET_KEY: ${{ secrets.INDODAX_SECRET_KEY }}
-          TOKOCRYPTO_API_KEY: ${{ secrets.TOKOCRYPTO_API_KEY }}
-          TOKOCRYPTO_SECRET_KEY: ${{ secrets.TOKOCRYPTO_SECRET_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
-          GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
-          GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
           GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
-          MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
           LIVE_TRADING_ENABLED: ${{ secrets.LIVE_TRADING_ENABLED || 'false' }}
-          ACTIVE_WATCH_MINUTES: '4'
-          WATCH_INTERVAL_SECONDS: '60'
+
+          # Konfigurasi Modal Grid & Mini Swing (Budget Vault)
+          MAX_BOT_CAPITAL_IDR: ${{ secrets.MAX_BOT_CAPITAL_IDR || '100000' }}
+          GRID_CAPITAL_PER_LAYER_IDR: ${{ secrets.GRID_CAPITAL_PER_LAYER_IDR || '33000' }}
+          GRID_BUDGET_PER_TIER_IDR: ${{ secrets.GRID_BUDGET_PER_TIER_IDR || '100000' }}
+          SWING_MODE_ENABLED: ${{ secrets.SWING_MODE_ENABLED || 'true' }}
+          MAX_SWING_CAPITAL_IDR: ${{ secrets.MAX_SWING_CAPITAL_IDR || '100000' }}
+
+          # Pengawasan Intensif Virtual OCO Mini Swing
+          ACTIVE_WATCH_MINUTES: "4"
+          WATCH_INTERVAL_SECONDS: "60"
         run: |
           python bot_grid_ai_tokocrypto_24_7.py
 
