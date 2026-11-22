@@ -35,7 +35,7 @@ MAX_SPREAD_INDODAX_PCT = 0.0035        # Maksimal toleransi Bid-Ask Spread Indod
 # ==============================================================================
 # KONFIGURASI METODE GRID 3-LAPIS (SELESAI PER LAPIS DI TP b1 MASING-MASING)
 # ==============================================================================
-GRID_MODE_ENABLED = True               # True = aktifkan Grid 3-Lapis; False = mode scalping cadangan
+GRID_MODE_ENABLED = os.getenv("GRID_MODE_ENABLED", "true").lower() == "true"
 GRID_CAPITAL_PER_LAYER_IDR = float(os.getenv("GRID_CAPITAL_PER_LAYER_IDR", "33000"))
 GRID_STEP_PCT = 0.0150                 # Default fallback jarak antar grid 1.50%
 GRID_STEP_GREEN_PCT = 0.0150           # Fallback aman (jangan dihapus, dipakai fungsi migrasi)
