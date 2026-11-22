@@ -870,9 +870,9 @@
           "b2": {
             "buy_price": 30500000,
             "tp_price": 31122000,
-            "status": "WAIT_BUY",
-            "buy_oid": "219809716",
-            "sell_oid": null,
+            "status": "HOLDING",
+            "buy_oid": null,
+            "sell_oid": "219873300",
             "qty": 0.00108,
             "capital_idr": 32940.0
           },
