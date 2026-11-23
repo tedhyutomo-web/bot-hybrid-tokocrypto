@@ -1,0 +1,34 @@
+{
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0,
+  "loss_to_recover_idr": 0.0,
+  "grid_cycle": null,
+  "grid_experience_memory": [],
+  "grid_trade_history": [],
+  "swing_positions": [],
+  "swing_pending_entries": [],
+  "swing_trade_history": [],
+  "swing_circuit_breaker": {
+    "consecutive_losses": 0,
+    "half_size_active": false,
+    "cooling_off_until": 0.0,
+    "week_id": "2026-W48",
+    "weekly_pnl_idr": 0.0,
+    "week_start_equity_idr": 100000.0
+  },
+  "wr_month_tracker": {
+    "month_id": "2026-11",
+    "start_day": 23,
+    "start_ts": 1795366800.0
+  },
+  "budget_ledger": {
+    "grid_equity_idr": 100000.0,
+    "swing_equity_idr": 100000.0,
+    "reserve_surplus_idr": 14108.0,
+    "last_swing_cap_setting": 100000.0,
+    "last_grid_tiers_count": 0,
+    "last_wallet_idr_free": 214108.0,
+    "last_sync_ts": 1795434255.4879856
+  },
+  "last_reset_date": "2026-11-23"
+}
