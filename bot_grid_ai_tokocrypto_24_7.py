@@ -3602,7 +3602,7 @@ def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=N
             print("⚠️ Gagal kirim ke Google Sheets:", e)
 
 # ==============================================================================
-MESIN GRID 3-LAPIS MANDIRI (TIAP LAPIS SELESAI DI TP b1 + SELF-HEALING)
+# MESIN GRID 3-LAPIS MANDIRI (TIAP LAPIS SELESAI DI TP b1 + SELF-HEALING)
 # ==============================================================================
 def _hitung_fee_roundtrip_grid(lp):
     """Menghitung total fee beli+jual PMK 50/2025 + CFX berdasarkan tipe eksekusi aktual (MOC vs GTC)."""
