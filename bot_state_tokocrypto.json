@@ -886,7 +886,7 @@
     "last_swing_cap_setting": 100000.0,
     "last_grid_tiers_count": 0,
     "last_wallet_idr_free": 214108.0,
-    "last_sync_ts": 1795402155.3082075
+    "last_sync_ts": 1795402451.5214624
   },
   "grid_trade_history": [
     {
@@ -902,5 +902,10 @@
       "pnl_idr": 101.0,
       "pnl_pct": 0.3
     }
-  ]
+  ],
+  "wr_month_tracker": {
+    "month_id": "2026-11",
+    "start_day": 23,
+    "start_ts": 1795366800.0
+  }
 }
