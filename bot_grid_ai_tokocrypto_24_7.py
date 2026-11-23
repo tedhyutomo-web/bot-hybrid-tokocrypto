@@ -2,7 +2,7 @@
 # PRO QUANT DUAL-ENGINE TRADING BOT 24/7 (100% NATIVE INDODAX V2 DETERMINISTIK)
 # ==============================================================================
 # 1. MESIN GRID BTC PER-LAPIS: Tiap lapis selesai di TP b1 + Self-Healing MOC/GTC
-# 2. MESIN MINI SWING NON-BTC: MTF 1D-4H-1H (Bullish & Sideways-Up) + Virtual OCO
+# 2. MESIN MINI SWING NON-BTC: MTF 1D-4H-30m/15m (Bullish & Sideways-Up) + Virtual OCO
 # 3. BUDGET VAULT 3-KANTONG, FAST WATCH 60 DETIK & REKONSILIASI 2-ARAH INDODAX
 # ==============================================================================
 
@@ -56,14 +56,14 @@ GRID_4H_SLOW_BLEED_EMA50_PCT = 0.040   # Veto slow-bleed jika downtrend 3 candle
 GRID_MAX_RSI_M5_ENTRY = 58.0           # Batas atas RSI 5M (Wilder) saat 4H Hijau (anti beli pucuk)
 GRID_MAX_RSI_M5_YELLOW = 52.0          # Batas atas RSI 5M (Wilder) saat 4H Kuning
 GRID_MAX_DIST_EMA20_15M_PCT = 0.0080   # Harga maksimal +0.80% di atas EMA20 15M agar entry dekat area value
-GRID_MIN_ATR_15M_PCT = 0.0035          # Syarat volatilitas minimal 15M agar rentang cukup melibas fee 0.55%
+GRID_MIN_ATR_15M_PCT = 0.0035          # Syarat volatilitas minimal 15M agar rentang cukup melibas fee ~0.43%
 GRID_WAIT_B1_TIMEOUT_MIN = 45.0        # Batas tunggu antrean awal b1 sebelum dibatalkan jika belum terjemput
 GRID_MEMORY_RETENTION_HOURS = 168.0    # Memori pengalaman siklus Grid disimpan 1 minggu (168 jam)
 MAX_GRID_MEMORY_ITEMS = 60             # Maksimal menyimpan 60 riwayat siklus Grid dalam 1 minggu
 GRID_ALLOWED_COINS = {"BTC"}
 GRID_LIMIT_TIF = "MOC"                 # Prioritas Maker-Only Cancel dengan fallback aman ke GTC bila ditolak
 
-# Validasi Gemini AI & Proteksi Invalidation Grid
+# Skor Entry Deterministik & Proteksi Invalidation Grid
 GRID_MIN_SCORE_ENTRY = 65.0            # Syarat skor efektif minimal (setelah penyesuaian memori 7H) untuk buka Lapis 1
 GRID_INVALIDATION_ENABLED = False      # Nonaktif: Murni Grid/DCA BTC tanpa Stop Loss / Cut Loss
 GRID_INVALIDATION_DD_PCT = -0.12       # Tidak dipakai selama GRID_INVALIDATION_ENABLED = False
@@ -106,7 +106,7 @@ SWING_MAX_SLOTS_BEARISH = 0            # Blokir total entry Mini Swing baru saat
 
 SWING_MAX_SPREAD_PCT = 0.0030          # Dilonggarkan ke 0.30% (aman karena entry MOC di Bid)
 SWING_MIN_OBP = 0.50                   # Jadi penambah skor & ranking (bukan pemblokir mutlak)
-SWING_MIN_CONFIRM_SCORE = 3            # Minimal lulus 3 dari 5 poin konfirmasi (1H + Order Book)
+SWING_MIN_CONFIRM_SCORE = 3            # Minimal lulus 3 dari 5 poin konfirmasi (Dual-Trigger 30m/15m + Order Book)
 SWING_MIN_DEPTH_2PCT_IDR = 800000000.0
 SWING_MAX_INACTIVE_SEC = 900.0
 
@@ -936,8 +936,8 @@ def format_qty_swing(coin, raw_qty, pairs_meta=None):
 def cek_mikrostruktur_orderbook_indodax(coin, order_size_idr=50000.0):
     """
     Mengambil order book (/api/depth) & trade terakhir (/api/trades) langsung dari Indodax:
-    - Spread% <= 0.15%
-    - OBP (±0.5% dari mid-price) > 0.52
+    - Spread% <= 0.30% (aman karena entry MOC di Bid)
+    - OBP (±0.5% dari mid-price) > 0.50 (penambah skor & ranking)
     - Kedalaman ±2% >= Rp800jt ATAU top-5 bid/ask >= 10x ukuran order bot
     - Aktivitas transaksi terbaru <= 15 menit (anti koin tidur)
     """
@@ -1115,7 +1115,7 @@ def eksekusi_jual_darurat_swing(coin, best_bid, qty_jual, pairs_meta=None):
     return False, 0.0, best_bid, res_mkt
 
 # ==============================================================================
-# BAGIAN 4: REKONSILIASI DOMPET INDODAX (MODE SCALPING & MODE GRID)
+# BAGIAN 4: REKONSILIASI DOMPET INDODAX (MODE GRID BTC & MODE MINI SWING)
 # ==============================================================================
 def rekonsiliasi_grid_dengan_indodax(state, dompet, harga_idr_map):
     """
@@ -1560,7 +1560,7 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
     1. Jika ada koin SWING_ALLOWED_COINS terbeli manual di dompet (>= Rp25rb) -> adopsi jadi swing_positions,
        hitung SL/TP1/TP2 berbasis ATR 4H real, pasang Limit Sell MOC & kawal dgn Virtual OCO Guardian.
     2. Jika ada Open Order BUY manual pada koin SWING_ALLOWED_COINS:
-       - Jika lolos filter 1D-4H-1H, Order Book, Circuit Breaker, Slot & Net RRR -> adopsi ke swing_pending_entries.
+       - Jika lolos filter 1D-4H-30m/15m, Order Book, Circuit Breaker, Slot & Net RRR -> adopsi ke swing_pending_entries.
        - Jika melanggar filter risiko -> BATALKAN otomatis via API Indodax.
     """
     log_m, log_tx = [], []
@@ -1707,7 +1707,7 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
                 elif total_terisi >= max_slots:
                     alasan_batal = f"Slot penuh ({total_terisi}/{max_slots}) pada rezim {rezim}"
                 elif coin not in kandidat_map:
-                    alasan_batal = f"Tidak lolos filter 1D-4H-1H/ATR/OB pada rezim {rezim}"
+                    alasan_batal = f"Tidak lolos filter 1D-4H-30m/15m/ATR/OB pada rezim {rezim}"
                 else:
                     kand_uji = dict(kandidat_map[coin])
                     kand_uji["harga_bid"] = harga_oo
@@ -1743,7 +1743,7 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
                     koin_pending.add(coin)
                     ada_aksi = True
                     log_m.append(
-                        f"🤝 [ADOPSI ANTREAN MANUAL SWING] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,} lolos 1D-4H-1H & RRR ({plan_ok['net_rrr']}:1) -> dikawal bot."
+                        f"🤝 [ADOPSI ANTREAN MANUAL SWING] Order BUY {coin} #{oid_oo} @ Rp{harga_oo:,} lolos 1D-4H-30m/15m & RRR ({plan_ok['net_rrr']}:1) -> dikawal bot."
                     )
                 else:
                     batalkan_order_indodax(coin, oid_oo)
@@ -1755,7 +1755,7 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
     return state, log_m, log_tx, ada_aksi
 
 # ==============================================================================
-# BAGIAN 5: NATIVE INDODAX OHLC (RSI WILDER + ANTI-INCOMPLETE CANDLE) & GEMINI
+# BAGIAN 5: NATIVE INDODAX OHLC (RSI WILDER + ANTI-INCOMPLETE CANDLE)
 # ==============================================================================
 def hitung_rsi(closes_list, periode=14):
     """Menghitung RSI standar Wilder's Smoothing (RMA) sesuai TradingView/Indodax."""
@@ -2152,12 +2152,12 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
     return peta_analisa
 
 # ==============================================================================
-# MESIN DATA & INDIKATOR KUANTITATIF MINI SWING (100% NATIVE INDODAX 1D-4H-1H)
+# MESIN DATA & INDIKATOR KUANTITATIF MINI SWING (100% NATIVE INDODAX 1D-4H-30m/15m)
 # ==============================================================================
 def ambil_ohlcv_swing_indodax(coin, tf="240", jumlah_candle=260):
     """
     Mengambil OHLCV lengkap (Open, High, Low, Close, Volume, Time) LANGSUNG dari chart Indodax
-    sesuai timeframe aslinya: tf="1D" (Daily), tf="240" (4H), tf="60" (1H).
+    sesuai timeframe aslinya: tf="1D" (Daily), tf="240" (4H), tf="30" (30m), tf="15" (15m).
     """
     info = WATCHLIST_COINS[coin]
     tf_str = str(tf)
@@ -2393,17 +2393,17 @@ def _evaluasi_trigger_tf_swing(d_tf):
 
 def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50000.0):
     """
-    Mesin Analisa Multi-Timeframe 100% Deterministik (1D -> 4H -> 1H + Order Book) langsung dari Indodax.
+    Mesin Analisa Multi-Timeframe 100% Deterministik (1D -> 4H -> 30m/15m + Order Book) langsung dari Indodax.
     - Semua indikator dihitung pada candle yang SUDAH TUTUP ([:-1]) -> zero repainting.
-    - BTC/IDR hanya dibaca sebagai Kompas Rezim Makro & Gerbang Stabilisasi (tidak pernah ditransaksikan Swing).
+    - BTC/IDR hanya dibaca sebagai Kompas Rezim Makro (tidak pernah ditransaksikan Swing).
     """
     hasil = {"rezim": "SIDEWAYS", "btc_info": {}, "kandidat": {}, "semua_koin": {}}
 
-    # 1. Lapisan 1: Kompas Makro BTC/IDR (1D, 4H, 1H)
+    # 1. Lapisan 1: Kompas Makro BTC/IDR (1D & 4H)
     btc_1d = ambil_ohlcv_swing_indodax("BTC", tf="1D", jumlah_candle=260)
     btc_4h = ambil_ohlcv_swing_indodax("BTC", tf="240", jumlah_candle=160)
     if not btc_1d or not btc_4h:
-        hasil["btc_info"] = {"error": "Gagal ambil OHLCV 1D/4H/1H BTC Indodax"}
+        hasil["btc_info"] = {"error": "Gagal ambil OHLCV 1D/4H BTC Indodax"}
         return hasil
 
     # Slice [:-1] = HANYA candle yang sudah tertutup sempurna
@@ -3203,7 +3203,7 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
             log_sw.append(
                 f"🚀 [SWING ANTRE MOC BELI | {rezim} - {kand['setup_label']}] {kand['coin']} @ Rp{plan['entry_price_idr']:,} "
                 f"(Modal:Rp{plan['capital_idr']:,.0f} | SL:Rp{plan['sl_price_idr']:,} | TP1:Rp{plan['tp1_price_idr']:,} | "
-                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | Skor:{kand.get('skor_konfirmasi', 0)}/5 | OBP:{kand.get('ob_info', {}).get('obp', 0.5):.2f} | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
+                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | Skor:{kand.get('skor_konfirmasi', 0)}/5 (30m:{kand.get('skor_30m', 0)}/15m:{kand.get('skor_15m', 0)}) | OBP:{kand.get('ob_info', {}).get('obp', 0.5):.2f} | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
             )
         else:
             log_sw.append(f"⚠️ [SWING MOC DITOLAK {kand['coin']}] {res_buy} (Tidak pernah kejar Market Buy).")
@@ -3366,8 +3366,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         rekap_grid_7h = "Belum ada siklus Grid selesai dlm 7 hari terakhir"
 
     ringkasan_pasar = (
-        f"Pasar [{sumber_grafik} 5M+15M+1H+4H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
-        f"Rata-rata RSI 5M (Wilder): {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
+        f"Kompas Grid BTC [{sumber_grafik} 5M+15M+1H+4H]: {kompas_btc_str} | Sinyal Grid: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal: {status_rec_str}\n"
         f"   -> Win Rate Bulanan [{label_periode_wr}] (Total Bot): {rekap_wr_total}\n"
         f"   -> Win Rate Bulanan [{label_periode_wr}] (Per Koin): {rekap_wr_koin}\n"
@@ -3433,12 +3432,34 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
             detail_diagnosa_koin.append(
                 f"   * Belum ada siklus Grid aktif (100% Cash is King - Menunggu 4H != MERAH, M15/H1/5M valid & Skor >= {GRID_MIN_SCORE_ENTRY})."
             )
+    info_swing_md = "OFF"
     if SWING_MODE_ENABLED:
         rezim_sw = (analisa_swing or {}).get("rezim", "-")
         btc_sw = (analisa_swing or {}).get("btc_info", {})
+        semua_sw = (analisa_swing or {}).get("semua_koin", {})
+        jml_pos_sw = len(state.get("swing_positions", []))
+        jml_pend_sw = len(state.get("swing_pending_entries", []))
+
+        radar_sw = []
+        for ck_s, vk_s in sorted(semua_sw.items()):
+            if vk_s.get("status") == "SKIP_MAINTENANCE":
+                radar_sw.append(f"{ck_s}:MAINT")
+            elif vk_s.get("setup_4h_ok"):
+                radar_sw.append(
+                    f"{ck_s}:{vk_s.get('setup_label')}(30m:{vk_s.get('skor_30m', 0)}/15m:{vk_s.get('skor_15m', 0)}|Skor:{vk_s.get('skor_konfirmasi', 0)}/5)"
+                )
+            else:
+                radar_sw.append(f"{ck_s}:WAIT(ATR:{vk_s.get('atr_4h_pct', 0)*100:.1f}%|RSI4H:{vk_s.get('rsi_4h', '-')})")
+        radar_sw_str = " | ".join(radar_sw) if radar_sw else "Belum ada data 4H"
+
+        info_swing_md = (
+            f"Rezim: {rezim_sw} (BTC ADX4H:{btc_sw.get('adx_4h', '-')}, CHOP:{btc_sw.get('chop_4h', '-')}) | "
+            f"Aktif: {jml_pos_sw} Pos, Pending MOC: {jml_pend_sw}"
+        )
         detail_diagnosa_koin.append(
-            f"   * [MINI SWING NON-BTC | Rezim:{rezim_sw} | BTC 4H ADX:{btc_sw.get('adx_4h', '-')} CHOP:{btc_sw.get('chop_4h', '-')}] "
-            f"Aktif:{len(state.get('swing_positions', []))} | Pending MOC:{len(state.get('swing_pending_entries', []))}"
+            f"   * [MINI SWING NON-BTC 1D-4H-30m/15m | Rezim:{rezim_sw} | BTC 4H ADX:{btc_sw.get('adx_4h', '-')} CHOP:{btc_sw.get('chop_4h', '-')}] "
+            f"Aktif:{jml_pos_sw} | Pending MOC:{jml_pend_sw}\n"
+            f"     Radar Altcoin: {radar_sw_str}"
         )
         for pos in state.get("swing_positions", []):
             skrg_s = (harga_idr_map or {}).get(pos["coin"], {}).get("last", pos["entry_price_idr"])
@@ -3448,7 +3469,15 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
                 f"     - SWING {pos['coin']} ({pos['setup_label']}): Entry Rp{pos['entry_price_idr']:,} -> Skrg Rp{skrg_s:,} ({pnl_s:+.2f}%) "
                 f"| V-SL:Rp{pos['virtual_sl_idr']:,} | TP1:{tp1_txt} | TP2:Rp{pos['tp2_price_idr']:,}"
             )
+
+    info_vault_md = "-"
     if vault_info:
+        info_vault_md = (
+            f"Dompet Free: Rp{vault_info['idr_free_wallet']:,.0f} | "
+            f"Grid Free: Rp{vault_info['grid_free_idr']:,.0f} | "
+            f"Swing Free: Rp{vault_info['swing_free_idr']:,.0f} | "
+            f"Surplus: Rp{vault_info['reserve_surplus_idr']:,.0f}"
+        )
         detail_diagnosa_koin.append(
             f"   * [LEDGER DOMPET] IDR Bebas: Rp{vault_info['idr_free_wallet']:,.0f} | "
             f"Grid (Cap Rp{vault_info['grid_cap_aktif']:,.0f}): Eq Rp{vault_info['grid_equity_idr']:,.0f} (Bebas Rp{vault_info['grid_free_idr']:,.0f}) | "
@@ -3461,7 +3490,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
 
     teks_final = (
         f"🟢 [{judul_mode} | Profit Hari Ini: Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)]\n"
-        f"📊 DIAGNOSA PORTOFOLIO & PREDIKSI CANDLESTICK RUPIAH INDODAX (5M + 15M + 1H + 4H):\n"
+        f"📊 DIAGNOSA PORTOFOLIO INDODAX (GRID BTC: 5M-4H | MINI SWING: 1D-4H-30m/15m):\n"
         f"{teks_diagnosa}\n"
         f"   -> {ringkasan_pasar}"
     )
@@ -3471,11 +3500,14 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         try:
             tz_wib = timezone(timedelta(hours=7))
             waktu_run = datetime.now(tz_wib).strftime("%Y-%m-%d %H:%M:%S WIB")
-            baris_grid_md = f"- **Status Grid Per-Lapis:** {info_grid_md}\n" if GRID_MODE_ENABLED else ""
+            baris_grid_md = f"- **Status Grid BTC:** {info_grid_md}\n" if GRID_MODE_ENABLED else ""
+            baris_swing_md = f"- **Status Mini Swing:** {info_swing_md}\n" if SWING_MODE_ENABLED else ""
             md_summary = (
                 f"### 📊 Ringkasan Patroli & Win Rate Bulanan [{label_periode_wr}] ({waktu_run})\n"
                 f"- **Profit Hari Ini:** Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)\n"
                 f"{baris_grid_md}"
+                f"{baris_swing_md}"
+                f"- **Budget Vault:** {info_vault_md}\n"
                 f"- **Memori Siklus Grid 7H:** {rekap_grid_7h}\n"
                 f"- **Win Rate Bulanan [{label_periode_wr}] (Total Bot):** {rekap_wr_total}\n"
                 f"- **Win Rate Bulanan [{label_periode_wr}] (Per Koin):** {rekap_wr_koin}\n"
@@ -3490,7 +3522,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
     return teks_final
 
 # ==============================================================================
-# BAGIAN 9: LAPORAN KE GOOGLE SHEETS (AKURAT UNTUK MODE GRID & MODE SCALPING)
+# BAGIAN 9: LAPORAN KE GOOGLE SHEETS (AKURAT UNTUK MODE GRID BTC & MINI SWING)
 # ==============================================================================
 def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=None):
     tz_wib = timezone(timedelta(hours=7))
@@ -3570,7 +3602,7 @@ def lapor_ke_google_sheets(state, log_khusus_transaksi, dompet, harga_live_map=N
             print("⚠️ Gagal kirim ke Google Sheets:", e)
 
 # ==============================================================================
-# MESIN GRID 3-LAPIS MANDIRI (TIAP LAPIS SELESAI DI TP b1 + SELF-HEALING + AI)
+MESIN GRID 3-LAPIS MANDIRI (TIAP LAPIS SELESAI DI TP b1 + SELF-HEALING)
 # ==============================================================================
 def _hitung_fee_roundtrip_grid(lp):
     """Menghitung total fee beli+jual PMK 50/2025 + CFX berdasarkan tipe eksekusi aktual (MOC vs GTC)."""
@@ -3712,7 +3744,7 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
     - Tiap lapis (L1, L2, L3) memiliki target finis sendiri di TP b1-nya.
     - Begitu b1 sebuah lapis TP dan b2/b3 tidak holding -> lapis selesai, cancel sisa buy, arsipkan & cairkan kas!
     - Lapis yang selesai dihapus dari daftar tiers aktif sehingga pemicu Lapis 2/3 selalu bekerja pada lapis aktif terbawah.
-    - Dilengkapi Self-Healing (anti-yatim MOC), handler PARTIALLY_FILLED, validasi Gemini AI, & Invalidation Guard.
+    - Dilengkapi Self-Healing (anti-yatim MOC), handler PARTIALLY_FILLED, rekonsiliasi dompet 2-arah, & akumulasi dust.
     """
     log_grid = []
     log_tx = []
@@ -3740,7 +3772,7 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
             cycle["tiers"] = tiers_aktif_saja
 
     # ==========================================================================
-    # TAHAP A: BELUM ADA SIKLUS -> BUKA LAPIS 1 (4H 3-MODE + ANTI-PUCUK + GEMINI)
+    # TAHAP A: BELUM ADA SIKLUS -> BUKA LAPIS 1 (4H 3-MODE + ANTI-PUCUK DETERMINISTIK)
     # ==========================================================================
     if not cycle or not cycle.get("tiers"):
         if cycle and not cycle.get("tiers"):
@@ -4435,7 +4467,7 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
             dompet_asli = ambil_saldo_lengkap_indodax()
         vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
 
-    # 4. STRATEGI B: MESIN MINI SWING NON-BTC (1D - 4H - 1H + ORDER BOOK + VIRTUAL OCO)
+    # 4. STRATEGI B: MESIN MINI SWING NON-BTC (1D - 4H - 30m/15m + ORDER BOOK + VIRTUAL OCO)
     analisa_swing = {}
     log_swing, log_tx_swing, ada_aksi_swing = [], [], False
     if SWING_MODE_ENABLED:
@@ -4557,9 +4589,9 @@ def jalankan_siklus_siaga_cepat(state, peta_analisa_cached, analisa_swing_cached
 def cetak_status_awal_quant():
     mode_str = "LIVE TRADING" if LIVE_TRADING_ENABLED else "SIMULASI"
     print(
-        f"⚙️ [DUAL QUANT BOT INDODAX | Mode: {mode_str} | 100% Deterministik Tanpa LLM]\n"
-        f"   1. GRID BTC     : {'AKTIF' if GRID_MODE_ENABLED else 'OFF'} | Koin: {','.join(sorted(GRID_ALLOWED_COINS))} | Cap: Rp{GRID_BUDGET_PER_TIER_IDR:,.0f}/Lapis\n"
-        f"   2. MINI SWING   : {'AKTIF' if SWING_MODE_ENABLED else 'OFF'} | Pool: {','.join(sorted(SWING_ALLOWED_COINS))} (Non-BTC) | Maks Dana: Rp{MAX_SWING_CAPITAL_IDR:,.0f}"
+        f"⚙️ [DUAL QUANT BOT INDODAX | Mode: {mode_str} | 100% Deterministik | Fast Watch: {WATCH_INTERVAL_SECONDS}s Maks {ACTIVE_WATCH_MINUTES}m]\n"
+        f"   1. GRID BTC     : {'AKTIF' if GRID_MODE_ENABLED else 'OFF'} | Koin: {','.join(sorted(GRID_ALLOWED_COINS))} | TF: 5M-15M-1H-4H | Cap: Rp{GRID_BUDGET_PER_TIER_IDR:,.0f}/Lapis\n"
+        f"   2. MINI SWING   : {'AKTIF' if SWING_MODE_ENABLED else 'OFF'} | Pool: {','.join(sorted(SWING_ALLOWED_COINS))} (Non-BTC) | TF: 1D-4H-30m/15m (Bullish & Sideways-Up) | Maks Dana: Rp{MAX_SWING_CAPITAL_IDR:,.0f}"
     )
 
 if __name__ == "__main__":
