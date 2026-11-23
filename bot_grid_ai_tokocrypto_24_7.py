@@ -107,8 +107,9 @@ SWING_MAX_SLOTS_BULLISH = 2
 SWING_MAX_SLOTS_SIDEWAYS = 2
 SWING_MAX_SLOTS_BEARISH = 1
 
-SWING_MAX_SPREAD_PCT = 0.0015
-SWING_MIN_OBP = 0.52
+SWING_MAX_SPREAD_PCT = 0.0030          # Dilonggarkan ke 0.30% (aman karena entry MOC di Bid)
+SWING_MIN_OBP = 0.50                   # Jadi penambah skor & ranking (bukan pemblokir mutlak)
+SWING_MIN_CONFIRM_SCORE = 3            # Minimal lulus 3 dari 5 poin konfirmasi (1H + Order Book)
 SWING_MIN_DEPTH_2PCT_IDR = 800000000.0
 SWING_MAX_INACTIVE_SEC = 900.0
 
@@ -158,9 +159,31 @@ def minggu_iso_wib():
     y, w, _ = now_wib.isocalendar()
     return f"{y}-W{w:02d}"
 
+def info_periode_bulan_wib():
+    """Menghitung batas awal bulan (tgl 1), awal hari ini, dan tanggal terakhir bulan (28/29/30/31) dalam WIB."""
+    tz_wib = timezone(timedelta(hours=7))
+    now_wib = datetime.now(tz_wib)
+    awal_bulan = now_wib.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if now_wib.month == 12:
+        awal_bulan_depan = awal_bulan.replace(year=now_wib.year + 1, month=1)
+    else:
+        awal_bulan_depan = awal_bulan.replace(month=now_wib.month + 1)
+    akhir_bulan = awal_bulan_depan - timedelta(seconds=1)
+    awal_hari_ini = now_wib.replace(hour=0, minute=0, second=0, microsecond=0)
+    return {
+        "month_id": now_wib.strftime("%Y-%m"),
+        "bulan_tahun": now_wib.strftime("%m/%Y"),
+        "hari_ini": now_wib.day,
+        "hari_terakhir": akhir_bulan.day,
+        "ts_awal_bulan": awal_bulan.timestamp(),
+        "ts_awal_hari_ini": awal_hari_ini.timestamp(),
+        "ts_batas_akhir": awal_bulan_depan.timestamp()
+    }
+
 def muat_state_bot():
     tgl_skrg = tanggal_wib_hari_ini()
     minggu_skrg = minggu_iso_wib()
+    info_bln = info_periode_bulan_wib()
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
@@ -172,6 +195,7 @@ def muat_state_bot():
             state.setdefault("loss_to_recover_idr", 0.0)
             state.setdefault("grid_cycle", None)
             state.setdefault("grid_experience_memory", [])
+            state.setdefault("grid_trade_history", [])
             state.setdefault("swing_positions", [])
             state.setdefault("swing_pending_entries", [])
             state.setdefault("swing_trade_history", [])
@@ -189,6 +213,19 @@ def muat_state_bot():
                 state["swing_circuit_breaker"]["week_start_equity_idr"] = float(
                     state.get("budget_ledger", {}).get("swing_equity_idr", MAX_SWING_CAPITAL_IDR)
                 )
+            # Tracker Win Rate Bulanan: pertama jalan mulai dari tanggal berjalan; ganti bulan otomatis reset ke tgl 1
+            if not isinstance(state.get("wr_month_tracker"), dict):
+                state["wr_month_tracker"] = {
+                    "month_id": info_bln["month_id"],
+                    "start_day": info_bln["hari_ini"],
+                    "start_ts": info_bln["ts_awal_hari_ini"]
+                }
+            elif state["wr_month_tracker"].get("month_id") != info_bln["month_id"]:
+                state["wr_month_tracker"] = {
+                    "month_id": info_bln["month_id"],
+                    "start_day": 1,
+                    "start_ts": info_bln["ts_awal_bulan"]
+                }
             state.setdefault("budget_ledger", None)
             return state
         except Exception:
@@ -199,6 +236,7 @@ def muat_state_bot():
         "loss_to_recover_idr": 0.0,
         "grid_cycle": None,
         "grid_experience_memory": [],
+        "grid_trade_history": [],
         "swing_positions": [],
         "swing_pending_entries": [],
         "swing_trade_history": [],
@@ -209,6 +247,11 @@ def muat_state_bot():
             "week_id": minggu_skrg,
             "weekly_pnl_idr": 0.0,
             "week_start_equity_idr": MAX_SWING_CAPITAL_IDR
+        },
+        "wr_month_tracker": {
+            "month_id": info_bln["month_id"],
+            "start_day": info_bln["hari_ini"],
+            "start_ts": info_bln["ts_awal_hari_ini"]
         },
         "budget_ledger": None,
         "last_reset_date": tgl_skrg
@@ -951,9 +994,11 @@ def cek_mikrostruktur_orderbook_indodax(coin, order_size_idr=50000.0):
         spread_ok = spread_pct <= SWING_MAX_SPREAD_PCT
         active_ok = age_sec <= SWING_MAX_INACTIVE_SEC
         obp_ok = obp > SWING_MIN_OBP
+        syarat_ob_mutlak = bool(depth_ok and spread_ok and active_ok)
 
         hasil.update({
-            "ok": bool(depth_ok and spread_ok and active_ok and obp_ok),
+            "ok": syarat_ob_mutlak,
+            "obp_ok": bool(obp_ok),
             "best_bid": best_bid,
             "best_ask": best_ask,
             "spread_pct": round(spread_pct, 5),
@@ -962,8 +1007,8 @@ def cek_mikrostruktur_orderbook_indodax(coin, order_size_idr=50000.0):
             "top5_idr": round(min(top5_bid, top5_ask), 0),
             "last_trade_age_sec": round(age_sec, 1),
             "alasan": (
-                "OK" if (depth_ok and spread_ok and active_ok and obp_ok) else
-                f"Spread:{spread_pct*100:.2f}% OBP:{obp:.2f} Depth2%:Rp{depth_2pct:,.0f} Idle:{age_sec:.0f}s"
+                f"OK (OBP:{obp:.2f})" if syarat_ob_mutlak else
+                f"Spread:{spread_pct*100:.2f}% Depth2%:Rp{depth_2pct:,.0f} Idle:{age_sec:.0f}s"
             )
         })
     except Exception as e:
@@ -2429,7 +2474,7 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         rsi_4h = rsi_4h_s[-1] or 50.0
         bb_up_4h, bb_mid_4h, bb_lo_4h = swing_bollinger_bands(c4, 20, 2.0)
         dc_hi_4h, dc_lo_4h = swing_donchian_channel(h4, l4, 20)
-        swing_low_4h = min(l4[-8:])
+        swing_low_4h = min(l4[-5:])
         swing_high_4h = max(h4[-12:])
         sma_vol_4h = sum(v4[-21:-1]) / 20.0 if len(v4) >= 21 else max(1e-9, sum(v4) / max(1, len(v4)))
         vol_ratio_4h = v4[-1] / max(1e-9, sma_vol_4h)
@@ -2444,15 +2489,20 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         sma_vol_1h = sum(v1[-21:-1]) / 20.0 if len(v1) >= 21 else max(1e-9, sum(v1) / max(1, len(v1)))
         vol_ratio_1h = v1[-1] / max(1e-9, sma_vol_1h)
 
+        # Sistem Skor Konfirmasi 1H (maks 4 poin; +1 poin lagi dari OBP Order Book = total 5 poin)
         range_1h = max(1e-12, h1[-1] - l1[-1])
         lower_wick_1h = min(o1[-1], c1[-1]) - l1[-1]
-        wick_rejection_1h = (lower_wick_1h / range_1h) >= 0.50
+        wick_rejection_1h = (lower_wick_1h / range_1h) >= 0.45
         bullish_engulf_1h = (c1[-1] > o1[-1]) and (c1[-2] < o1[-2]) and (c1[-1] >= o1[-2]) and (o1[-1] <= c1[-2])
         reclaim_ema_1h = (c1[-1] > ema9_1h) or (c1[-1] > ema20_1h)
-        trigger_1h_ok = bool(
-            (reclaim_ema_1h or wick_rejection_1h or bullish_engulf_1h)
-            and (vol_ratio_1h >= 1.20)
-            and (rsi_1h_now > rsi_1h_prev)
+        rsi_1h_naik = rsi_1h_now > rsi_1h_prev
+        vol_1h_naik = vol_ratio_1h >= 1.08
+
+        skor_1h = (
+            (1 if reclaim_ema_1h else 0)
+            + (1 if (wick_rejection_1h or bullish_engulf_1h) else 0)
+            + (1 if rsi_1h_naik else 0)
+            + (1 if vol_1h_naik else 0)
         )
 
         # Matriks Batasan Volatilitas 4H ATR%
@@ -2465,39 +2515,49 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         elif SWING_ATR_SWEET_MAX_PCT < atr_4h_pct <= SWING_ATR_CAP_MAX_PCT:
             atr_ok, atr_risk_mult = True, 0.75
 
-        # Evaluasi Syarat Setup 4H Sesuai Rezim Aktif
+        # Evaluasi Syarat Setup 4H Sesuai Rezim Aktif (Jendela Pullback/Support 3 Candle Terakhir)
         setup_4h_ok = False
         setup_label = "WAIT"
+        low_3bar_4h = min(l4[-3:])
         if atr_ok:
             if rezim == "BULLISH":
-                pullback_zona = (l4[-1] <= ema20_4h * 1.006) and (c4[-1] >= ema50_4h * 0.995)
-                if (c4[-1] > ema50_4h) and rs_info["above_ema20"] and pullback_zona and (40.0 <= rsi_4h <= 55.0):
+                pullback_zona = (
+                    (low_3bar_4h <= ema20_4h * 1.008)
+                    and (c4[-1] >= ema50_4h * 0.995)
+                    and (c4[-1] <= ema20_4h * 1.015)
+                )
+                if (c4[-1] > ema50_4h) and rs_info["above_ema20"] and pullback_zona and (38.0 <= rsi_4h <= 58.0):
                     setup_4h_ok = True
                     setup_label = "BULL_PULLBACK"
             elif rezim == "SIDEWAYS":
-                sentuh_support = (l4[-1] <= bb_lo_4h * 1.005) or (l4[-1] <= dc_lo_4h * 1.005)
+                sentuh_support = (low_3bar_4h <= bb_lo_4h * 1.008) or (low_3bar_4h <= dc_lo_4h * 1.008)
+                tidak_kejar_tinggi = c4[-1] <= bb_mid_4h
+                rsi_oversold_3bar = any((r is not None and r < 36.0) for r in rsi_4h_s[-3:]) and (rsi_4h < 42.0)
                 tidak_breakdown_besar = not (c4[-1] < o4[-1] and vol_ratio_4h >= 1.80)
-                if sentuh_support and (rsi_4h < 35.0) and tidak_breakdown_besar:
+                if sentuh_support and tidak_kejar_tinggi and rsi_oversold_3bar and tidak_breakdown_besar:
                     setup_4h_ok = True
                     setup_label = "SIDEWAYS_MEAN_REV"
             elif rezim == "BEARISH_DOWN":
-                # Protokol 5-Gerbang Anti-Pisau Jatuh (Gerbang 1: BTC stabil, Gerbang 2: Decoupled / Div+Cap)
+                # Protokol 5-Gerbang Anti-Pisau Jatuh (Tetap Ketat demi Modal Tipis)
                 jalur_decoupled = (c4[-1] > ema50_4h) and rs_info["break_20_high"]
                 range_4h = max(1e-12, h4[-1] - l4[-1])
-                wick_4h_ok = ((min(o4[-1], c4[-1]) - l4[-1]) / range_4h) >= 0.50
+                wick_4h_ok = ((min(o4[-1], c4[-1]) - l4[-1]) / range_4h) >= 0.45
                 div_4h = swing_deteksi_bullish_divergence_4h(l4, rsi_4h_s)
-                jalur_div_cap = div_4h and (vol_ratio_4h >= 2.0) and wick_4h_ok and (l4[-1] <= dc_lo_4h * 1.015)
+                jalur_div_cap = div_4h and (vol_ratio_4h >= 1.8) and wick_4h_ok and (min(l4[-2:]) <= dc_lo_4h * 1.015)
                 if btc_stabil_gate and (jalur_decoupled or jalur_div_cap):
                     setup_4h_ok = True
                     setup_label = "BEAR_DECOUPLED" if jalur_decoupled else "BEAR_DIV_CAP"
 
-        # Cek Order Book hanya jika 4H & 1H lolos (hemat rate-limit API Indodax)
-        ob_info = {"ok": False, "spread_pct": 0.0, "obp": 0.5, "alasan": "Belum lolos 4H/1H"}
-        if setup_4h_ok and trigger_1h_ok:
+        # Cek Order Book hanya jika 4H lolos & skor 1H berpeluang tembus batas minimal (hemat API Indodax)
+        ob_info = {"ok": False, "obp_ok": False, "spread_pct": 0.0, "obp": 0.5, "alasan": "Belum lolos 4H / Skor 1H kurang"}
+        if setup_4h_ok and skor_1h >= (SWING_MIN_CONFIRM_SCORE - 1):
             ob_info = cek_mikrostruktur_orderbook_indodax(coin, order_size_idr=order_size_ref_idr)
             if ob_info["best_bid"] > 0:
                 harga_bid = ob_info["best_bid"]
                 harga_ask = ob_info["best_ask"]
+
+        skor_konfirmasi = skor_1h + (1 if ob_info.get("obp_ok") else 0)
+        trigger_1h_ok = bool(skor_konfirmasi >= SWING_MIN_CONFIRM_SCORE)
 
         info_koin = {
             "coin": coin,
@@ -2525,6 +2585,7 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
             "vol_ratio_1h": round(vol_ratio_1h, 2),
             "setup_4h_ok": setup_4h_ok,
             "trigger_1h_ok": trigger_1h_ok,
+            "skor_konfirmasi": skor_konfirmasi,
             "ob_info": ob_info,
             "siap_entry": bool(setup_4h_ok and trigger_1h_ok and ob_info["ok"])
         }
@@ -2554,27 +2615,36 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
     if entry_p <= 0 or atr_4h <= 0:
         return None, "Harga/ATR tidak valid"
 
-    # 1. Hitung jarak SL struktur (max dari 1.5x ATR atau di bawah SwingLow - 0.25 ATR)
-    sl_atr_p = entry_p - (1.5 * atr_4h)
-    sl_struct_p = float(info_k["swing_low_4h"]) - (0.25 * atr_4h)
-    raw_sl_p = min(sl_atr_p, sl_struct_p)
-    d_sl = (entry_p - raw_sl_p) / entry_p
-
-    # Terapkan Lantai & Plafon Volatilitas ATR%
-    if atr_pct <= SWING_ATR_FLOOR_MAX_PCT:
-        d_sl = max(d_sl, SWING_SL_FLOOR_PCT)
-    if atr_pct > SWING_ATR_SWEET_MAX_PCT:
-        d_sl = min(d_sl, SWING_SL_CAP_PCT)
-
-    # Dual-Cap 1: Fee-Inclusive Price SL Cap (overhead ~0.67% -> cap 5.0% menyisakan d_SL_max 4.34%)
+    # 1. Hitung batas maksimal SL (Fee-Inclusive ~4.34% agar total rugi bersih tak pernah > 5%)
     d_sl_max = 1.0 - SWING_SLIPPAGE_SL_PCT - (
         (1.0 - SWING_MAX_POS_LOSS_CAP) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_TAKER))
     )
-    if d_sl > d_sl_max:
-        return None, f"SL struktur terlalu dalam ({d_sl*100:.2f}% > cap {d_sl_max*100:.2f}%)"
+
+    # Bandingkan SL berbasis 1.5x ATR dengan SL struktur 5 candle 4H terakhir
+    sl_atr_p = entry_p - (1.5 * atr_4h)
+    sl_struct_p = float(info_k["swing_low_4h"]) - (0.25 * atr_4h)
+    d_sl_atr = max(0.0, (entry_p - sl_atr_p) / entry_p)
+    d_sl_struct = max(0.0, (entry_p - sl_struct_p) / entry_p)
+
+    if d_sl_struct <= d_sl_max:
+        d_sl = max(d_sl_atr, d_sl_struct)
+    elif d_sl_struct <= 0.075:
+        # Jika ada ekor wick 5-bar agak dalam (<= 7.5%), pakai patokan ATR & patok maksimal di d_sl_max
+        d_sl = min(d_sl_atr, d_sl_max)
+    else:
+        return None, f"Harga terlalu jauh dari support 5-bar ({d_sl_struct*100:.2f}% > 7.50%)"
+
+    # Terapkan Lantai & Plafon Volatilitas ATR% tanpa pernah melewati d_sl_max
+    if atr_pct <= SWING_ATR_FLOOR_MAX_PCT:
+        d_sl = max(d_sl, SWING_SL_FLOOR_PCT)
+    if atr_pct > SWING_ATR_SWEET_MAX_PCT:
+        d_sl = min(d_sl, SWING_SL_CAP_PCT, d_sl_max)
+    d_sl = min(d_sl, d_sl_max)
 
     sl_p = bulatkan_harga_swing(coin, entry_p * (1.0 - d_sl), pairs_meta)
     d_sl = (entry_p - sl_p) / entry_p
+    if d_sl <= 0.005:
+        return None, f"Jarak SL terlalu sempit ({d_sl*100:.2f}%)"
 
     # 2. Target TP1 & TP2 sesuai Rezim (dan Gerbang Ruang Pantulan / Headroom >= 1.8x d_SL)
     if rezim == "BULLISH":
@@ -2666,7 +2736,7 @@ def _catat_riwayat_swing(state, pos, alasan_exit, pnl_idr, pnl_pct, qty_sold=0.0
         "pnl_idr": round(pnl_idr, 0),
         "pnl_pct": round(pnl_pct * 100.0, 2)
     })
-    state["swing_trade_history"] = hist[-80:]
+    state["swing_trade_history"] = hist[-500:]
 
 def _cek_sisa_dust_dompet(coin, qty_target_awal, qty_terjual_aktual, dompet_setelah=None):
     """Mengukur sisa dust aktual pasca jual agar JSON & Spreadsheet mencatat bersih hanya porsi yang laku."""
@@ -3025,7 +3095,14 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
         return state, log_sw, log_tx, ada_aksi
 
     kandidat_list = [v for c, v in analisa_swing.get("kandidat", {}).items() if c not in koin_aktif]
-    kandidat_list.sort(key=lambda x: x["rs_info"]["roc_20"], reverse=True)
+    kandidat_list.sort(
+        key=lambda x: (
+            x.get("skor_konfirmasi", 0),
+            x.get("ob_info", {}).get("obp", 0.5),
+            x["rs_info"]["roc_20"]
+        ),
+        reverse=True
+    )
 
     if not kandidat_list:
         log_sw.append(f"⏸️ [SWING MENUNGGU SETUP | Rezim:{rezim}] Belum ada koin non-BTC lolos 1D-4H-1H & Order Book.")
@@ -3073,7 +3150,7 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
             log_sw.append(
                 f"🚀 [SWING ANTRE MOC BELI | {rezim} - {kand['setup_label']}] {kand['coin']} @ Rp{plan['entry_price_idr']:,} "
                 f"(Modal:Rp{plan['capital_idr']:,.0f} | SL:Rp{plan['sl_price_idr']:,} | TP1:Rp{plan['tp1_price_idr']:,} | "
-                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
+                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | Skor:{kand.get('skor_konfirmasi', 0)}/5 | OBP:{kand.get('ob_info', {}).get('obp', 0.5):.2f} | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
             )
         else:
             log_sw.append(f"⚠️ [SWING MOC DITOLAK {kand['coin']}] {res_buy} (Tidak pernah kejar Market Buy).")
@@ -3139,31 +3216,60 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
     defisit_rec = float(state.get("loss_to_recover_idr", 0.0))
     status_rec_str = f"AKTIF (Target Pulihkan Rp{defisit_rec:,.0f})" if defisit_rec > 0 else "Aman (0 Defisit)"
 
-    batas_7h = time.time() - (SL_MEMORY_RETENTION_HOURS * 3600.0)
-    outcome_7h = [m for m in state.get("sl_trade_outcome_memory", []) if float(m.get("ts", 0.0)) >= batas_7h]
+    info_bln = info_periode_bulan_wib()
+    wr_tracker = state.get("wr_month_tracker")
+    if not isinstance(wr_tracker, dict):
+        wr_tracker = {
+            "month_id": info_bln["month_id"],
+            "start_day": info_bln["hari_ini"],
+            "start_ts": info_bln["ts_awal_hari_ini"]
+        }
+        state["wr_month_tracker"] = wr_tracker
+    elif wr_tracker.get("month_id") != info_bln["month_id"]:
+        wr_tracker = {
+            "month_id": info_bln["month_id"],
+            "start_day": 1,
+            "start_ts": info_bln["ts_awal_bulan"]
+        }
+        state["wr_month_tracker"] = wr_tracker
 
-    if outcome_7h:
-        all_w = [m for m in outcome_7h if m.get("hasil") == "MENANG"]
-        all_l = [m for m in outcome_7h if m.get("hasil") == "KALAH"]
+    ts_mulai_wr = float(wr_tracker.get("start_ts", info_bln["ts_awal_bulan"]))
+    ts_akhir_wr = float(info_bln["ts_batas_akhir"])
+    hari_mulai_wr = int(wr_tracker.get("start_day", 1))
+    label_periode_wr = f"{hari_mulai_wr:02d}-{info_bln['hari_terakhir']:02d}/{info_bln['bulan_tahun']}"
+
+    gabung_hist = state.get("swing_trade_history", []) + state.get("grid_trade_history", [])
+    outcome_bln = [
+        m for m in gabung_hist
+        if ts_mulai_wr <= float(m.get("ts", 0.0)) < ts_akhir_wr
+    ]
+
+    if outcome_bln:
+        all_w = [m for m in outcome_bln if float(m.get("pnl_idr", 0.0)) >= 0.0]
+        all_l = [m for m in outcome_bln if float(m.get("pnl_idr", 0.0)) < 0.0]
         tot_w, tot_l = len(all_w), len(all_l)
         wr_tot = (tot_w / float(tot_w + tot_l)) * 100.0
         avg_w_tot = (sum(float(m.get("pnl_pct", 0.0)) for m in all_w) / tot_w) if tot_w else 0.0
         avg_l_tot = (sum(float(m.get("pnl_pct", 0.0)) for m in all_l) / tot_l) if tot_l else 0.0
-        rekap_wr_total = f"{tot_w}W/{tot_l}L (WR {wr_tot:.0f}% | Avg Win:+{avg_w_tot:.2f}% | Avg Loss:{avg_l_tot:.2f}%)"
+        net_pnl_bln = sum(float(m.get("pnl_idr", 0.0)) for m in outcome_bln)
+        rekap_wr_total = (
+            f"{tot_w}W/{tot_l}L (WR {wr_tot:.1f}% | Avg Win:+{avg_w_tot:.2f}% | "
+            f"Avg Loss:{avg_l_tot:.2f}% | Net: Rp{net_pnl_bln:+,.0f})"
+        )
 
-        koin_unik = sorted({m.get("coin", "?") for m in outcome_7h})
+        koin_unik = sorted({m.get("coin", "?") for m in outcome_bln})
         daftar_wr_koin = []
         for ck in koin_unik:
-            mk = [m for m in outcome_7h if m.get("coin") == ck]
-            kw = [m for m in mk if m.get("hasil") == "MENANG"]
-            kl = [m for m in mk if m.get("hasil") == "KALAH"]
+            mk = [m for m in outcome_bln if m.get("coin") == ck]
+            kw = [m for m in mk if float(m.get("pnl_idr", 0.0)) >= 0.0]
+            kl = [m for m in mk if float(m.get("pnl_idr", 0.0)) < 0.0]
             wrk = (len(kw) / float(len(mk))) * 100.0
             aw = (sum(float(m.get("pnl_pct", 0.0)) for m in kw) / len(kw)) if kw else 0.0
             al = (sum(float(m.get("pnl_pct", 0.0)) for m in kl) / len(kl)) if kl else 0.0
             daftar_wr_koin.append(f"{ck}: {len(kw)}W/{len(kl)}L (WR {wrk:.0f}%, +{aw:.2f}%/{al:.2f}%)")
         rekap_wr_koin = " | ".join(daftar_wr_koin)
     else:
-        rekap_wr_total = "Belum ada transaksi selesai dlm 7 hari terakhir"
+        rekap_wr_total = f"Belum ada transaksi selesai pd periode {label_periode_wr}"
         rekap_wr_koin = "-"
 
     batas_grid_7h = time.time() - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
@@ -3181,8 +3287,8 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         f"Pasar [{sumber_grafik} 5M+15M+1H+4H]: {len(koin_uptrend)}/{total_koin_pasar} koin UPTREND | "
         f"Rata-rata RSI 5M (Wilder): {rata_rsi_5m:.1f} | Kompas: {kompas_btc_str} | Sinyal Tertinggi: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal: {status_rec_str}\n"
-        f"   -> Statistik Memori 7H (Total Bot): {rekap_wr_total}\n"
-        f"   -> Win Rate 7H Per Koin: {rekap_wr_koin}\n"
+        f"   -> Win Rate Bulanan [{label_periode_wr}] (Total Bot): {rekap_wr_total}\n"
+        f"   -> Win Rate Bulanan [{label_periode_wr}] (Per Koin): {rekap_wr_koin}\n"
         f"   -> Memori Siklus Grid 7H: {rekap_grid_7h}\n"
         f"   -> Koin SIAP ENTRY Grid ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (tunggu struktur & area value)'}"
     )
@@ -3284,12 +3390,12 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
             waktu_run = datetime.now(tz_wib).strftime("%Y-%m-%d %H:%M:%S WIB")
             baris_grid_md = f"- **Status Grid Per-Lapis:** {info_grid_md}\n" if GRID_MODE_ENABLED else ""
             md_summary = (
-                f"### 📊 Ringkasan Patroli & Win Rate 7 Hari ({waktu_run})\n"
+                f"### 📊 Ringkasan Patroli & Win Rate Bulanan [{label_periode_wr}] ({waktu_run})\n"
                 f"- **Profit Hari Ini:** Rp{state.get('realized_profit_today_idr', 0):,.0f} ({state.get('completed_trades_today', 0)} Trade)\n"
                 f"{baris_grid_md}"
                 f"- **Memori Siklus Grid 7H:** {rekap_grid_7h}\n"
-                f"- **Win Rate 7H (Total Bot):** {rekap_wr_total}\n"
-                f"- **Win Rate 7H (Per Koin):** {rekap_wr_koin}\n"
+                f"- **Win Rate Bulanan [{label_periode_wr}] (Total Bot):** {rekap_wr_total}\n"
+                f"- **Win Rate Bulanan [{label_periode_wr}] (Per Koin):** {rekap_wr_koin}\n"
                 f"- **Mode Recovery:** {status_rec_str}\n\n"
                 f"```text\n{teks_final}\n```\n"
             )
@@ -3440,7 +3546,7 @@ def _catat_riwayat_jual_grid(state, coin, tier_no, nama_lp, buy_price, sell_pric
         "pnl_idr": round(pnl_idr, 0),
         "pnl_pct": round(net_pct * 100.0, 2)
     })
-    state["grid_trade_history"] = hist[-80:]
+    state["grid_trade_history"] = hist[-500:]
 
 def _buat_struktur_tier_baru(coin, tier_no, p1, step_pct, mode_4h, oid_b1, qty_b1, now_ts, buy_tif_b1="MOC"):
     """Setiap lapis (L1, L2, L3) memiliki target TP b1 lokal sendiri (p1 * (1 + step_pct))."""
