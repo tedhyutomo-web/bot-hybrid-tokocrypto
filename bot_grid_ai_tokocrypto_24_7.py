@@ -79,7 +79,7 @@ MAX_SWING_CAPITAL_IDR = float(os.getenv("MAX_SWING_CAPITAL_IDR", "100000"))
 # ==============================================================================
 # KONFIGURASI SISTEM MINI SWING DETERMINISTIK INDODAX (BLUEPRINT PMK 50/2025 + CFX)
 # ==============================================================================
-SWING_ALLOWED_COINS = {"ETH", "SOL", "XRP", "DOGE", "PEPE"}
+SWING_ALLOWED_COINS = {"ETH", "SOL", "XRP"}
 
 SWING_FEE_BUY_MAKER = FEE_BUY_MAKER_PCT
 SWING_FEE_SELL_MAKER = FEE_SELL_MAKER_PCT
@@ -91,13 +91,15 @@ SWING_ATR_MIN_PCT = 0.0130
 SWING_ATR_FLOOR_MAX_PCT = 0.0150
 SWING_ATR_SWEET_MAX_PCT = 0.0300
 SWING_ATR_CAP_MAX_PCT = 0.0450
-SWING_SL_FLOOR_PCT = 0.0220
-SWING_SL_CAP_PCT = 0.0450
-SWING_MAX_POS_LOSS_CAP = 0.0500
-SWING_MIN_NET_RRR = 1.75
+SWING_SL_ATR_MULT = 1.20               # Pengali ATR 4H untuk jarak SL (1.20x ATR 4H)
+SWING_SL_FLOOR_PCT = 0.0200            # Floor SL 2.00%
+SWING_SL_CAP_PCT = 0.0320              # Cap SL 3.20%
+SWING_MAX_POS_LOSS_CAP = 0.0400        # Plafon rugi bersih ~4.00% (selaras Cap SL 3.20% + fee/slippage)
+SWING_MIN_NET_RRR = 1.50               # TP1 (Partial) / Pemicu TP (Single-Tranche) pada Net RRR 1.50:1
+SWING_REAL_TP_RRR = 2.00               # TP2 (Partial) / Real TP (Single-Tranche) pada Net RRR 2.00:1
+SWING_TP_TRIGGER_PULLBACK_PCT = 0.0065 # Koreksi >= 0.65% dari puncak pasca Pemicu TP = sinyal turun
 SWING_MAX_SINGLE_CONCENTRATION = 0.50
 SWING_MIN_PARTIAL_SPLIT_IDR = 56000.0
-
 SWING_RISK_BULLISH = 0.0150
 SWING_RISK_SIDEWAYS = 0.0125
 SWING_MAX_SLOTS_BULLISH = 2
@@ -132,9 +134,7 @@ WATCHLIST_COINS = {
     "BTC":  {"v2_symbol": "BTCIDR",  "indodax_key": "btc_idr",  "step_decimals": 6, "price_step": 1000},
     "ETH":  {"v2_symbol": "ETHIDR",  "indodax_key": "eth_idr",  "step_decimals": 5, "price_step": 1000},
     "SOL":  {"v2_symbol": "SOLIDR",  "indodax_key": "sol_idr",  "step_decimals": 4, "price_step": 1},
-    "XRP":  {"v2_symbol": "XRPIDR",  "indodax_key": "xrp_idr",  "step_decimals": 2, "price_step": 1},
-    "DOGE": {"v2_symbol": "DOGEIDR", "indodax_key": "doge_idr", "step_decimals": 0, "price_step": 1},
-    "PEPE": {"v2_symbol": "PEPEIDR", "indodax_key": "pepe_idr", "step_decimals": 0, "price_step": 0.001}
+    "XRP":  {"v2_symbol": "XRPIDR",  "indodax_key": "xrp_idr",  "step_decimals": 2, "price_step": 1}
 }
 
 STATE_FILE = "bot_state_tokocrypto.json"
@@ -1593,14 +1593,12 @@ def adopsi_atau_batal_beli_manual_grid(state, dompet, peta_analisa, harga_idr_ma
     return state, log_m, log_tx, ada_aksi
 
 
-def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info, harga_idr_map, pairs_meta):
+def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info, harga_idr_map, pairs_meta, fokus_koin_oo=None):
     """
     Opsi 1 (Mode Mini Swing Non-BTC):
     1. Jika ada koin SWING_ALLOWED_COINS terbeli manual di dompet (>= Rp25rb) -> adopsi jadi swing_positions,
-       hitung SL/TP1/TP2 berbasis ATR 4H real, pasang Limit Sell MOC & kawal dgn Virtual OCO Guardian.
-    2. Jika ada Open Order BUY manual pada koin SWING_ALLOWED_COINS:
-       - Jika lolos filter 1D-4H-30m/15m, Order Book, Circuit Breaker, Slot & Net RRR -> adopsi ke swing_pending_entries.
-       - Jika melanggar filter risiko -> BATALKAN otomatis via API Indodax.
+       hitung SL/TP1(1.5R)/TP2(2.0R) berbasis ATR 4H real, pasang Limit Sell MOC & kawal dgn Virtual OCO Guardian.
+    2. Cek Open Order BUY manual hanya pada koin target (fokus koin watch jika slot penuh).
     """
     log_m, log_tx = [], []
     ada_aksi = False
@@ -1622,6 +1620,7 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
     known_pending_oids = {str(x.get("buy_oid", "")) for x in state.get("swing_pending_entries", [])}
     koin_pending = {x["coin"] for x in state.get("swing_pending_entries", [])}
     idr_locked = float(dompet.get("idr_locked", 0.0))
+    daftar_cek_oo = set(fokus_koin_oo) if fokus_koin_oo is not None else set(SWING_ALLOWED_COINS)
 
     for coin in sorted(SWING_ALLOWED_COINS):
         if coin == "BTC" or coin == grid_coin or coin not in WATCHLIST_COINS:
@@ -1641,23 +1640,18 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
             atr_4h = float(info_k.get("atr_4h", 0.0))
 
             if atr_4h > 0 and entry_asli > 0:
-                d_sl = max(SWING_SL_FLOOR_PCT, min(SWING_SL_CAP_PCT, (1.5 * atr_4h) / entry_asli))
+                d_sl = max(SWING_SL_FLOOR_PCT, min(SWING_SL_CAP_PCT, (SWING_SL_ATR_MULT * atr_4h) / entry_asli))
             else:
-                d_sl = 0.030
+                d_sl = 0.0250
 
             sl_p = bulatkan_harga_swing(coin, entry_asli * (1.0 - d_sl), pairs_meta)
-            if rezim == "BULLISH":
-                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.5 * d_sl)), pairs_meta)
-                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (3.0 * d_sl)), pairs_meta)
-                tp1_ratio = 0.50
-            elif rezim == "SIDEWAYS":
-                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.35 * d_sl)), pairs_meta)
-                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (2.5 * d_sl)), pairs_meta)
-                tp1_ratio = 0.60
-            else:
-                tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (1.5 * d_sl)), pairs_meta)
-                tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + (2.6 * d_sl)), pairs_meta)
-                tp1_ratio = 0.65
+            d_sl_act = (entry_asli - sl_p) / max(1e-9, entry_asli)
+            l_net = 1.0 - ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - d_sl_act - SWING_SLIPPAGE_SL_PCT) * (1.0 - SWING_FEE_SELL_TAKER))
+            d_tp1 = ((1.0 + (l_net * SWING_MIN_NET_RRR)) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_MAKER))) - 1.0
+            d_tp2 = ((1.0 + (l_net * SWING_REAL_TP_RRR)) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_MAKER))) - 1.0
+            tp1_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + d_tp1), pairs_meta)
+            tp2_p = bulatkan_harga_swing(coin, entry_asli * (1.0 + d_tp2), pairs_meta)
+            tp1_ratio = 0.50 if rezim == "BULLISH" else 0.60
 
             nilai_pos = round(qty_tot * entry_asli, 0)
             partial_ok = nilai_pos >= SWING_MIN_PARTIAL_SPLIT_IDR
@@ -1687,7 +1681,6 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
                 "filled_ts": trades_beli[0]["ts"] if trades_beli else now_ts
             }
 
-            # Cek apakah user sudah memasang order SELL manual di Indodax
             ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
             open_sells = [o for o in daftar_oo if str(o.get("side", "")).upper() == "SELL"] if ok_oo else []
             if open_sells:
@@ -1717,13 +1710,13 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
             ada_aksi = True
             pesan = (
                 f"♻️ [ADOPSI SWING BELI MANUAL] {coin} Qty:{qty_tot:g} @ Rp{entry_asli:,} (myTrades) -> "
-                f"Dikawal Virtual OCO (V-SL:Rp{sl_p:,} | TP1:Rp{tp1_p:,} | TP2:Rp{pos_baru['tp2_price_idr']:,})."
+                f"Dikawal Virtual OCO (V-SL:Rp{sl_p:,} | TP1/Pemicu:Rp{tp1_p:,} | TP2/Real:Rp{pos_baru['tp2_price_idr']:,})."
             )
             log_m.append(pesan)
             log_tx.append(pesan)
 
-        # B. CEK OPEN ORDER BUY MANUAL NON-BTC DI INDODAX (HANYA JIKA ADA IDR LOCKED)
-        if idr_locked >= 1000.0:
+        # B. CEK OPEN ORDER BUY MANUAL NON-BTC (HANYA UNTUK KOIN TARGET AGAR HEMAT API)
+        if idr_locked >= 1000.0 and coin in daftar_cek_oo:
             ok_oo, daftar_oo = ambil_open_orders_indodax(coin)
             if not ok_oo:
                 continue
@@ -2432,13 +2425,55 @@ def _evaluasi_trigger_tf_swing(d_tf):
     )
     return {"ok": True, "skor": skor, "rsi": round(rsi_now, 1), "vol_ratio": round(vol_ratio, 2)}
 
-def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50000.0):
+def analisa_teknikal_mini_swing(
+    harga_idr_map,
+    pairs_meta,
+    order_size_ref_idr=50000.0,
+    fokus_koin=None,
+    izinkan_scan_baru=True,
+    jml_slot_terisi=0,
+    max_slots_modal=2,
+    rezim_fallback="SIDEWAYS"
+):
     """
-    Mesin Analisa Multi-Timeframe 100% Deterministik (1D -> 4H -> 30m/15m + Order Book) langsung dari Indodax.
-    - Semua indikator dihitung pada candle yang SUDAH TUTUP ([:-1]) -> zero repainting.
-    - BTC/IDR hanya dibaca sebagai Kompas Rezim Makro (tidak pernah ditransaksikan Swing).
+    Mesin Analisa Multi-Timeframe 100% Deterministik (1D -> 4H -> 30m/15m + Order Book):
+    - Jika izinkan_scan_baru=False (slot penuh / modal cukup 1 koin / di luar jadwal 15m):
+      HANYA mengambil 4H untuk koin yang sedang aktif di-watch (0 API ke koin lain & 0 API BTC 1D/4H).
+    - Jika izinkan_scan_baru=True: baca Kompas BTC 1D/4H; bila rezim ternyata hanya izinkan slot <= terisi
+      (misal SIDEWAYS max 1 slot & sudah pegang 1 koin), otomatis fokus ke koin watch saja.
     """
-    hasil = {"rezim": "SIDEWAYS", "btc_info": {}, "kandidat": {}, "semua_koin": {}}
+    hasil = {"rezim": rezim_fallback, "btc_info": {}, "kandidat": {}, "semua_koin": {}}
+    koin_watch_set = {c for c in (fokus_koin or set()) if c in WATCHLIST_COINS and c != "BTC"}
+
+    # MODE FOKUS WATCH SAJA (Tidak scan entry baru -> 0 API BTC & 0 API koin lain)
+    if not izinkan_scan_baru:
+        for coin in sorted(koin_watch_set):
+            d_4h = ambil_ohlcv_swing_indodax(coin, tf="240", jumlah_candle=100)
+            time.sleep(0.10)
+            if not d_4h:
+                continue
+            h4, l4, c4 = d_4h["h"][:-1], d_4h["l"][:-1], d_4h["c"][:-1]
+            ema20_4h = swing_ema_series(c4, 20)[-1]
+            ema50_4h = swing_ema_series(c4, 50)[-1]
+            atr_4h = swing_atr_series(h4, l4, c4, 14)[-1] or 0.0
+            rsi_4h = swing_rsi_series(c4, 14)[-1] or 50.0
+            harga_live = harga_idr_map.get(coin, {}).get("last", c4[-1])
+            hasil["semua_koin"][coin] = {
+                "coin": coin,
+                "rezim": rezim_fallback,
+                "setup_label": "WATCH_ONLY",
+                "harga_live": harga_live,
+                "harga_bid": harga_idr_map.get(coin, {}).get("buy", harga_live),
+                "harga_ask": harga_idr_map.get(coin, {}).get("sell", harga_live),
+                "ema20_4h": ema20_4h,
+                "ema50_4h": ema50_4h,
+                "atr_4h": atr_4h,
+                "atr_4h_pct": round((atr_4h / c4[-1]) if c4[-1] > 0 else 0.0, 5),
+                "rsi_4h": round(rsi_4h, 1),
+                "setup_4h_ok": False,
+                "siap_entry": False
+            }
+        return hasil
 
     # 1. Lapisan 1: Kompas Makro BTC/IDR (1D & 4H)
     btc_1d = ambil_ohlcv_swing_indodax("BTC", tf="1D", jumlah_candle=260)
@@ -2447,10 +2482,9 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         hasil["btc_info"] = {"error": "Gagal ambil OHLCV 1D/4H BTC Indodax"}
         return hasil
 
-    # Slice [:-1] = HANYA candle yang sudah tertutup sempurna
     c1d_b, h1d_b, l1d_b = btc_1d["c"][:-1], btc_1d["h"][:-1], btc_1d["l"][:-1]
     c4h_b, h4h_b, l4h_b, t4h_b = btc_4h["c"][:-1], btc_4h["h"][:-1], btc_4h["l"][:-1], btc_4h["t"][:-1]
-    
+
     ema50_1d_b = swing_ema_series(c1d_b, 50)[-1]
     ema200_1d_b = swing_ema_series(c1d_b, 200)[-1] or ema50_1d_b
     ema20_4h_b = swing_ema_series(c4h_b, 20)[-1]
@@ -2458,8 +2492,7 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
     adx_4h_b, pdi_4h_b, mdi_4h_b = swing_adx_di(h4h_b, l4h_b, c4h_b, 14)
     chop_4h_b = swing_choppiness_index(h4h_b, l4h_b, c4h_b, 14)
     er_4h_b = swing_efficiency_ratio(c4h_b, 10)
-    
-    # Klasifikasi 3-Rezim sesuai Tabel Blueprint Bagian 5
+
     is_bullish = (
         c1d_b[-1] > ema50_1d_b
         and (
@@ -2483,7 +2516,6 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         rezim = "SIDEWAYS"
 
     btc_4h_chg = ((c4h_b[-1] - c4h_b[-2]) / c4h_b[-2]) if c4h_b[-2] > 0 else 0.0
-
     hasil["rezim"] = rezim
     hasil["btc_info"] = {
         "rezim": rezim,
@@ -2493,8 +2525,14 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         "btc_4h_chg_pct": round(btc_4h_chg * 100.0, 2)
     }
 
-    # 2. Lapisan 2 (4H Struktur) & Lapisan 3 (Dual-Trigger 30m + 15m + Order Book) untuk Core Pool Non-BTC
-    for coin in sorted(SWING_ALLOWED_COINS):
+    # Cek ulang apakah aturan rezim membolehkan beli koin baru; jika tidak, panggil API koin watch saja!
+    max_slots_rezim = SWING_MAX_SLOTS_BULLISH if rezim == "BULLISH" else (SWING_MAX_SLOTS_SIDEWAYS if rezim == "SIDEWAYS" else SWING_MAX_SLOTS_BEARISH)
+    max_slots_aktual = min(max_slots_modal, max_slots_rezim)
+    boleh_scan_semua = (jml_slot_terisi < max_slots_aktual) and (rezim != "BEARISH_DOWN")
+    daftar_koin_scan = sorted(SWING_ALLOWED_COINS) if boleh_scan_semua else sorted(koin_watch_set)
+
+    # 2. Lapisan 2 (4H Struktur) & Lapisan 3 (Dual-Trigger 30m + 15m + Order Book)
+    for coin in daftar_koin_scan:
         if coin == "BTC" or coin not in WATCHLIST_COINS:
             continue
         sym_v2 = WATCHLIST_COINS[coin]["v2_symbol"]
@@ -2508,13 +2546,11 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         if not d_4h:
             continue
 
-        # Closed bars 4H ([:-1]) untuk seluruh struktur anti-repainting
         o4, h4, l4, c4, v4, t4 = d_4h["o"][:-1], d_4h["h"][:-1], d_4h["l"][:-1], d_4h["c"][:-1], d_4h["v"][:-1], d_4h["t"][:-1]
         harga_live = harga_idr_map.get(coin, {}).get("last", c4[-1])
         harga_bid = harga_idr_map.get(coin, {}).get("buy", harga_live)
         harga_ask = harga_idr_map.get(coin, {}).get("sell", harga_live)
 
-        # Indikator 4H (EMA sejati & Wilder RMA + Struktur Sideways-Up)
         ema20_4h_s = swing_ema_series(c4, 20)
         ema50_4h_s = swing_ema_series(c4, 50)
         ema20_4h = ema20_4h_s[-1]
@@ -2535,7 +2571,6 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         vol_ratio_4h = v4[-1] / max(1e-9, sma_vol_4h)
         rs_info = swing_relative_strength_vs_btc(t4, c4, t4h_b, c4h_b)
 
-        # Matriks Batasan Volatilitas 4H ATR%
         atr_ok = False
         atr_risk_mult = 0.0
         if SWING_ATR_MIN_PCT <= atr_4h_pct <= SWING_ATR_FLOOR_MAX_PCT:
@@ -2545,11 +2580,10 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
         elif SWING_ATR_SWEET_MAX_PCT < atr_4h_pct <= SWING_ATR_CAP_MAX_PCT:
             atr_ok, atr_risk_mult = True, 0.75
 
-        # Evaluasi Syarat Setup 4H Sesuai Rezim Aktif (Jendela Pullback/Support 3 Candle Terakhir)
         setup_4h_ok = False
         setup_label = "WAIT"
         low_3bar_4h = min(l4[-3:])
-        if atr_ok:
+        if boleh_scan_semua and (coin not in koin_watch_set) and atr_ok:
             if rezim == "BULLISH":
                 pullback_zona = (
                     (low_3bar_4h <= ema20_4h * 1.008)
@@ -2560,7 +2594,6 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
                     setup_4h_ok = True
                     setup_label = "BULL_PULLBACK"
             elif rezim == "SIDEWAYS":
-                # Khusus Sideways Cenderung Uptrend (anti sideways-down / pisau jatuh)
                 btc_sideways_up_ok = (c4h_b[-1] >= ema50_4h_b * 0.985) and (pdi_4h_b >= mdi_4h_b * 0.85)
                 bias_uptrend_4h = (
                     btc_sideways_up_ok
@@ -2570,12 +2603,10 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
                 )
                 tidak_breakdown_besar = not (c4[-1] < o4[-1] and vol_ratio_4h >= 1.80)
 
-                # Jalur 1: Pantulan support bawah pada struktur sideways-up
                 sentuh_support = (low_3bar_4h <= bb_lo_4h * 1.008) or (low_3bar_4h <= dc_lo_4h * 1.008)
                 rsi_oversold_3bar = any((r is not None and r < 38.0) for r in rsi_4h_s[-3:]) and (rsi_4h < 45.0)
                 jalur_support_up = sentuh_support and (c4[-1] <= bb_mid_4h) and rsi_oversold_3bar
 
-                # Jalur 2: Pullback sehat ke EMA20/BB Mid saat harga sudah di atas EMA50 4H
                 pullback_mid = (
                     (c4[-1] > ema50_4h)
                     and (low_3bar_4h <= max(ema20_4h, bb_mid_4h) * 1.008)
@@ -2587,11 +2618,11 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
                 if bias_uptrend_4h and tidak_breakdown_besar and (jalur_support_up or pullback_mid):
                     setup_4h_ok = True
                     setup_label = "SIDEWAYS_UP_PULLBACK" if pullback_mid else "SIDEWAYS_UP_REV"
-            elif rezim == "BEARISH_DOWN":
-                setup_4h_ok = False
-                setup_label = "SKIP_BEARISH"
+        elif coin in koin_watch_set:
+            setup_label = "WATCH_HOLD"
+        elif rezim == "BEARISH_DOWN":
+            setup_label = "SKIP_BEARISH"
 
-        # Lapisan 3 (Lazy Fetch): HANYA ambil 30m & 15m jika lolos 4H (hemat API Indodax)
         trig_30m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
         trig_15m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
         skor_tf = 0
@@ -2605,7 +2636,6 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
             trig_30m = _evaluasi_trigger_tf_swing(d_30m)
             trig_15m = _evaluasi_trigger_tf_swing(d_15m)
 
-            # Sinergi 30m + 15m: keduanya minimal >= 1 (anti-fakeout), bonus +1 jika keduanya >= 2 (konfluensi)
             s30 = trig_30m["skor"]
             s15 = trig_15m["skor"]
             selaras_30m_15m = (s30 >= 1) and (s15 >= 1)
@@ -2667,10 +2697,10 @@ def analisa_teknikal_mini_swing(harga_idr_map, pairs_meta, order_size_ref_idr=50
 # ==============================================================================
 def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free_idr, cb_half_size, pairs_meta):
     """
-    Formulasi Matematis Eksak (Opsi A + Opsi B):
-    - Blokir total rezim BEARISH_DOWN (hanya BULLISH & SIDEWAYS cenderung uptrend).
-    - Saat Circuit Breaker Half-Size aktif di modal kecil, wajib BULLISH + Skor >= 4/5 (bebas deadlock).
-    - Cek mode Single-Tranche vs Partial SEBELUM menghitung RRR, lalu sesuaikan TP agar Net RRR >= 1.75:1.
+    Formulasi Matematis Eksak:
+    - SL berbasis 1.20x ATR 4H dengan Floor 2.00% dan Cap 3.20%.
+    - TP1 (Partial) / Pemicu TP (Single-Tranche) eksak di Net RRR 1.50:1.
+    - TP2 (Partial) / Real TP (Single-Tranche) eksak di Net RRR 2.00:1.
     """
     coin = info_k["coin"]
     rezim = info_k["rezim"]
@@ -2679,33 +2709,28 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
 
     entry_p = bulatkan_harga_swing(coin, info_k["harga_bid"], pairs_meta)
     atr_4h = float(info_k["atr_4h"])
-    atr_pct = float(info_k["atr_4h_pct"])
     if entry_p <= 0 or atr_4h <= 0:
         return None, "Harga/ATR tidak valid"
 
-    # 1. Hitung jarak SL (Fee-Inclusive ~4.34% maks agar rugi bersih tak pernah > 5%)
+    # 1. Hitung jarak SL (1.20x ATR 4H | Floor 2.00% | Cap 3.20%)
     d_sl_max = 1.0 - SWING_SLIPPAGE_SL_PCT - (
         (1.0 - SWING_MAX_POS_LOSS_CAP) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_TAKER))
     )
+    cap_sl_final = min(SWING_SL_CAP_PCT, d_sl_max)
 
-    sl_atr_p = entry_p - (1.5 * atr_4h)
+    sl_atr_p = entry_p - (SWING_SL_ATR_MULT * atr_4h)
     sl_struct_p = float(info_k["swing_low_4h"]) - (0.25 * atr_4h)
     d_sl_atr = max(0.0, (entry_p - sl_atr_p) / entry_p)
     d_sl_struct = max(0.0, (entry_p - sl_struct_p) / entry_p)
 
-    if d_sl_struct <= d_sl_max:
+    if d_sl_struct <= cap_sl_final:
         d_sl = max(d_sl_atr, d_sl_struct)
     elif d_sl_struct <= 0.075:
-        d_sl = min(d_sl_atr, d_sl_max)
+        d_sl = min(d_sl_atr, cap_sl_final)
     else:
         return None, f"Harga terlalu jauh dari support 5-bar ({d_sl_struct*100:.2f}% > 7.50%)"
 
-    if atr_pct <= SWING_ATR_FLOOR_MAX_PCT:
-        d_sl = max(d_sl, SWING_SL_FLOOR_PCT)
-    if atr_pct > SWING_ATR_SWEET_MAX_PCT:
-        d_sl = min(d_sl, SWING_SL_CAP_PCT, d_sl_max)
-    d_sl = min(d_sl, d_sl_max)
-
+    d_sl = max(SWING_SL_FLOOR_PCT, min(d_sl, cap_sl_final))
     sl_p = bulatkan_harga_swing(coin, entry_p * (1.0 - d_sl), pairs_meta)
     d_sl = (entry_p - sl_p) / entry_p
     if d_sl <= 0.005:
@@ -2715,7 +2740,7 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
     if l_net <= 0:
         return None, "Kalkulasi risiko bersih tidak valid"
 
-    # 2. Sizing Modal & Cek Mode Partial vs Single-Tranche lebih awal (agar RRR akurat)
+    # 2. Sizing Modal & Penentuan Partial vs Single-Tranche
     r_acct = SWING_RISK_BULLISH if rezim == "BULLISH" else SWING_RISK_SIDEWAYS
     r_eff = r_acct * float(info_k["atr_risk_mult"]) * (0.50 if cb_half_size else 1.0)
     c_pos_ideal = (swing_equity_idr * r_eff) / max(1e-6, l_net)
@@ -2725,7 +2750,6 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
     min_order_base = float(pairs_meta.get(WATCHLIST_COINS[coin]["v2_symbol"], {}).get("trade_min_base_currency", MIN_LIMIT_ORDER_INDODAX_IDR))
     min_aman = max(MIN_NEW_BUY_ALLOCATION_IDR, min_order_base * 1.15)
     if c_pos < min_aman:
-        # Opsi A: saat Circuit Breaker Half-Size aktif dan sizing ideal < min_aman, wajib setup ketat (BULLISH & Skor >= 4/5)
         if cb_half_size:
             skor_k = int(info_k.get("skor_konfirmasi", 0))
             if rezim != "BULLISH" or skor_k < 4:
@@ -2733,7 +2757,6 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
         if min(c_pos_max_conc, swing_free_idr) >= min_aman:
             c_pos = min_aman
         elif c_pos_max_conc < min_aman and swing_free_idr >= min_aman:
-            # Jika 50% ekuitas < Rp32.000 tapi saldo bebas masih >= Rp32.000, tetap beli 1 koin saja (anti-deadlock)
             c_pos = min_aman
         else:
             return None, f"Dana Swing bebas Rp{swing_free_idr:,.0f} < minimal aman Rp{min_aman:,.0f}"
@@ -2745,35 +2768,15 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
 
     partial_enabled = modal_aktual >= SWING_MIN_PARTIAL_SPLIT_IDR
 
-    # 3. Target TP1 & TP2 disesuaikan agar Net RRR tetap sehat (>= 1.75:1) di Single-Tranche maupun Partial
-    w_net_min = l_net * SWING_MIN_NET_RRR
-    d_tp_min_rrr = ((1.0 + w_net_min) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_MAKER))) - 1.0
+    # 3. TP1 (Partial) / Pemicu TP (Single-Tranche) = 1.50:1 | TP2 (Partial) / Real TP = 2.00:1
+    tp1_ratio = 0.50 if rezim == "BULLISH" else 0.60
+    d_tp1 = ((1.0 + (l_net * SWING_MIN_NET_RRR)) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_MAKER))) - 1.0
+    d_tp2 = ((1.0 + (l_net * SWING_REAL_TP_RRR)) / ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 - SWING_FEE_SELL_MAKER))) - 1.0
 
-    if rezim == "BULLISH":
-        tp1_ratio = 0.50
-        tp1_p = bulatkan_harga_swing(coin, entry_p * (1.0 + (1.5 * d_sl)), pairs_meta)
-        if partial_enabled:
-            tp2_p = bulatkan_harga_swing(coin, entry_p * (1.0 + (3.0 * d_sl)), pairs_meta)
-        else:
-            # Single-Tranche (modal kecil): TP1 sbg trigger BE+, seluruh koin dijual di TP2
-            tp2_pct = min(3.3 * d_sl, max(2.6 * d_sl, d_tp_min_rrr * 1.03))
-            tp2_p = bulatkan_harga_swing(coin, entry_p * (1.0 + tp2_pct), pairs_meta)
-    else:  # SIDEWAYS cenderung uptrend
-        tp1_ratio = 0.60
-        tp1_raw = max(float(info_k["bb_mid_4h"]), float(info_k["ema20_4h"]), entry_p * (1.0 + (1.35 * d_sl)))
-        tp1_p = bulatkan_harga_swing(coin, tp1_raw, pairs_meta)
-        if partial_enabled:
-            tp2_raw = max(float(info_k["bb_up_4h"]), entry_p * (1.0 + (2.5 * d_sl)))
-            tp2_p = bulatkan_harga_swing(coin, tp2_raw, pairs_meta)
-        else:
-            tp2_pct = min(3.2 * d_sl, max(2.4 * d_sl, d_tp_min_rrr * 1.03))
-            tp2_raw = max(float(info_k["bb_up_4h"]), entry_p * (1.0 + tp2_pct))
-            tp2_p = bulatkan_harga_swing(coin, tp2_raw, pairs_meta)
+    # Tambah 0.05% buffer pembulatan floor agar Net RRR tidak jatuh ke 1.49 akibat tick size
+    tp1_p = bulatkan_harga_swing(coin, entry_p * (1.0 + d_tp1 + 0.0005), pairs_meta)
+    tp2_p = bulatkan_harga_swing(coin, entry_p * (1.0 + d_tp2 + 0.0005), pairs_meta)
 
-    if tp1_p >= tp2_p:
-        tp1_p = bulatkan_harga_swing(coin, entry_p + ((tp2_p - entry_p) * 0.55), pairs_meta)
-
-    # 4. Validasi Net RRR Eksak sesuai mode jual aktual (Single-Tranche 100% TP2 vs Partial TP1+TP2)
     if partial_enabled:
         d_tp_eff = (tp1_ratio * ((tp1_p - entry_p) / entry_p)) + ((1.0 - tp1_ratio) * ((tp2_p - entry_p) / entry_p))
     else:
@@ -2781,7 +2784,7 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
 
     w_net = ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 + d_tp_eff) * (1.0 - SWING_FEE_SELL_MAKER)) - 1.0
     net_rrr = (w_net / l_net) if l_net > 0 else 0.0
-    if net_rrr < SWING_MIN_NET_RRR:
+    if net_rrr < (SWING_MIN_NET_RRR - 0.02):
         return None, f"Net RRR terlalu tipis ({net_rrr:.2f} < {SWING_MIN_NET_RRR:.2f})"
 
     return {
@@ -2826,6 +2829,34 @@ def _cek_sisa_dust_dompet(coin, qty_target_awal, qty_terjual_aktual, dompet_sete
     if dompet_setelah is not None and LIVE_TRADING_ENABLED:
         return round(max(0.0, float(dompet_setelah["coins_free"].get(coin, 0.0))), 8)
     return round(max(0.0, float(qty_target_awal) - float(qty_terjual_aktual)), 8)
+
+def cek_tanda_turun_pemicu_tp_15m(coin, harga_bid, highest_post_tp1):
+    """
+    Khusus Single-Tranche pasca melewati Pemicu TP 1.50:1 (hanya memanggil API 15m utk koin ini saja):
+    - Tanda turun 1 (Real-Time): Harga Bid koreksi >= 0.65% dari puncak tertinggi pasca Pemicu TP.
+    - Tanda turun 2 (Teknikal 15m): Candle 15m tertutup merah & menembus bawah EMA9 15m atau RSI15m berbalik turun dari >= 60.
+    """
+    if highest_post_tp1 > 0 and harga_bid <= (highest_post_tp1 * (1.0 - SWING_TP_TRIGGER_PULLBACK_PCT)):
+        drop_pct = ((harga_bid - highest_post_tp1) / highest_post_tp1) * 100.0
+        return True, f"Pullback {drop_pct:.2f}% dr puncak Rp{highest_post_tp1:,}"
+
+    d_15m = ambil_ohlcv_swing_indodax(coin, tf="15", jumlah_candle=80)
+    if not d_15m or len(d_15m.get("c", [])) < 20:
+        return False, ""
+
+    o, c = d_15m["o"][:-1], d_15m["c"][:-1]
+    ema9 = swing_ema_series(c, 9)[-1]
+    rsi_s = swing_rsi_series(c, 14)
+    rsi_now = rsi_s[-1] if rsi_s[-1] is not None else 50.0
+    rsi_prev = rsi_s[-2] if rsi_s[-2] is not None else 50.0
+
+    candle_merah = c[-1] < o[-1]
+    jebol_ema9 = (ema9 is not None) and (c[-1] < ema9)
+    rsi_turun = (rsi_now < rsi_prev) and (rsi_prev >= 60.0)
+
+    if candle_merah and (jebol_ema9 or rsi_turun):
+        return True, f"15m melemah (RSI15m:{rsi_prev:.1f}->{rsi_now:.1f})"
+    return False, ""
 
 def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harga_live_map, pairs_meta):
     """
@@ -3068,16 +3099,53 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 pos["tp1_oid"] = None
                 log_sw.append(f"⚠️ [SWING TP1 {st_tp1}] {coin} direset agar dipulihkan Self-Healing.")
 
-        # B2. Mode Single-Tranche: tembus level TP1 -> aktifkan BE+ & Monotonic Trailing (tidak kirim Sheets)
-        if (not pos.get("partial_enabled")) and (not pos.get("tp1_filled")) and harga_bid >= float(pos["tp1_price_idr"]):
-            pos["tp1_filled"] = True
-            pos["highest_post_tp1"] = harga_skrg
-            pos["virtual_sl_idr"] = max(
-                float(pos["virtual_sl_idr"]),
-                bulatkan_harga_swing(coin, entry_p * SWING_BE_PLUS_MULT, pairs_meta)
-            )
-            ada_aksi = True
-            log_sw.append(f"🛡️ [SWING BE+ AKTIF] {coin} melewati TP1 Rp{pos['tp1_price_idr']:,} -> V-SL dikunci di BE+ Rp{pos['virtual_sl_idr']:,}.")
+        # B2. Mode Single-Tranche: TP1 (1.50:1) berfungsi sbg PEMICU TP -> Fast Watch 60s & Selamatkan Profit saat tanda turun
+        if not pos.get("partial_enabled"):
+            if (not pos.get("tp1_filled")) and harga_bid >= float(pos["tp1_price_idr"]):
+                pos["tp1_filled"] = True
+                pos["highest_post_tp1"] = max(harga_skrg, harga_bid)
+                lantai_pemicu = bulatkan_harga_swing(coin, float(pos["tp1_price_idr"]) * 0.999, pairs_meta)
+                pos["virtual_sl_idr"] = max(float(pos["virtual_sl_idr"]), lantai_pemicu)
+                ada_aksi = True
+                log_sw.append(
+                    f"🎯 [SWING PEMICU TP 1.5R AKTIF] {coin} lewati Rp{pos['tp1_price_idr']:,} -> "
+                    f"Fast Watch 60s ON & Lantai V-SL dikunci @ Rp{pos['virtual_sl_idr']:,} (Real TP:Rp{pos['tp2_price_idr']:,})."
+                )
+            elif pos.get("tp1_filled"):
+                pos["highest_post_tp1"] = max(float(pos.get("highest_post_tp1", harga_skrg)), harga_skrg, harga_bid)
+                tanda_turun, alasan_turun = cek_tanda_turun_pemicu_tp_15m(coin, harga_bid, pos["highest_post_tp1"])
+                if tanda_turun and harga_bid >= float(pos["tp1_price_idr"]):
+                    for k_oid in ("tp1_oid", "tp2_oid", "stale_oid"):
+                        if pos.get(k_oid):
+                            batalkan_order_indodax(coin, pos[k_oid])
+                            pos[k_oid] = None
+                    if LIVE_TRADING_ENABLED:
+                        time.sleep(1.0)
+                        d_save = ambil_saldo_lengkap_indodax()
+                        q_save = format_qty_swing(coin, float(d_save["coins_free"].get(coin, pos["qty_remaining"])), pairs_meta)
+                    else:
+                        q_save = pos["qty_remaining"]
+
+                    ok_sv, q_sold_sv, p_sv, _ = eksekusi_jual_darurat_swing(coin, harga_bid, q_save, pairs_meta=pairs_meta)
+                    if ok_sv and q_sold_sv > 0:
+                        cap_sold_sv = round(q_sold_sv * entry_p, 0)
+                        pnl_pct_sv = ((1.0 - SWING_FEE_BUY_MAKER) * (p_sv / entry_p) * (1.0 - SWING_FEE_SELL_TAKER)) - 1.0
+                        pnl_idr_sv = round(cap_sold_sv * pnl_pct_sv, 0)
+                        d_post_sv = ambil_saldo_lengkap_indodax() if LIVE_TRADING_ENABLED else None
+                        dust_sv = _cek_sisa_dust_dompet(coin, q_save, q_sold_sv, d_post_sv)
+
+                        catat_pnl_ledger_swing(state, pnl_idr_sv)
+                        catat_hasil_transaksi_ke_recovery(state, pnl_idr_sv, coin)
+                        _catat_riwayat_swing(state, pos, "TP_TRIGGER_PROTECT_EXIT", pnl_idr_sv, pnl_pct_sv, q_sold_sv, p_sv, cap_sold_sv, dust_sv)
+                        ada_aksi = True
+                        tag_dust = f" | SisaDust:{dust_sv:g}" if dust_sv > 0 else ""
+                        pesan = (
+                            f"🛡️ [SWING TP_TRIGGER_PROTECT_EXIT] {coin} selamatkan TP ({alasan_turun}) "
+                            f"terjual {q_sold_sv:g} @ Rp{p_sv:,} (Net:Rp{pnl_idr_sv:+,.0f} | {pnl_pct_sv*100:+.2f}%{tag_dust})."
+                        )
+                        log_sw.append(pesan)
+                        log_tx.append(pesan)
+                        continue
 
         # C. Cek TP2 Terisi -> Catat murni porsi terjual & cek apakah ada sisa dust
         if pos.get("tp2_oid"):
@@ -3356,6 +3424,11 @@ def cek_apakah_butuh_pengawasan_intensif(state, analisa_swing=None, harga_live_m
                 )
         if pos.get("stale_oid"):
             alasan.append(f"SWING {coin} antre Stale Limit Maker")
+
+        if (not pos.get("partial_enabled")) and pos.get("tp1_filled"):
+            alasan.append(
+                f"SWING {coin} di atas Pemicu TP 1.5R (Rp{pos['tp1_price_idr']:,}) -> pantau tanda turun 60s"
+            )
 
     cycle = state.get("grid_cycle")
     if cycle:
@@ -4506,6 +4579,7 @@ def saring_log_eksekusi_terbeli_terjual(daftar_log):
         "TP2 PENUH!]",
         "VIRTUAL_STOP_LOSS]",
         "BE_PLUS_TRAIL_EXIT]",
+        "TP_TRIGGER_PROTECT_EXIT]",
         "STALE EXIT MAKER]",
         "STALE EXIT MARKET]",
     )
@@ -4586,14 +4660,69 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
             dompet_asli = ambil_saldo_lengkap_indodax()
         vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
 
-    # 4. STRATEGI B: MESIN MINI SWING NON-BTC (1D - 4H - 30m/15m + ORDER BOOK + VIRTUAL OCO)
+    # 4. STRATEGI B: MESIN MINI SWING NON-BTC (TETAP SCAN 5M SAAT SLOT TERBUKA, FOKUS KOIN WATCH SAAT SLOT PENUH)
     analisa_swing = {}
     log_swing, log_tx_swing, ada_aksi_swing = [], [], False
     if SWING_MODE_ENABLED:
+        now_ts_sw = time.time()
+        koin_swing_aktif = (
+            {x["coin"] for x in state.get("swing_positions", [])}
+            | {x["coin"] for x in state.get("swing_pending_entries", [])}
+        )
+        cb_sw = state.get("swing_circuit_breaker", {})
+        cb_cooling = now_ts_sw < float(cb_sw.get("cooling_off_until", 0.0))
+        modal_hanya_1_koin = (float(vault_info.get("swing_equity_idr", 0.0)) * SWING_MAX_SINGLE_CONCENTRATION) < MIN_NEW_BUY_ALLOCATION_IDR
+        max_slots_modal = 1 if (modal_hanya_1_koin or cb_sw.get("half_size_active", False)) else SWING_MAX_SLOTS_BULLISH
+        dana_cukup_beli_baru = float(vault_info.get("swing_free_idr", 0.0)) >= MIN_NEW_BUY_ALLOCATION_IDR
+        bisa_cari_entry_baru = (not cb_cooling) and (len(koin_swing_aktif) < max_slots_modal) and dana_cukup_beli_baru
+
+        # Ambil referensi rezim terakhir dari posisi/antrean aktif (fallback SIDEWAYS)
+        rezim_ref = "SIDEWAYS"
+        if state.get("swing_positions"):
+            rezim_ref = state["swing_positions"][0].get("rezim", "SIDEWAYS")
+        elif state.get("swing_pending_entries"):
+            rezim_ref = state["swing_pending_entries"][0].get("rezim", "SIDEWAYS")
+
         order_ref = max(MIN_NEW_BUY_ALLOCATION_IDR, vault_info["swing_equity_idr"] * 0.40)
-        analisa_swing = analisa_teknikal_mini_swing(harga_live_map, pairs_meta, order_size_ref_idr=order_ref)
+
+        if bisa_cari_entry_baru:
+            # Slot masih tersedia & dana cukup -> scan normal tiap 5 menit (otomatis fokus watch saja jika rezim tidak izinkan >1 koin)
+            analisa_swing = analisa_teknikal_mini_swing(
+                harga_live_map,
+                pairs_meta,
+                order_size_ref_idr=order_ref,
+                fokus_koin=koin_swing_aktif,
+                izinkan_scan_baru=True,
+                jml_slot_terisi=len(koin_swing_aktif),
+                max_slots_modal=max_slots_modal,
+                rezim_fallback=rezim_ref
+            )
+            rezim_aktual = analisa_swing.get("rezim", rezim_ref)
+            max_slots_rezim = SWING_MAX_SLOTS_BULLISH if rezim_aktual == "BULLISH" else (SWING_MAX_SLOTS_SIDEWAYS if rezim_aktual == "SIDEWAYS" else SWING_MAX_SLOTS_BEARISH)
+            max_slots_aktual = min(max_slots_modal, max_slots_rezim)
+            fokus_oo = None if (len(koin_swing_aktif) < max_slots_aktual and rezim_aktual != "BEARISH_DOWN") else koin_swing_aktif
+        elif koin_swing_aktif:
+            # Slot penuh (modal cukup 1 koin / dana habis) -> 100% fokus API hanya pada koin yang sedang di-watch
+            analisa_swing = analisa_teknikal_mini_swing(
+                harga_live_map,
+                pairs_meta,
+                order_size_ref_idr=order_ref,
+                fokus_koin=koin_swing_aktif,
+                izinkan_scan_baru=False,
+                jml_slot_terisi=len(koin_swing_aktif),
+                max_slots_modal=max_slots_modal,
+                rezim_fallback=rezim_ref
+            )
+            fokus_oo = koin_swing_aktif
+        else:
+            # Tidak ada posisi aktif & sedang CB cooling-off atau dana bebas < Rp32.000 -> 0 panggilan API OHLCV Swing
+            analisa_swing = {"rezim": rezim_ref, "btc_info": {}, "kandidat": {}, "semua_koin": {}}
+            fokus_oo = set()
+            if not cb_cooling:
+                log_swing.append(f"⏸️ [SWING DANA KURANG] Dana Swing bebas Rp{vault_info['swing_free_idr']:,.0f} < Rp{MIN_NEW_BUY_ALLOCATION_IDR:,.0f}, skip scan koin.")
+
         state, log_ms, log_tx_ms, ada_ms = adopsi_atau_batal_beli_manual_swing(
-            state, dompet_asli, analisa_swing, vault_info, harga_live_map, pairs_meta
+            state, dompet_asli, analisa_swing, vault_info, harga_live_map, pairs_meta, fokus_koin_oo=fokus_oo
         )
         log_swing.extend(log_ms)
         log_tx_swing.extend(log_tx_ms)
@@ -4603,15 +4732,16 @@ def jalankan_satu_siklus_penuh(state, paksa_kirim_sheets=False):
                 dompet_asli = ambil_saldo_lengkap_indodax()
             vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
 
-        state, log_s2, log_tx_s2, ada_s2 = kelola_siklus_mini_swing(
-            state, analisa_swing, vault_info, dompet_asli, harga_live_map, pairs_meta
-        )
-        log_swing.extend(log_s2)
-        log_tx_swing.extend(log_tx_s2)
-        ada_aksi_swing = ada_aksi_swing or ada_s2
-        if ada_aksi_swing and LIVE_TRADING_ENABLED:
-            dompet_asli = ambil_saldo_lengkap_indodax()
-        vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
+        if koin_swing_aktif or bisa_cari_entry_baru or cb_cooling or ada_ms:
+            state, log_s2, log_tx_s2, ada_s2 = kelola_siklus_mini_swing(
+                state, analisa_swing, vault_info, dompet_asli, harga_live_map, pairs_meta
+            )
+            log_swing.extend(log_s2)
+            log_tx_swing.extend(log_tx_s2)
+            ada_aksi_swing = ada_aksi_swing or ada_s2
+            if ada_aksi_swing and LIVE_TRADING_ENABLED:
+                dompet_asli = ambil_saldo_lengkap_indodax()
+            vault_info = sinkronkan_dan_hitung_budget_vault(state, dompet_asli)
 
     # 5. Simpan State Atomik & Laporan
     simpan_state_bot(state)
