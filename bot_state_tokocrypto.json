@@ -853,63 +853,7 @@
       "sempat_tahan_sl": false
     }
   ],
-  "grid_cycle": {
-    "coin": "BTC",
-    "created_ts": 1795411150.183435,
-    "b3_ever_touched": false,
-    "bounce_count": 0,
-    "completed_tiers_count": 0,
-    "realized_grid_profit_idr": 0.0,
-    "tiers": [
-      {
-        "tier_no": 1,
-        "mode_4h": "HIJAU",
-        "step_pct": 0.0152,
-        "created_ts": 1795411150.183435,
-        "status": "ACTIVE",
-        "realized_tier_profit_idr": 0.0,
-        "layers": {
-          "b1": {
-            "buy_price": 1120888000,
-            "tp_price": 1137925000,
-            "base_tp_price": 1137925000,
-            "status": "WAIT_BUY",
-            "buy_oid": "275312202",
-            "sell_oid": null,
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 2.9e-05,
-            "capital_idr": 32506.0
-          },
-          "b2": {
-            "buy_price": 1103851000,
-            "tp_price": 1120888000,
-            "base_tp_price": 1120888000,
-            "status": "ARMED",
-            "buy_oid": null,
-            "sell_oid": null,
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 0.0,
-            "capital_idr": 33000.0
-          },
-          "b3": {
-            "buy_price": 1086813000,
-            "tp_price": 1103851000,
-            "base_tp_price": 1103851000,
-            "status": "ARMED",
-            "buy_oid": null,
-            "sell_oid": null,
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 0.0,
-            "capital_idr": 33000.0
-          }
-        }
-      }
-    ],
-    "completed_tiers": []
-  },
+  "grid_cycle": null,
   "grid_experience_memory": [
     {
       "ts": 1795378445.6862571,
@@ -936,13 +880,13 @@
     "week_start_equity_idr": 100000.0
   },
   "budget_ledger": {
-    "grid_equity_idr": 100000.0,
-    "swing_equity_idr": 100000.0,
-    "reserve_surplus_idr": 14108.0,
+    "grid_equity_idr": 90768.0,
+    "swing_equity_idr": 90768.0,
+    "reserve_surplus_idr": 0.0,
     "last_swing_cap_setting": 100000.0,
-    "last_grid_tiers_count": 1,
+    "last_grid_tiers_count": 0,
     "last_wallet_idr_free": 181535.0,
-    "last_sync_ts": 1795411453.5561628
+    "last_sync_ts": 1795411764.480272
   },
   "grid_trade_history": [
     {
