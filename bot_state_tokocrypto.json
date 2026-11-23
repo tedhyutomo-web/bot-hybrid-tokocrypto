@@ -2,7 +2,63 @@
   "realized_profit_today_idr": 0.0,
   "completed_trades_today": 0,
   "loss_to_recover_idr": 0.0,
-  "grid_cycle": null,
+  "grid_cycle": {
+    "coin": "BTC",
+    "created_ts": 1795449846.4113305,
+    "b3_ever_touched": false,
+    "bounce_count": 0,
+    "completed_tiers_count": 0,
+    "realized_grid_profit_idr": 0.0,
+    "tiers": [
+      {
+        "tier_no": 1,
+        "mode_4h": "HIJAU",
+        "step_pct": 0.0199,
+        "created_ts": 1795449846.4113305,
+        "status": "ACTIVE",
+        "realized_tier_profit_idr": 0.0,
+        "layers": {
+          "b1": {
+            "buy_price": 1146799000,
+            "tp_price": 1169620000,
+            "base_tp_price": 1169620000,
+            "status": "HOLDING",
+            "buy_oid": null,
+            "sell_oid": "275379152",
+            "buy_tif": "MOC",
+            "sell_tif": "MOC",
+            "qty": 2.8e-05,
+            "capital_idr": 32110.0
+          },
+          "b2": {
+            "buy_price": 1123978000,
+            "tp_price": 1146799000,
+            "base_tp_price": 1146799000,
+            "status": "WAIT_BUY",
+            "buy_oid": "275379155",
+            "sell_oid": null,
+            "buy_tif": "MOC",
+            "sell_tif": "MOC",
+            "qty": 2.9e-05,
+            "capital_idr": 32595.0
+          },
+          "b3": {
+            "buy_price": 1101156000,
+            "tp_price": 1123978000,
+            "base_tp_price": 1123978000,
+            "status": "WAIT_BUY",
+            "buy_oid": "275379156",
+            "sell_oid": null,
+            "buy_tif": "MOC",
+            "sell_tif": "MOC",
+            "qty": 2.9e-05,
+            "capital_idr": 31934.0
+          }
+        }
+      }
+    ],
+    "completed_tiers": []
+  },
   "grid_experience_memory": [],
   "grid_trade_history": [],
   "swing_positions": [],
@@ -24,11 +80,11 @@
   "budget_ledger": {
     "grid_equity_idr": 100000.0,
     "swing_equity_idr": 100000.0,
-    "reserve_surplus_idr": 14108.0,
+    "reserve_surplus_idr": 13941.0,
     "last_swing_cap_setting": 100000.0,
-    "last_grid_tiers_count": 0,
-    "last_wallet_idr_free": 214108.0,
-    "last_sync_ts": 1795449546.7524323
+    "last_grid_tiers_count": 1,
+    "last_wallet_idr_free": 117302.0,
+    "last_sync_ts": 1795449915.3316922
   },
   "last_reset_date": "2026-11-23"
 }
