@@ -101,7 +101,7 @@ SWING_MIN_PARTIAL_SPLIT_IDR = 56000.0
 SWING_RISK_BULLISH = 0.0150
 SWING_RISK_SIDEWAYS = 0.0125
 SWING_MAX_SLOTS_BULLISH = 2
-SWING_MAX_SLOTS_SIDEWAYS = 2
+SWING_MAX_SLOTS_SIDEWAYS = 1           # Sideways fokus 1 altcoin terbaik saja (redam risiko korelasi)
 SWING_MAX_SLOTS_BEARISH = 0            # Blokir total entry Mini Swing baru saat rezim BEARISH_DOWN
 
 SWING_MAX_SPREAD_PCT = 0.0030          # Dilonggarkan ke 0.30% (aman karena entry MOC di Bid)
@@ -116,14 +116,15 @@ SWING_STALE_HOURS = 72.0               # Cek stale mulai 72 jam jika struktur me
 SWING_STALE_HARD_HOURS = 96.0          # Batas keras stale exit jika tetap stagnan > 96 jam
 SWING_STALE_MIN_PNL_PCT = 0.0100
 SWING_STALE_MAKER_WAIT_MIN = 15.0
-SWING_SL_WATCH_BUFFER_PCT = 0.0150     # Fast Watch 60s aktif jika harga Mini Swing <= 1.50% di atas V-SL
+SWING_SL_WATCH_BUFFER_PCT = 0.0250     # Fast Watch 60s aktif jika harga Mini Swing <= 2.50% di atas V-SL
+SWING_SL_WATCH_FLOAT_LOSS_PCT = -0.0100 # Fast Watch 60s juga aktif jika floating loss Mini Swing <= -1.00%
 SWING_CB_HALF_LOSSES = 2
 SWING_CB_PAUSE_LOSSES = 3
 SWING_CB_WEEKLY_DD_PAUSE = -0.0450
 SWING_CB_COOLING_HOURS = 24.0
 SL_MEMORY_RETENTION_HOURS = 168.0
 
-ACTIVE_WATCH_MINUTES = int(os.getenv("ACTIVE_WATCH_MINUTES", "3"))
+ACTIVE_WATCH_MINUTES = int(os.getenv("ACTIVE_WATCH_MINUTES", "4"))
 WATCH_INTERVAL_SECONDS = int(os.getenv("WATCH_INTERVAL_SECONDS", "60"))
 FORCE_CONTINUOUS_WATCH = os.getenv("FORCE_CONTINUOUS_WATCH", "false").lower() == "true"
 
@@ -1048,6 +1049,44 @@ def eksekusi_order_swing_moc(coin, side_str, harga_idr, qty_koin, pairs_meta=Non
         res["qty"] = qty
     return res
 
+def pasang_tp_swing_aman(coin, target_price_idr, qty_koin, harga_bid=0.0, harga_ask=0.0, pairs_meta=None):
+    """
+    Eksekutor Limit Sell TP Mini Swing anti-gagal MOC:
+    1. Jika harga pasar sudah melewati target TP, coba MOC di Best Ask (atau Bid + 1 tick) agar tetap Maker.
+    2. Jika MOC tetap ditolak Indodax, fallback ke LIMIT GTC agar posisi tidak pernah tanpa order TP.
+    Return: (sukses, res_dict, harga_terpasang, tif_dipakai)
+    """
+    harga_target = bulatkan_harga_swing(coin, target_price_idr, pairs_meta)
+    sym = WATCHLIST_COINS[coin]["v2_symbol"]
+    inc = float((pairs_meta or {}).get(sym, {}).get("price_increment", 0.0) or WATCHLIST_COINS[coin].get("price_step", 1))
+
+    harga_coba_moc = harga_target
+    if harga_bid > 0 and harga_target <= harga_bid:
+        harga_coba_moc = bulatkan_harga_swing(
+            coin,
+            max(harga_target, harga_ask if harga_ask > harga_bid else harga_bid + (inc * 1.01)),
+            pairs_meta
+        )
+
+    res_moc = eksekusi_order_swing_moc(
+        coin, "SELL", harga_coba_moc, qty_koin, pairs_meta=pairs_meta, order_type="LIMIT", tif="MOC"
+    )
+    if apakah_order_sukses(res_moc):
+        return True, res_moc, harga_coba_moc, "MOC"
+
+    harga_gtc = bulatkan_harga_swing(
+        coin,
+        max(harga_target, harga_bid) if harga_bid > 0 else harga_coba_moc,
+        pairs_meta
+    )
+    print(f"⚠️ [SWING FALLBACK MOC->GTC] SELL {coin} MOC gagal, dialihkan ke LIMIT GTC @ Rp{harga_gtc:,}...")
+    res_gtc = eksekusi_order_swing_moc(
+        coin, "SELL", harga_gtc, qty_koin, pairs_meta=pairs_meta, order_type="LIMIT", tif="GTC"
+    )
+    if apakah_order_sukses(res_gtc):
+        return True, res_gtc, harga_gtc, "GTC"
+    return False, res_gtc, harga_gtc, "GTC"
+
 def eksekusi_jual_darurat_swing(coin, best_bid, qty_jual, pairs_meta=None):
     """
     Protokol Virtual SL Guardian + Anti-Dust:
@@ -1575,6 +1614,8 @@ def adopsi_atau_batal_beli_manual_swing(state, dompet, analisa_swing, vault_info
     cb = state.get("swing_circuit_breaker", {})
     cb_cooling = now_ts < float(cb.get("cooling_off_until", 0.0))
     max_slots = SWING_MAX_SLOTS_BULLISH if rezim == "BULLISH" else (SWING_MAX_SLOTS_SIDEWAYS if rezim == "SIDEWAYS" else SWING_MAX_SLOTS_BEARISH)
+    if cb.get("half_size_active", False) or (float(vault_info.get("swing_equity_idr", 0.0)) * SWING_MAX_SINGLE_CONCENTRATION) < MIN_NEW_BUY_ALLOCATION_IDR:
+        max_slots = min(max_slots, 1)
 
     grid_coin = (state.get("grid_cycle") or {}).get("coin")
     koin_pos_aktif = {x["coin"] for x in state.get("swing_positions", [])}
@@ -2691,6 +2732,9 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
                 return None, f"CB Half-Size aktif (Ideal Rp{c_pos_ideal:,.0f}): skip {rezim} / Skor {skor_k}<4"
         if min(c_pos_max_conc, swing_free_idr) >= min_aman:
             c_pos = min_aman
+        elif c_pos_max_conc < min_aman and swing_free_idr >= min_aman:
+            # Jika 50% ekuitas < Rp32.000 tapi saldo bebas masih >= Rp32.000, tetap beli 1 koin saja (anti-deadlock)
+            c_pos = min_aman
         else:
             return None, f"Dana Swing bebas Rp{swing_free_idr:,.0f} < minimal aman Rp{min_aman:,.0f}"
 
@@ -2856,6 +2900,10 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 "filled_ts": now_ts
             }
 
+            t_fill = harga_live_map.get(coin, {})
+            h_bid_f = float(t_fill.get("buy", harga_skrg))
+            h_ask_f = float(t_fill.get("sell", harga_skrg))
+
             if pos_baru["partial_enabled"]:
                 qty_tp1 = format_qty_swing(coin, qty_asli * pos_baru["tp1_ratio"], pairs_meta)
                 sisa_estimasi = qty_asli - qty_tp1
@@ -2863,15 +2911,21 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 if (sisa_estimasi * pos_baru["tp2_price_idr"]) < (MIN_LIMIT_ORDER_INDODAX_IDR * 1.05):
                     pos_baru["partial_enabled"] = False
                 else:
-                    res_tp1 = eksekusi_order_swing_moc(coin, "SELL", pos_baru["tp1_price_idr"], qty_tp1, pairs_meta=pairs_meta)
-                    if apakah_order_sukses(res_tp1):
+                    ok_tp1, res_tp1, h_tp1, _ = pasang_tp_swing_aman(
+                        coin, pos_baru["tp1_price_idr"], qty_tp1, h_bid_f, h_ask_f, pairs_meta=pairs_meta
+                    )
+                    if ok_tp1:
                         pos_baru["tp1_oid"] = str(res_tp1.get("orderId"))
+                        pos_baru["tp1_price_idr"] = h_tp1
                         pos_baru["qty_tp1"] = qty_tp1
 
             if not pos_baru["partial_enabled"]:
-                res_tp2 = eksekusi_order_swing_moc(coin, "SELL", pos_baru["tp2_price_idr"], qty_asli, pairs_meta=pairs_meta)
-                if apakah_order_sukses(res_tp2):
+                ok_tp2, res_tp2, h_tp2, _ = pasang_tp_swing_aman(
+                    coin, pos_baru["tp2_price_idr"], qty_asli, h_bid_f, h_ask_f, pairs_meta=pairs_meta
+                )
+                if ok_tp2:
                     pos_baru["tp2_oid"] = str(res_tp2.get("orderId"))
+                    pos_baru["tp2_price_idr"] = h_tp2
 
             state["swing_positions"].append(pos_baru)
             ada_aksi = True
@@ -2996,9 +3050,12 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 )
 
                 if pos["qty_remaining"] > 0 and (pos["qty_remaining"] * pos["tp2_price_idr"]) >= MIN_LIMIT_ORDER_INDODAX_IDR:
-                    res_tp2 = eksekusi_order_swing_moc(coin, "SELL", pos["tp2_price_idr"], pos["qty_remaining"], pairs_meta=pairs_meta)
-                    if apakah_order_sukses(res_tp2):
+                    ok_tp2, res_tp2, h_tp2, _ = pasang_tp_swing_aman(
+                        coin, pos["tp2_price_idr"], pos["qty_remaining"], harga_bid, harga_ask, pairs_meta=pairs_meta
+                    )
+                    if ok_tp2:
                         pos["tp2_oid"] = str(res_tp2.get("orderId"))
+                        pos["tp2_price_idr"] = h_tp2
 
                 ada_aksi = True
                 pesan = (
@@ -3007,6 +3064,9 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 )
                 log_sw.append(pesan)
                 log_tx.append(pesan)
+            elif st_tp1 in ("CANCELED", "EXPIRED", "REJECTED", "NOT_FOUND"):
+                pos["tp1_oid"] = None
+                log_sw.append(f"⚠️ [SWING TP1 {st_tp1}] {coin} direset agar dipulihkan Self-Healing.")
 
         # B2. Mode Single-Tranche: tembus level TP1 -> aktifkan BE+ & Monotonic Trailing (tidak kirim Sheets)
         if (not pos.get("partial_enabled")) and (not pos.get("tp1_filled")) and harga_bid >= float(pos["tp1_price_idr"]):
@@ -3041,6 +3101,10 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 log_sw.append(pesan)
                 log_tx.append(pesan)
                 continue
+
+            elif st_tp2 in ("CANCELED", "EXPIRED", "REJECTED", "NOT_FOUND"):
+                pos["tp2_oid"] = None
+                log_sw.append(f"⚠️ [SWING TP2 {st_tp2}] {coin} direset agar dipulihkan Self-Healing.")
 
         # D. Update Monotonic ATR Trailing Stop pasca TP1
         if pos.get("tp1_filled") and atr_4h_skrg > 0:
@@ -3083,6 +3147,53 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
                 log_sw.append(pesan)
                 log_tx.append(pesan)
                 continue
+
+        # E2. SELF-HEALING TP MINI SWING (Pulihkan TP1/TP2 yang gagal MOC atau ter-reset)
+        if not pos.get("stale_oid"):
+            butuh_heal_tp1 = bool(pos.get("partial_enabled") and (not pos.get("tp1_filled")) and (not pos.get("tp1_oid")))
+            butuh_heal_tp2 = bool(((not pos.get("partial_enabled")) or pos.get("tp1_filled")) and (not pos.get("tp2_oid")))
+
+            if butuh_heal_tp1 or butuh_heal_tp2:
+                if LIVE_TRADING_ENABLED:
+                    d_heal_sw = ambil_saldo_lengkap_indodax()
+                    qty_bebas_sw = format_qty_swing(coin, float(d_heal_sw["coins_free"].get(coin, 0.0)), pairs_meta)
+                else:
+                    qty_bebas_sw = float(pos.get("qty_remaining", 0.0))
+
+                if butuh_heal_tp1 and qty_bebas_sw > 0:
+                    q_tp1_h = format_qty_swing(coin, qty_bebas_sw * float(pos.get("tp1_ratio", 0.5)), pairs_meta)
+                    sisa_est_h = qty_bebas_sw - q_tp1_h
+                    if (
+                        (q_tp1_h * float(pos["tp1_price_idr"])) < MIN_LIMIT_ORDER_INDODAX_IDR
+                        or (sisa_est_h * float(pos["tp2_price_idr"])) < (MIN_LIMIT_ORDER_INDODAX_IDR * 1.05)
+                    ):
+                        pos["partial_enabled"] = False
+                        butuh_heal_tp2 = True
+                    else:
+                        ok_h1, res_h1, h_h1, tif_h1 = pasang_tp_swing_aman(
+                            coin, pos["tp1_price_idr"], q_tp1_h, harga_bid, harga_ask, pairs_meta=pairs_meta
+                        )
+                        if ok_h1:
+                            pos["tp1_oid"] = str(res_h1.get("orderId"))
+                            pos["tp1_price_idr"] = h_h1
+                            pos["qty_tp1"] = q_tp1_h
+                            ada_aksi = True
+                            log_sw.append(
+                                f"🩹 [SELF-HEAL SWING TP1 ({tif_h1})] {coin} dipulihkan Qty:{q_tp1_h:g} @ Rp{h_h1:,} (#{pos['tp1_oid']})."
+                            )
+
+                if butuh_heal_tp2 and qty_bebas_sw > 0 and (qty_bebas_sw * float(pos["tp2_price_idr"])) >= MIN_LIMIT_ORDER_INDODAX_IDR:
+                    ok_h2, res_h2, h_h2, tif_h2 = pasang_tp_swing_aman(
+                        coin, pos["tp2_price_idr"], qty_bebas_sw, harga_bid, harga_ask, pairs_meta=pairs_meta
+                    )
+                    if ok_h2:
+                        pos["tp2_oid"] = str(res_h2.get("orderId"))
+                        pos["tp2_price_idr"] = h_h2
+                        pos["qty_remaining"] = qty_bebas_sw
+                        ada_aksi = True
+                        log_sw.append(
+                            f"🩹 [SELF-HEAL SWING TP2 ({tif_h2})] {coin} dipulihkan Qty:{qty_bebas_sw:g} @ Rp{h_h2:,} (#{pos['tp2_oid']})."
+                        )
 
         # F. Cek Stale Time-Stop (72 Jam jika struktur < EMA20 4H, atau batas keras 96 Jam)
         umur_jam = (now_ts - float(pos.get("filled_ts", now_ts))) / 3600.0
@@ -3136,6 +3247,8 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
 
     max_slots = SWING_MAX_SLOTS_BULLISH if rezim == "BULLISH" else (SWING_MAX_SLOTS_SIDEWAYS if rezim == "SIDEWAYS" else SWING_MAX_SLOTS_BEARISH)
     if cb.get("half_size_active", False):
+        max_slots = min(max_slots, 1)
+    if (float(vault_info.get("swing_equity_idr", 0.0)) * SWING_MAX_SINGLE_CONCENTRATION) < MIN_NEW_BUY_ALLOCATION_IDR:
         max_slots = min(max_slots, 1)
     total_terisi = len(state["swing_positions"]) + len(state["swing_pending_entries"])
     koin_aktif = {x["coin"] for x in state["swing_positions"]} | {x["coin"] for x in state["swing_pending_entries"]}
@@ -3212,9 +3325,9 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
 
 def cek_apakah_butuh_pengawasan_intensif(state, analisa_swing=None, harga_live_map=None):
     """
-    Fast Watch 60 detik (maks 3 menit) HANYA menyala pada momen kritis:
+    Fast Watch 60 detik (maks 4 menit) HANYA menyala pada momen kritis:
     1. Order MOC Mini Swing sedang antre menunggu terisi.
-    2. Posisi Mini Swing mendekati Virtual SL (jarak <= 1.50%) atau sedang Stale Limit Exit.
+    2. Posisi Mini Swing mendekati Virtual SL (jarak <= 2.50%), floating minus (<= -1.00%), atau sedang Stale Limit Exit.
     3. Order b1 Grid BTC sedang antre WAIT_BUY (segera pasang TP & jaring b2/b3 begitu terbeli).
     """
     alasan = []
@@ -3226,14 +3339,20 @@ def cek_apakah_butuh_pengawasan_intensif(state, analisa_swing=None, harga_live_m
     for pos in state.get("swing_positions", []):
         coin = pos["coin"]
         v_sl = float(pos.get("virtual_sl_idr", 0.0))
+        entry_p = float(pos.get("entry_price_idr", 0.0))
         harga_bid = float((harga_live_map or {}).get(coin, {}).get("buy", 0.0))
         if harga_bid <= 0:
             harga_bid = float((harga_live_map or {}).get(coin, {}).get("last", 0.0))
         if harga_bid > 0 and v_sl > 0:
             jarak_sl_pct = (harga_bid - v_sl) / harga_bid
+            pnl_float_pct = ((harga_bid - entry_p) / entry_p) if entry_p > 0 else 0.0
             if jarak_sl_pct <= SWING_SL_WATCH_BUFFER_PCT:
                 alasan.append(
                     f"SWING {coin} masuk zona waspada V-SL (jarak {jarak_sl_pct*100:.2f}% <= {SWING_SL_WATCH_BUFFER_PCT*100:.1f}%)"
+                )
+            elif (not pos.get("tp1_filled")) and pnl_float_pct <= SWING_SL_WATCH_FLOAT_LOSS_PCT:
+                alasan.append(
+                    f"SWING {coin} sedang floating minus ({pnl_float_pct*100:.2f}% <= {SWING_SL_WATCH_FLOAT_LOSS_PCT*100:.1f}%)"
                 )
         if pos.get("stale_oid"):
             alasan.append(f"SWING {coin} antre Stale Limit Maker")
