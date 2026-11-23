@@ -880,13 +880,13 @@
     "week_start_equity_idr": 100000.0
   },
   "budget_ledger": {
-    "grid_equity_idr": 90768.0,
+    "grid_equity_idr": 100000.0,
     "swing_equity_idr": 90768.0,
-    "reserve_surplus_idr": 0.0,
+    "reserve_surplus_idr": 23340.0,
     "last_swing_cap_setting": 100000.0,
     "last_grid_tiers_count": 0,
-    "last_wallet_idr_free": 181535.0,
-    "last_sync_ts": 1795411764.480272
+    "last_wallet_idr_free": 214108.0,
+    "last_sync_ts": 1795412049.429759
   },
   "grid_trade_history": [
     {
