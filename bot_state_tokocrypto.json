@@ -1,6 +1,6 @@
 {
-  "realized_profit_today_idr": 1545.0,
-  "completed_trades_today": 3,
+  "realized_profit_today_idr": 0.0,
+  "completed_trades_today": 0,
   "loss_to_recover_idr": 0.0,
   "grid_cycle": null,
   "grid_experience_memory": [
@@ -81,7 +81,7 @@
     "last_swing_cap_setting": 100000.0,
     "last_grid_tiers_count": 0,
     "last_wallet_idr_free": 215668.0,
-    "last_sync_ts": 1795539549.7415075
+    "last_sync_ts": 1795539849.380053
   },
-  "last_reset_date": "2026-11-24"
+  "last_reset_date": "2026-11-25"
 }
