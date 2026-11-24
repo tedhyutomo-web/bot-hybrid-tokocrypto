@@ -69,6 +69,10 @@ GRID_INVALIDATION_ENABLED = False      # Nonaktif: Murni Grid/DCA BTC tanpa Stop
 GRID_INVALIDATION_DD_PCT = -0.12       # Tidak dipakai selama GRID_INVALIDATION_ENABLED = False
 GRID_INVALIDATION_AUTO_CUT = False     # Nonaktif permanen (tidak akan pernah cut loss)
 
+# Sistem Resistance Grid BTC (Anti-Nabrak Atap & Smart Cap TP b1)
+GRID_RES_ENABLED = True                # Aktifkan deteksi resistance 1H/4H untuk Grid BTC
+GRID_RES_FRONT_RUN_PCT = 0.0020        # Taruh TP b1 0.20% di bawah atap resistance agar keburu laku
+
 # ==============================================================================
 # KONFIGURASI PEMBAGIAN DANA (BUDGET VAULT: GRID BTC vs MINI SWING NON-BTC)
 # ==============================================================================
@@ -98,6 +102,11 @@ SWING_MAX_POS_LOSS_CAP = 0.0400        # Plafon rugi bersih ~4.00% (selaras Cap 
 SWING_MIN_NET_RRR = 1.50               # TP1 (Partial) / Pemicu TP (Single-Tranche) pada Net RRR 1.50:1
 SWING_REAL_TP_RRR = 2.00               # TP2 (Partial) / Real TP (Single-Tranche) pada Net RRR 2.00:1
 SWING_TP_TRIGGER_PULLBACK_PCT = 0.0065 # Koreksi >= 0.65% dari puncak pasca Pemicu TP = sinyal turun
+
+# Sistem Resistance Mini Swing (Resistance Headroom + Front-Run TP2 saat Sideways)
+SWING_RES_ENABLED = True               # Aktifkan deteksi resistance 4H untuk Mini Swing
+SWING_RES_FRONT_RUN_PCT = 0.0030       # Taruh TP2 0.30% di bawah atap resistance (khusus rezim SIDEWAYS)
+
 SWING_MAX_SINGLE_CONCENTRATION = 0.50
 SWING_MIN_PARTIAL_SPLIT_IDR = 56000.0
 SWING_RISK_BULLISH = 0.0150
@@ -1486,7 +1495,7 @@ def adopsi_atau_batal_beli_manual_grid(state, dompet, peta_analisa, harga_idr_ma
             step_l1 = float(info.get("grid_step_aktif", GRID_STEP_GREEN_PCT))
             mode_4h = info.get("lampu_4h", "HIJAU")
 
-            tier_1 = _buat_struktur_tier_baru(coin, 1, harga_beli_asli, step_l1, mode_4h, None, qty_tot, now_ts, buy_tif_b1="GTC")
+            tier_1 = _buat_struktur_tier_baru(coin, 1, harga_beli_asli, step_l1, mode_4h, None, qty_tot, now_ts, buy_tif_b1="GTC", tp_b1_step_pct=float(info.get("grid_tp_b1_step_aktif", step_l1)))
             b1 = tier_1["layers"]["b1"]
             b1["status"] = "HOLDING"
             b1["buy_oid"] = None
@@ -1565,7 +1574,7 @@ def adopsi_atau_batal_beli_manual_grid(state, dompet, peta_analisa, harga_idr_ma
                 if aman_grid and harga_oo > 0 and qty_oo > 0:
                     step_l1 = float(info.get("grid_step_aktif", GRID_STEP_GREEN_PCT))
                     mode_4h = info.get("lampu_4h", "HIJAU")
-                    tier_1 = _buat_struktur_tier_baru(coin, 1, harga_oo, step_l1, mode_4h, oid_oo, qty_oo, now_ts, buy_tif_b1="MOC")
+                    tier_1 = _buat_struktur_tier_baru(coin, 1, harga_oo, step_l1, mode_4h, oid_oo, qty_oo, now_ts, buy_tif_b1="MOC", tp_b1_step_pct=float(info.get("grid_tp_b1_step_aktif", step_l1)))
                     state["grid_cycle"] = {
                         "coin": coin,
                         "created_ts": now_ts,
@@ -1839,6 +1848,70 @@ def hitung_atr_pct(closes, highs, lows, periode=14):
         atr_rma = ((atr_rma * (periode - 1)) + tr) / float(periode)
     return atr_rma / closes[-1]
 
+def cari_pivot_highs(highs, left=2, right=2):
+    """Mendeteksi swing pivot high murni berbasis fractal kiri-kanan pada candle tertutup."""
+    n = len(highs)
+    if n < (left + right + 1):
+        return []
+    pivots = []
+    for i in range(left, n - right):
+        val = float(highs[i])
+        jendela = highs[i - left : i + right + 1]
+        if val >= max(jendela) and val > min(jendela):
+            pivots.append(val)
+    return pivots
+
+def deteksi_resisten_terdekat(
+    harga_acuan,
+    kandidat_level,
+    min_dist_pct=0.0020,
+    cluster_pct=0.0040,
+    hanya_zona_kuat=False
+):
+    """
+    Mengelompokkan level resisten berdekatan menjadi zona (cluster) dan mengambil
+    atap terdekat di atas harga_acuan * (1 + min_dist_pct).
+    - kandidat_level: list tuple (harga_level, label_sumber, bobot_sentuhan)
+    - hanya_zona_kuat=True (rezim BULLISH): hanya pakai zona multi-touch (>=2)
+      atau pivot mayor (bobot >= 2) agar uptrend tidak terblokir swing minor.
+    Return: (harga_resisten, label_zona, jumlah_sentuhan)
+    """
+    if harga_acuan <= 0 or not kandidat_level:
+        return 0.0, "OPEN_SKY", 0
+
+    ambang_bawah = harga_acuan * (1.0 + min_dist_pct)
+    valid = [
+        (float(p), str(lbl), int(w))
+        for p, lbl, w in kandidat_level
+        if float(p) > ambang_bawah
+    ]
+    if not valid:
+        return 0.0, "OPEN_SKY", 0
+
+    valid.sort(key=lambda x: x[0])
+
+    clusters = []
+    for p, lbl, w in valid:
+        if not clusters:
+            clusters.append({"low": p, "high": p, "labels": {lbl}, "touches": w})
+        else:
+            c_last = clusters[-1]
+            if ((p - c_last["low"]) / max(1e-9, c_last["low"])) <= cluster_pct:
+                c_last["high"] = max(c_last["high"], p)
+                c_last["labels"].add(lbl)
+                c_last["touches"] += w
+            else:
+                clusters.append({"low": p, "high": p, "labels": {lbl}, "touches": w})
+
+    if hanya_zona_kuat:
+        clusters = [c for c in clusters if c["touches"] >= 2]
+        if not clusters:
+            return 0.0, "OPEN_SKY_BULL", 0
+
+    terdekat = clusters[0]
+    label_str = "+".join(sorted(terdekat["labels"]))
+    return terdekat["low"], f"{label_str}({terdekat['touches']}x)", terdekat["touches"]
+
 def ambil_data_ohlc_indodax(coin, info, tf="15", jumlah_candle=100):
     """
     Mengambil data candlestick LANGSUNG dari Indodax:
@@ -2075,6 +2148,52 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             trigger_5m_ok = False
             struktur_ok = False
 
+        # ======================================================================
+        # SISTEM RESISTANCE GRID BTC (1H/4H PIVOT + DONCHIAN 1H + EMA50 4H)
+        # ======================================================================
+        res_terdekat_idr = 0.0
+        res_info_label = "OPEN_SKY"
+        res_grid_ok = True
+        res_grid_mode = "OPEN_SKY"
+        headroom_tp_pct = 1.0
+        grid_tp_b1_step_aktif = grid_step_aktif
+
+        if GRID_RES_ENABLED and harga_bid > 0:
+            h1_closed = h1h[:-1]
+            h4_closed = h4h[:-1]
+            kand_res_grid = []
+
+            for pv in cari_pivot_highs(h1_closed[-72:], left=3, right=3):
+                kand_res_grid.append((pv, "PIV1H", 1))
+            for pv in cari_pivot_highs(h4_closed[-60:], left=2, right=2):
+                kand_res_grid.append((pv, "PIV4H", 2))
+            if len(h1_closed) >= 20:
+                kand_res_grid.append((max(h1_closed[-20:]), "DC1H", 1))
+            if float(h4["ema50"]) > harga_bid:
+                kand_res_grid.append((float(h4["ema50"]), "EMA50_4H", 1))
+
+            res_raw, res_info_label, _ = deteksi_resisten_terdekat(
+                harga_bid, kand_res_grid, min_dist_pct=0.0020, cluster_pct=0.0040, hanya_zona_kuat=False
+            )
+            if res_raw > 0:
+                res_terdekat_idr = bulatkan_harga_indodax(coin, res_raw)
+                tp_front_run_idr = bulatkan_harga_indodax(coin, res_terdekat_idr * (1.0 - GRID_RES_FRONT_RUN_PCT))
+                headroom_tp_pct = (tp_front_run_idr - harga_bid) / max(1.0, harga_bid)
+
+                if headroom_tp_pct < GRID_STEP_MIN_PCT:
+                    # Skenario 3: Terjepit atap (< 1.50% setelah front-run) -> VETO
+                    res_grid_ok = False
+                    res_grid_mode = "VETO_TERJEPIT"
+                elif headroom_tp_pct < grid_step_aktif:
+                    # Skenario 2: Atap di antara 1.50% & step ATR -> Smart Cap khusus TP b1
+                    res_grid_ok = True
+                    res_grid_mode = "SMART_CAP_TP_B1"
+                    grid_tp_b1_step_aktif = round(max(GRID_STEP_MIN_PCT, headroom_tp_pct), 4)
+                else:
+                    # Skenario 1: Jalur bersih
+                    res_grid_ok = True
+                    res_grid_mode = "JALUR_BERSIH"
+
         layak_grid = bool(
             koin_diizinkan
             and h4_tidak_crash
@@ -2082,9 +2201,10 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             and trigger_5m_ok
             and volatilitas_cukup
             and spread_aman
+            and res_grid_ok
         )
 
-        # Syarat buka Lapis 2 / Lapis 3 (momen sideways-up / uptrend baru di area value)
+        # Syarat buka Lapis 2 / Lapis 3 (momen sideways-up / uptrend baru di area value + bebas atap)
         layak_lapis_baru = bool(
             koin_diizinkan
             and h4_tidak_crash
@@ -2094,6 +2214,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             and (not candle_jatuh_beruntun)
             and (m5["rsi"] <= GRID_MAX_RSI_M5_ENTRY)
             and spread_aman
+            and res_grid_ok
         )
 
         skor_grid = 50.0
@@ -2109,7 +2230,6 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             skor_grid += 15.0
         elif m15["rezim"] == "UPTREND":
             skor_grid += 10.0
-        # Bonus area value / pullback sehat
         if 35.0 <= m5["rsi"] <= 52.0:
             skor_grid += 10.0
         if -0.004 <= jarak_dari_ema20_15m_pct <= 0.003:
@@ -2117,11 +2237,16 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         if not layak_grid:
             skor_grid = min(skor_grid, 45.0)
 
+        tag_res = (
+            f" | Res:{res_info_label}@Rp{res_terdekat_idr:,.0f}[{res_grid_mode}]"
+            if res_terdekat_idr > 0 else " | Res:OPEN_SKY"
+        )
+
         if layak_grid:
             ikon_lampu = "🟢" if lampu_4h == "HIJAU" else "🟡"
             prediksi = (
-                f"{ikon_lampu} LAYAK GRID [{lampu_4h} Step:{grid_step_aktif*100:.1f}%] "
-                f"({m15['rezim']} 15M | {h1['rezim']} 1H | {h4['rezim']} 4H | DistEMA20:{jarak_dari_ema20_15m_pct*100:+.2f}%)"
+                f"{ikon_lampu} LAYAK GRID [{lampu_4h} Step:{grid_step_aktif*100:.1f}%|TPb1:{grid_tp_b1_step_aktif*100:.1f}%] "
+                f"({m15['rezim']} 15M | {h1['rezim']} 1H | {h4['rezim']} 4H | DistEMA20:{jarak_dari_ema20_15m_pct*100:+.2f}%{tag_res})"
             )
         elif lampu_4h == "MERAH":
             prediksi = f"🔴 VETO CRASH/BLEED 4H (RSI4H:{h4['rsi']}, Vol4H:{vol_4h_ratio}x - Stop Entry)"
@@ -2133,11 +2258,16 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             prediksi = f"🟡 TUNGGU TRIGGER 5M (RSI5M:{m5['rsi']} | 4H:{lampu_4h})"
         elif not volatilitas_cukup:
             prediksi = f"🟡 PASAR SEPI (ATR15M:{m15['atr_pct']*100:.2f}% < {GRID_MIN_ATR_15M_PCT*100:.2f}%)"
+        elif not res_grid_ok:
+            prediksi = (
+                f"🧱 VETO RESISTEN GRID (Atap {res_info_label} @ Rp{res_terdekat_idr:,.0f}, "
+                f"ruang +{headroom_tp_pct*100:.2f}% < {GRID_STEP_MIN_PCT*100:.2f}%)"
+            )
         else:
             prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}%)"
 
         entry_ideal_idr = bulatkan_harga_indodax(coin, harga_bid)
-        tp_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 + grid_step_aktif))
+        tp_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 + grid_tp_b1_step_aktif))
         sl_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 - (grid_step_aktif * 2.0)))
 
         peta_analisa[coin] = {
@@ -2161,6 +2291,11 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             "lampu_4h": lampu_4h,
             "vol_4h_ratio": vol_4h_ratio,
             "grid_step_aktif": grid_step_aktif,
+            "grid_tp_b1_step_aktif": grid_tp_b1_step_aktif,
+            "res_terdekat_idr": res_terdekat_idr,
+            "res_info_label": res_info_label,
+            "res_grid_mode": res_grid_mode,
+            "res_grid_ok": res_grid_ok,
             "jarak_ema20_15m_pct": round(jarak_dari_ema20_15m_pct * 100.0, 2),
             "rsi": m5["rsi"],
             "rsi_15m": m15["rsi"],
@@ -2174,7 +2309,7 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             "entry_ideal_idr": entry_ideal_idr,
             "tp_ideal_idr": tp_ideal_idr,
             "sl_ideal_idr": sl_ideal_idr,
-            "tp_target_pct": round(grid_step_aktif * 100.0, 2),
+            "tp_target_pct": round(grid_tp_b1_step_aktif * 100.0, 2),
             "gaya": "GRID_3L" if layak_grid else "WAIT",
             "skor": round(skor_grid, 1),
             "prediksi": prediksi,
@@ -2653,6 +2788,34 @@ def analisa_teknikal_mini_swing(
         skor_konfirmasi = skor_tf + (1 if ob_info.get("obp_ok") else 0)
         trigger_mtf_ok = bool(selaras_30m_15m and skor_konfirmasi >= SWING_MIN_CONFIRM_SCORE)
 
+# Hitung Resisten Struktural 4H (SIDEWAYS: range ceiling | BULLISH: hanya zona kuat / mayor)
+        nearest_res_4h = 0.0
+        res_label_4h = "OPEN_SKY"
+        res_touches_4h = 0
+        if SWING_RES_ENABLED and harga_bid > 0:
+            kand_res_sw = []
+            if rezim == "BULLISH":
+                for pv in cari_pivot_highs(h4[-140:], left=4, right=4):
+                    kand_res_sw.append((pv, "MAJ4H", 2))
+                for pv in cari_pivot_highs(h4[-60:], left=2, right=2):
+                    kand_res_sw.append((pv, "PIV4H", 1))
+                kand_res_sw.append((dc_hi_4h, "DC4H", 1))
+                res_raw_sw, res_label_4h, res_touches_4h = deteksi_resisten_terdekat(
+                    harga_bid, kand_res_sw, min_dist_pct=0.0040, cluster_pct=0.0060, hanya_zona_kuat=True
+                )
+            else:
+                for pv in cari_pivot_highs(h4[-80:], left=2, right=2):
+                    kand_res_sw.append((pv, "PIV4H", 1))
+                kand_res_sw.append((dc_hi_4h, "DC4H", 1))
+                kand_res_sw.append((bb_up_4h, "BB4H", 1))
+                if ema50_4h > harga_bid:
+                    kand_res_sw.append((ema50_4h, "EMA50_4H", 1))
+                res_raw_sw, res_label_4h, res_touches_4h = deteksi_resisten_terdekat(
+                    harga_bid, kand_res_sw, min_dist_pct=0.0040, cluster_pct=0.0060, hanya_zona_kuat=False
+                )
+            if res_raw_sw > 0:
+                nearest_res_4h = bulatkan_harga_swing(coin, res_raw_sw, pairs_meta)
+
         info_koin = {
             "coin": coin,
             "rezim": rezim,
@@ -2678,6 +2841,9 @@ def analisa_teknikal_mini_swing(
             "dc_lo_4h": dc_lo_4h,
             "swing_low_4h": swing_low_4h,
             "swing_high_4h": swing_high_4h,
+            "nearest_res_4h": nearest_res_4h,
+            "res_label_4h": res_label_4h,
+            "res_touches_4h": res_touches_4h,
             "rs_info": rs_info,
             "vol_ratio_15m": trig_15m["vol_ratio"],
             "setup_4h_ok": setup_4h_ok,
@@ -2777,6 +2943,40 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
     tp1_p = bulatkan_harga_swing(coin, entry_p * (1.0 + d_tp1 + 0.0005), pairs_meta)
     tp2_p = bulatkan_harga_swing(coin, entry_p * (1.0 + d_tp2 + 0.0005), pairs_meta)
 
+# 3B. Uji Resistance Headroom (RRR Alami >= 1.50:1) & Front-Run TP2 saat SIDEWAYS
+    nearest_res_4h = float(info_k.get("nearest_res_4h", 0.0))
+    res_label_4h = str(info_k.get("res_label_4h", "OPEN_SKY"))
+    res_action = "OPEN_SKY"
+
+    if SWING_RES_ENABLED and nearest_res_4h > 0:
+        res_front_run_p = bulatkan_harga_swing(
+            coin, nearest_res_4h * (1.0 - SWING_RES_FRONT_RUN_PCT), pairs_meta
+        )
+        d_res = (res_front_run_p - entry_p) / max(1e-9, entry_p)
+        w_net_res = ((1.0 - SWING_FEE_BUY_MAKER) * (1.0 + d_res) * (1.0 - SWING_FEE_SELL_MAKER)) - 1.0
+        rrr_res = (w_net_res / l_net) if l_net > 0 else 0.0
+
+        # Skenario 3: Terjepit atap sebelum menyentuh 1.50:1 -> VETO ENTRY
+        if rrr_res < (SWING_MIN_NET_RRR - 0.02):
+            return None, (
+                f"Terjepit Resisten {res_label_4h} @ Rp{nearest_res_4h:,} "
+                f"(RRR alami {rrr_res:.2f}:1 < {SWING_MIN_NET_RRR:.2f}:1)"
+            )
+
+        # Skenario 2: Resisten berada di antara TP1 dan TP2
+        if res_front_run_p < tp2_p:
+            if rezim == "SIDEWAYS":
+                tp2_p = max(tp1_p, res_front_run_p)
+                res_action = f"FRONT_RUN_TP2({res_label_4h}@Rp{nearest_res_4h:,})"
+                # Jika TP2 hasil front-run mepet TP1 (< 0.30%), jadikan Single-Tranche bersih
+                if partial_enabled and tp2_p <= (tp1_p * 1.003):
+                    partial_enabled = False
+            else:
+                # Rezim BULLISH: tetap biarkan TP2 di 2.00R agar ikut breakout
+                res_action = f"BULL_WATCH({res_label_4h}@Rp{nearest_res_4h:,})"
+        else:
+            res_action = f"JALUR_BERSIH({res_label_4h}@Rp{nearest_res_4h:,})"
+
     if partial_enabled:
         d_tp_eff = (tp1_ratio * ((tp1_p - entry_p) / entry_p)) + ((1.0 - tp1_ratio) * ((tp2_p - entry_p) / entry_p))
     else:
@@ -2800,6 +3000,8 @@ def hitung_parameter_entry_dan_sizing_swing(info_k, swing_equity_idr, swing_free
         "capital_idr": modal_aktual,
         "qty": qty_coin,
         "atr_4h_entry": atr_4h,
+        "nearest_res_4h": nearest_res_4h,
+        "res_action": res_action,
         "partial_enabled": partial_enabled
     }, "OK"
 
@@ -3384,7 +3586,7 @@ def kelola_siklus_mini_swing(state, analisa_swing, vault_info, dompet_asli, harg
             log_sw.append(
                 f"🚀 [SWING ANTRE MOC BELI | {rezim} - {kand['setup_label']}] {kand['coin']} @ Rp{plan['entry_price_idr']:,} "
                 f"(Modal:Rp{plan['capital_idr']:,.0f} | SL:Rp{plan['sl_price_idr']:,} | TP1:Rp{plan['tp1_price_idr']:,} | "
-                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | Skor:{kand.get('skor_konfirmasi', 0)}/5 (30m:{kand.get('skor_30m', 0)}/15m:{kand.get('skor_15m', 0)}) | OBP:{kand.get('ob_info', {}).get('obp', 0.5):.2f} | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
+                f"TP2:Rp{plan['tp2_price_idr']:,} | NetRRR:{plan['net_rrr']}:1 | Res:{plan.get('res_action', 'OPEN_SKY')} | Skor:{kand.get('skor_konfirmasi', 0)}/5 (30m:{kand.get('skor_30m', 0)}/15m:{kand.get('skor_15m', 0)}) | OBP:{kand.get('ob_info', {}).get('obp', 0.5):.2f} | RS20:{kand['rs_info']['roc_20']*100:+.2f}%)"
             )
         else:
             log_sw.append(f"⚠️ [SWING MOC DITOLAK {kand['coin']}] {res_buy} (Tidak pernah kejar Market Buy).")
@@ -3856,15 +4058,21 @@ def _catat_riwayat_jual_grid(state, coin, tier_no, nama_lp, buy_price, sell_pric
     })
     state["grid_trade_history"] = hist[-500:]
 
-def _buat_struktur_tier_baru(coin, tier_no, p1, step_pct, mode_4h, oid_b1, qty_b1, now_ts, buy_tif_b1="MOC"):
-    """Setiap lapis (L1, L2, L3) memiliki target TP b1 lokal sendiri (p1 * (1 + step_pct))."""
-    tp1 = bulatkan_harga_indodax(coin, p1 * (1.0 + step_pct))
+def _buat_struktur_tier_baru(coin, tier_no, p1, step_pct, mode_4h, oid_b1, qty_b1, now_ts, buy_tif_b1="MOC", tp_b1_step_pct=None):
+    """Setiap lapis (L1, L2, L3) memiliki target TP b1 lokal (Smart Cap resisten) & jaring b2/b3 murni ATR."""
+    tp_b1_step = (
+        float(tp_b1_step_pct)
+        if (tp_b1_step_pct is not None and float(tp_b1_step_pct) >= GRID_STEP_MIN_PCT)
+        else float(step_pct)
+    )
+    tp1 = bulatkan_harga_indodax(coin, p1 * (1.0 + tp_b1_step))
     p2 = bulatkan_harga_indodax(coin, p1 * (1.0 - step_pct))
     p3 = bulatkan_harga_indodax(coin, p1 * (1.0 - (step_pct * 2.0)))
     return {
         "tier_no": tier_no,
         "mode_4h": mode_4h,
         "step_pct": step_pct,
+        "tp_b1_step_pct": tp_b1_step,
         "created_ts": now_ts,
         "status": "ACTIVE",
         "realized_tier_profit_idr": 0.0,
@@ -3876,13 +4084,23 @@ def _buat_struktur_tier_baru(coin, tier_no, p1, step_pct, mode_4h, oid_b1, qty_b
     }
 
 def _promosikan_b1_dan_pasang_jaring(coin, tier, qty_aktual, harga_eksekusi, info_pasar):
-    """Mempromosikan b1 ke HOLDING, memasang TP b1 aman, serta memasang jaring b2 & b3."""
+    """Mempromosikan b1 ke HOLDING, memasang TP b1 aman (Smart Cap resisten), serta jaring b2 & b3 (ATR penuh)."""
     layers = tier["layers"]
     step_pct = float(tier.get("step_pct", GRID_STEP_GREEN_PCT))
+    tp_b1_step = float(tier.get("tp_b1_step_pct", step_pct))
 
     if harga_eksekusi > 0:
         p1_aktual = bulatkan_harga_indodax(coin, harga_eksekusi)
-        tp1_baru = bulatkan_harga_indodax(coin, p1_aktual * (1.0 + step_pct))
+        tp1_baru = bulatkan_harga_indodax(coin, p1_aktual * (1.0 + tp_b1_step))
+
+        # Validasi ulang Smart Cap resisten terhadap harga fill aktual (tetap min +1.50%)
+        if GRID_RES_ENABLED and info_pasar and float(info_pasar.get("res_terdekat_idr", 0.0)) > 0:
+            res_p = float(info_pasar["res_terdekat_idr"])
+            tp1_fr = bulatkan_harga_indodax(coin, res_p * (1.0 - GRID_RES_FRONT_RUN_PCT))
+            tp1_min = bulatkan_harga_indodax(coin, p1_aktual * (1.0 + GRID_STEP_MIN_PCT))
+            if tp1_min <= tp1_fr < tp1_baru:
+                tp1_baru = tp1_fr
+
         p2_baru = bulatkan_harga_indodax(coin, p1_aktual * (1.0 - step_pct))
         p3_baru = bulatkan_harga_indodax(coin, p1_aktual * (1.0 - (step_pct * 2.0)))
 
@@ -3903,7 +4121,6 @@ def _promosikan_b1_dan_pasang_jaring(coin, tier, qty_aktual, harga_eksekusi, inf
     layers["b1"]["status"] = "HOLDING"
     layers["b1"]["buy_oid"] = None
 
-    # 1. Pasang TP b1 secara aman (MOC -> fallback GTC)
     ok_tp1, res_tp1, harga_tp1, tif_tp1 = pasang_order_grid_aman(
         coin, "SELL", layers["b1"]["base_tp_price"], qty_aktual, info_pasar=info_pasar, paksa_gtc_fallback=True
     )
@@ -3912,7 +4129,6 @@ def _promosikan_b1_dan_pasang_jaring(coin, tier, qty_aktual, harga_eksekusi, inf
         layers["b1"]["tp_price"] = harga_tp1
         layers["b1"]["sell_tif"] = tif_tp1
 
-    # 2. Pasang jaring b2 dan b3 secara aman
     for nama_lp in ("b2", "b3"):
         lp = layers[nama_lp]
         q_lp = hitung_kuantitas_koin(coin, lp["capital_idr"], lp["buy_price"])
@@ -4020,7 +4236,11 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
         if ok_b1:
             oid_b1 = str(res_b1.get("orderId"))
             qty_b1_ok = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, harga_b1_pasang) if harga_b1_pasang != p1 else qty_b1
-            tier_1 = _buat_struktur_tier_baru(coin, 1, harga_b1_pasang, step_l1, mode_4h, oid_b1, qty_b1_ok, now_ts, buy_tif_b1=tif_b1)
+            tp_b1_step_l1 = float(pilih.get("grid_tp_b1_step_aktif", step_l1))
+            tier_1 = _buat_struktur_tier_baru(
+                coin, 1, harga_b1_pasang, step_l1, mode_4h, oid_b1, qty_b1_ok, now_ts,
+                buy_tif_b1=tif_b1, tp_b1_step_pct=tp_b1_step_l1
+            )
             l1 = tier_1["layers"]
             state["grid_cycle"] = {
                 "coin": coin,
@@ -4517,7 +4737,11 @@ def kelola_siklus_grid_3_lapis(state, peta_analisa, dompet, harga_live_map=None)
             if ok_nb:
                 oid_nb = str(res_nb.get("orderId"))
                 qty_nb_ok = hitung_kuantitas_koin(coin, GRID_CAPITAL_PER_LAYER_IDR, harga_nb_pasang) if harga_nb_pasang != p1_baru else qty_b1_baru
-                tier_baru = _buat_struktur_tier_baru(coin, lapis_berikutnya, harga_nb_pasang, step_baru, lampu_4h, oid_nb, qty_nb_ok, now_ts, buy_tif_b1=tif_nb)
+                tp_b1_step_baru = float(info.get("grid_tp_b1_step_aktif", step_baru))
+                tier_baru = _buat_struktur_tier_baru(
+                    coin, lapis_berikutnya, harga_nb_pasang, step_baru, lampu_4h, oid_nb, qty_nb_ok, now_ts,
+                    buy_tif_b1=tif_nb, tp_b1_step_pct=tp_b1_step_baru
+                )
                 tiers.append(tier_baru)
                 ada_aksi = True
                 lb = tier_baru["layers"]
