@@ -1,66 +1,63 @@
 {
-  "realized_profit_today_idr": 0.0,
-  "completed_trades_today": 0,
+  "realized_profit_today_idr": 1545.0,
+  "completed_trades_today": 3,
   "loss_to_recover_idr": 0.0,
-  "grid_cycle": {
-    "coin": "BTC",
-    "created_ts": 1795449846.4113305,
-    "b3_ever_touched": true,
-    "bounce_count": 0,
-    "completed_tiers_count": 0,
-    "realized_grid_profit_idr": 0.0,
-    "tiers": [
-      {
-        "tier_no": 1,
-        "mode_4h": "HIJAU",
-        "step_pct": 0.0199,
-        "created_ts": 1795449846.4113305,
-        "status": "ACTIVE",
-        "realized_tier_profit_idr": 0.0,
-        "layers": {
-          "b1": {
-            "buy_price": 1146799000,
-            "tp_price": 1169620000,
-            "base_tp_price": 1169620000,
-            "status": "HOLDING",
-            "buy_oid": null,
-            "sell_oid": "275379152",
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 2.8e-05,
-            "capital_idr": 32110.0
-          },
-          "b2": {
-            "buy_price": 1123978000,
-            "tp_price": 1146799000,
-            "base_tp_price": 1146799000,
-            "status": "HOLDING",
-            "buy_oid": null,
-            "sell_oid": "275395727",
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 2.9e-05,
-            "capital_idr": 32595.0
-          },
-          "b3": {
-            "buy_price": 1101156000,
-            "tp_price": 1123978000,
-            "base_tp_price": 1123978000,
-            "status": "HOLDING",
-            "buy_oid": null,
-            "sell_oid": "275443467",
-            "buy_tif": "MOC",
-            "sell_tif": "MOC",
-            "qty": 2.9e-05,
-            "capital_idr": 31934.0
-          }
-        }
-      }
-    ],
-    "completed_tiers": []
-  },
-  "grid_experience_memory": [],
-  "grid_trade_history": [],
+  "grid_cycle": null,
+  "grid_experience_memory": [
+    {
+      "ts": 1795492496.920582,
+      "waktu": "24/11 10:54",
+      "coin": "BTC",
+      "alasan_tutup": "SYNC_MANUAL_SELESAI",
+      "bounce_count": 3,
+      "completed_tiers_count": 1,
+      "b3_ever_touched": true,
+      "durasi_jam": 11.85,
+      "total_pnl_idr": 1545.0,
+      "berhasil": true
+    }
+  ],
+  "grid_trade_history": [
+    {
+      "ts": 1795492496.4003007,
+      "waktu": "24/11 10:54",
+      "coin": "BTC",
+      "tier": "L1_B1",
+      "buy_price_idr": 1146799000.0,
+      "sell_price_idr": 1169620000.0,
+      "qty_sold": 2.8e-05,
+      "capital_sold_idr": 32110.0,
+      "dust_qty": 0.0,
+      "pnl_idr": 500.0,
+      "pnl_pct": 1.56
+    },
+    {
+      "ts": 1795492496.6604052,
+      "waktu": "24/11 10:54",
+      "coin": "BTC",
+      "tier": "L1_B2",
+      "buy_price_idr": 1123978000.0,
+      "sell_price_idr": 1146799000.0,
+      "qty_sold": 2.9e-05,
+      "capital_sold_idr": 32595.0,
+      "dust_qty": 0.0,
+      "pnl_idr": 521.0,
+      "pnl_pct": 1.6
+    },
+    {
+      "ts": 1795492496.9205253,
+      "waktu": "24/11 10:54",
+      "coin": "BTC",
+      "tier": "L1_B3",
+      "buy_price_idr": 1101156000.0,
+      "sell_price_idr": 1123978000.0,
+      "qty_sold": 2.9e-05,
+      "capital_sold_idr": 31934.0,
+      "dust_qty": 0.0,
+      "pnl_idr": 524.0,
+      "pnl_pct": 1.64
+    }
+  ],
   "swing_positions": [],
   "swing_pending_entries": [],
   "swing_trade_history": [],
@@ -80,11 +77,11 @@
   "budget_ledger": {
     "grid_equity_idr": 100000.0,
     "swing_equity_idr": 100000.0,
-    "reserve_surplus_idr": 13941.0,
+    "reserve_surplus_idr": 15668.0,
     "last_swing_cap_setting": 100000.0,
-    "last_grid_tiers_count": 1,
-    "last_wallet_idr_free": 117372.0,
-    "last_sync_ts": 1795492149.902908
+    "last_grid_tiers_count": 0,
+    "last_wallet_idr_free": 215668.0,
+    "last_sync_ts": 1795492502.4784107
   },
   "last_reset_date": "2026-11-24"
 }
