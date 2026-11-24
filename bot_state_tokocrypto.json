@@ -5,7 +5,7 @@
   "grid_cycle": {
     "coin": "BTC",
     "created_ts": 1795449846.4113305,
-    "b3_ever_touched": false,
+    "b3_ever_touched": true,
     "bounce_count": 0,
     "completed_tiers_count": 0,
     "realized_grid_profit_idr": 0.0,
@@ -46,9 +46,9 @@
             "buy_price": 1101156000,
             "tp_price": 1123978000,
             "base_tp_price": 1123978000,
-            "status": "WAIT_BUY",
-            "buy_oid": "275379156",
-            "sell_oid": null,
+            "status": "HOLDING",
+            "buy_oid": null,
+            "sell_oid": "275443467",
             "buy_tif": "MOC",
             "sell_tif": "MOC",
             "qty": 2.9e-05,
@@ -83,8 +83,8 @@
     "reserve_surplus_idr": 13941.0,
     "last_swing_cap_setting": 100000.0,
     "last_grid_tiers_count": 1,
-    "last_wallet_idr_free": 117337.0,
-    "last_sync_ts": 1795488666.7559555
+    "last_wallet_idr_free": 117372.0,
+    "last_sync_ts": 1795488849.5458121
   },
   "last_reset_date": "2026-11-24"
 }
