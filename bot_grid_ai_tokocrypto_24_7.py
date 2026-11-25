@@ -58,8 +58,8 @@ GRID_MAX_RSI_M5_YELLOW = 52.0          # Batas atas RSI 5M (Wilder) saat 4H Kuni
 GRID_MAX_DIST_EMA20_15M_PCT = 0.0080   # Harga maksimal +0.80% di atas EMA20 15M agar entry dekat area value
 GRID_MIN_ATR_15M_PCT = 0.0035          # Syarat volatilitas minimal 15M agar rentang cukup melibas fee ~0.43%
 GRID_WAIT_B1_TIMEOUT_MIN = 45.0        # Batas tunggu antrean awal b1 sebelum dibatalkan jika belum terjemput
-GRID_MEMORY_RETENTION_HOURS = 168.0    # Memori pengalaman siklus Grid disimpan 1 minggu (168 jam)
-MAX_GRID_MEMORY_ITEMS = 60             # Maksimal menyimpan 60 riwayat siklus Grid dalam 1 minggu
+GRID_MEMORY_RETENTION_HOURS = 744.0    # Log riwayat siklus Grid disimpan 1 bulan penuh (31 hari / 744 jam)
+MAX_GRID_MEMORY_ITEMS = 250            # Maksimal menyimpan 250 riwayat siklus Grid dalam 1 bulan
 GRID_ALLOWED_COINS = {"BTC"}
 GRID_LIMIT_TIF = "MOC"                 # Prioritas Maker-Only Cancel dengan fallback aman ke GTC bila ditolak
 
@@ -312,56 +312,26 @@ def rekam_memori_siklus_grid(state, cycle, alasan_tutup, total_pnl_idr):
 
 def hitung_penyesuaian_skor_memori_grid(state, coin):
     """
-    Penilaian historis 7 hari yang anti-recency bias:
-    - Bonus dibatasi (+4.0 maks) agar koin yang terlalu lama sideways tidak diprioritaskan
-      menjelang fase breakout/ekspansi volatilitas.
-    - Penalti fokus pada rugi aktual, invalidation cut, atau siklus yang nyangkut lama di b3.
+    Log riwayat siklus Grid 1 bulan (sejalan dengan periode Win Rate Bulanan).
+    Murni untuk pencatatan/evaluasi: tidak memotong atau menambah skor entry (Adj: 0.0).
     """
-    now_ts = time.time()
-    batas_kadaluarsa = now_ts - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
+    info_bln = info_periode_bulan_wib()
+    wr_tracker = state.get("wr_month_tracker") if isinstance(state.get("wr_month_tracker"), dict) else {}
+    ts_mulai = float(wr_tracker.get("start_ts", info_bln["ts_awal_bulan"]))
+    ts_akhir = float(info_bln["ts_batas_akhir"])
+
     riwayat_koin = [
         m for m in state.get("grid_experience_memory", [])
-        if float(m.get("ts", 0.0)) >= batas_kadaluarsa and m.get("coin") == coin
+        if ts_mulai <= float(m.get("ts", 0.0)) < ts_akhir and m.get("coin") == coin
     ]
     if not riwayat_koin:
-        return 0.0, "Belum ada riwayat 7H"
+        return 0.0, "Belum ada riwayat bulan ini"
 
-    delta_skor = 0.0
-    jml_lancar = 0
-    jml_berat = 0
-    total_panen_7h = sum(int(m.get("bounce_count", 0)) for m in riwayat_koin)
-
-    for m in riwayat_koin:
-        pnl = float(m.get("total_pnl_idr", 0.0))
-        sentuh_b3 = bool(m.get("b3_ever_touched", False))
-        durasi_j = float(m.get("durasi_jam", 0.0))
-        alasan = str(m.get("alasan_tutup", ""))
-
-        if pnl < 0 or "INVALIDATION" in alasan:
-            jml_berat += 1
-            delta_skor -= 7.0
-        elif sentuh_b3 and durasi_j >= 24.0:
-            jml_berat += 1
-            delta_skor -= 4.0
-        elif pnl > 0:
-            jml_lancar += 1
-            delta_skor += 1.5
-
-    # Redam bias recency: jika sudah terlalu banyak pantulan dalam 7 hari (>= 12x),
-    # hindari mengejar range yang berpotensi segera jebol (volatility expansion)
-    if total_panen_7h >= 12 and delta_skor > 0:
-        delta_skor = min(delta_skor, 1.0)
-
-    terakhir = riwayat_koin[-1]
-    umur_terakhir = now_ts - float(terakhir.get("ts", 0.0))
-    if "INVALIDATION" in str(terakhir.get("alasan_tutup", "")) and umur_terakhir < 14400.0:
-        delta_skor -= 8.0
-    elif terakhir.get("b3_ever_touched") and umur_terakhir < 7200.0:
-        delta_skor -= 3.5
-
-    delta_skor = round(max(-15.0, min(4.0, delta_skor)), 1)
-    catatan = f"7H:{len(riwayat_koin)}x ({jml_lancar} lancar/{jml_berat} berat, Panen:{total_panen_7h}x, Adj:{delta_skor:+.1f})"
-    return delta_skor, catatan
+    jml_lancar = sum(1 for m in riwayat_koin if float(m.get("total_pnl_idr", 0.0)) >= 0.0)
+    jml_berat = len(riwayat_koin) - jml_lancar
+    total_panen_bln = sum(int(m.get("bounce_count", 0)) for m in riwayat_koin)
+    catatan = f"BlnIni:{len(riwayat_koin)}x ({jml_lancar} lancar/{jml_berat} berat, Panen:{total_panen_bln}x, LogOnly)"
+    return 0.0, catatan
 
 # ==============================================================================
 # MODUL BUDGET VAULT: ISOLASI KEUANGAN GRID (100RB/LAPIS) vs MINI SWING vs SURPLUS
@@ -3748,23 +3718,25 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         rekap_wr_total = f"Belum ada transaksi selesai pd periode {label_periode_wr}"
         rekap_wr_koin = "-"
 
-    batas_grid_7h = time.time() - (GRID_MEMORY_RETENTION_HOURS * 3600.0)
-    mem_grid_7h = [m for m in state.get("grid_experience_memory", []) if float(m.get("ts", 0.0)) >= batas_grid_7h]
-    if mem_grid_7h:
-        tot_siklus = len(mem_grid_7h)
-        tot_panen_7h = sum(int(m.get("bounce_count", 0)) for m in mem_grid_7h)
-        tot_pnl_7h = sum(float(m.get("total_pnl_idr", 0.0)) for m in mem_grid_7h)
-        jml_sentuh_b3 = sum(1 for m in mem_grid_7h if m.get("b3_ever_touched"))
-        rekap_grid_7h = f"{tot_siklus} Siklus ({tot_panen_7h}x Panen | Net: Rp{tot_pnl_7h:+,.0f} | Sentuh b3: {jml_sentuh_b3}x)"
+    mem_grid_bln = [
+        m for m in state.get("grid_experience_memory", [])
+        if ts_mulai_wr <= float(m.get("ts", 0.0)) < ts_akhir_wr
+    ]
+    if mem_grid_bln:
+        tot_siklus = len(mem_grid_bln)
+        tot_panen_bln = sum(int(m.get("bounce_count", 0)) for m in mem_grid_bln)
+        tot_pnl_bln = sum(float(m.get("total_pnl_idr", 0.0)) for m in mem_grid_bln)
+        jml_sentuh_b3 = sum(1 for m in mem_grid_bln if m.get("b3_ever_touched"))
+        rekap_grid_bln = f"{tot_siklus} Siklus ({tot_panen_bln}x Panen | Net: Rp{tot_pnl_bln:+,.0f} | Sentuh b3: {jml_sentuh_b3}x)"
     else:
-        rekap_grid_7h = "Belum ada siklus Grid selesai dlm 7 hari terakhir"
+        rekap_grid_bln = f"Belum ada siklus Grid selesai pd periode {label_periode_wr}"
 
     ringkasan_pasar = (
         f"Kompas Grid BTC [{sumber_grafik} 5M+15M+1H+4H]: {kompas_btc_str} | Sinyal Grid: {info_skor_tertinggi}\n"
         f"   -> Mode Recovery Balik Modal: {status_rec_str}\n"
         f"   -> Win Rate Bulanan [{label_periode_wr}] (Total Bot): {rekap_wr_total}\n"
         f"   -> Win Rate Bulanan [{label_periode_wr}] (Per Koin): {rekap_wr_koin}\n"
-        f"   -> Memori Siklus Grid 7H: {rekap_grid_7h}\n"
+        f"   -> Log Siklus Grid Bulanan [{label_periode_wr}]: {rekap_grid_bln}\n"
         f"   -> Koin SIAP ENTRY Grid ({len(koin_siap_beli)} koin): {', '.join(koin_siap_beli) or 'Belum ada (tunggu struktur & area value)'}"
     )
 
@@ -3902,7 +3874,7 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
                 f"{baris_grid_md}"
                 f"{baris_swing_md}"
                 f"- **Budget Vault:** {info_vault_md}\n"
-                f"- **Memori Siklus Grid 7H:** {rekap_grid_7h}\n"
+                f"- **Log Siklus Grid Bulanan [{label_periode_wr}]:** {rekap_grid_bln}\n"
                 f"- **Win Rate Bulanan [{label_periode_wr}] (Total Bot):** {rekap_wr_total}\n"
                 f"- **Win Rate Bulanan [{label_periode_wr}] (Per Koin):** {rekap_wr_koin}\n"
                 f"- **Mode Recovery:** {status_rec_str}\n\n"
