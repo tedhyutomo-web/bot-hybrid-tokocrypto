@@ -2247,6 +2247,33 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         else:
             prediksi = f"⚠️ SPREAD LEBAR ({spread_pct*100:.2f}%)"
 
+        grid_lolos, grid_gagal = [], []
+        (grid_lolos if h4_tidak_crash else grid_gagal).append(f"4H:{lampu_4h}(Syarat:!=MERAH)")
+        (grid_lolos if struktur_ok else grid_gagal).append(f"Tren:15M={m15['rezim']}/1H={h1['rezim']}(Syarat:UP/SW_UP)")
+        (grid_lolos if tidak_pucuk else grid_gagal).append(
+            f"JarakEMA20:{jarak_dari_ema20_15m_pct*100:+.2f}%(Max:+{GRID_MAX_DIST_EMA20_15M_PCT*100:.2f}%)"
+        )
+        batas_rsi_5m_cek = GRID_MAX_RSI_M5_ENTRY if lampu_4h == "HIJAU" else GRID_MAX_RSI_M5_YELLOW
+        (grid_lolos if m5["rsi"] <= batas_rsi_5m_cek else grid_gagal).append(f"RSI5M:{m5['rsi']}(Max:{batas_rsi_5m_cek})")
+        if lampu_4h == "HIJAU":
+            (grid_lolos if m15["rsi"] <= 64.0 else grid_gagal).append(f"RSI15M:{m15['rsi']}(Max:64.0)")
+        elif lampu_4h == "KUNING":
+            (grid_lolos if candle_5m_hijau else grid_gagal).append(f"C5M:{'Hijau' if candle_5m_hijau else 'Merah'}(Syarat:Hijau)")
+        if candle_jatuh_beruntun:
+            grid_gagal.append("C5M:JatuhBeruntun(Syarat:Tidak)")
+        (grid_lolos if volatilitas_cukup else grid_gagal).append(
+            f"ATR15M:{m15['atr_pct']*100:.2f}%(Min:{GRID_MIN_ATR_15M_PCT*100:.2f}%)"
+        )
+        (grid_lolos if spread_aman else grid_gagal).append(
+            f"Spread:{spread_pct*100:.2f}%(Max:{MAX_SPREAD_INDODAX_PCT*100:.2f}%)"
+        )
+        if res_terdekat_idr > 0:
+            (grid_lolos if res_grid_ok else grid_gagal).append(
+                f"RuangRes:+{headroom_tp_pct*100:.2f}%(Min:+{GRID_STEP_MIN_PCT*100:.2f}%)"
+            )
+        else:
+            grid_lolos.append("Resisten:OPEN_SKY")
+
         entry_ideal_idr = bulatkan_harga_indodax(coin, harga_bid)
         tp_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 + grid_tp_b1_step_aktif))
         sl_ideal_idr = bulatkan_harga_indodax(coin, entry_ideal_idr * (1.0 - (grid_step_aktif * 2.0)))
@@ -2293,6 +2320,8 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
             "tp_target_pct": round(grid_tp_b1_step_aktif * 100.0, 2),
             "gaya": "GRID_3L" if layak_grid else "WAIT",
             "skor": round(skor_grid, 1),
+            "grid_lolos": grid_lolos,
+            "grid_gagal": grid_gagal,
             "prediksi": prediksi,
             "siap_entry": layak_grid,
             "layak_grid": layak_grid,
@@ -2718,7 +2747,7 @@ def analisa_teknikal_mini_swing(
                     elif not pullback_zona:
                         alasan_wait = "LuarZonaPB"
                     else:
-                        alasan_wait = f"RSI4H({rsi_4h})!=38-58"
+                        alasan_wait = f"RSI4H({rsi_4h:.1f})!=38-58"
             elif rezim == "SIDEWAYS":
                 btc_sideways_up_ok = (c4h_b[-1] >= ema50_4h_b * 0.985) and (pdi_4h_b >= mdi_4h_b * 0.85)
                 bias_uptrend_4h = (
@@ -2758,7 +2787,7 @@ def analisa_teknikal_mini_swing(
                     elif not rs_info["above_ema20"] and not jalur_support_up:
                         alasan_wait = "RS_Lemah&NoSup"
                     elif not (38.0 <= rsi_4h <= 56.0) and not jalur_support_up:
-                        alasan_wait = f"RSI4H({rsi_4h})_Luar"
+                        alasan_wait = f"RSI4H({rsi_4h:.1f})_Luar"
                     else:
                         alasan_wait = "LuarZonaPB/Sup"
         elif coin in koin_watch_set:
@@ -2769,6 +2798,32 @@ def analisa_teknikal_mini_swing(
             alasan_wait = "BEARISH"
         elif not atr_ok:
             alasan_wait = f"ATR({atr_4h_pct*100:.1f}%)_Luar"
+
+        sw_lolos, sw_gagal = [], []
+        dist_ema50_pct = ((c4[-1] - ema50_4h) / ema50_4h * 100.0) if ema50_4h > 0 else 0.0
+        slope_ema50_pct = ((ema50_4h - ema50_4h_prev4) / ema50_4h_prev4 * 100.0) if ema50_4h_prev4 > 0 else 0.0
+        (sw_lolos if atr_ok else sw_gagal).append(f"ATR4H:{atr_4h_pct*100:.1f}%(Target:1.3-4.5%)")
+
+        if rezim == "SIDEWAYS":
+            btc_sw_ok = (c4h_b[-1] >= ema50_4h_b * 0.985) and (pdi_4h_b >= mdi_4h_b * 0.85)
+            (sw_lolos if btc_sw_ok else sw_gagal).append(f"BTC4H:{'OK' if btc_sw_ok else 'Lemah'}")
+            (sw_lolos if dist_ema50_pct >= -1.50 else sw_gagal).append(f"HargaVsEMA50:{dist_ema50_pct:+.2f}%(Min:-1.50%)")
+            (sw_lolos if ema50_4h_stabil_naik else sw_gagal).append(f"ArahEMA50:{slope_ema50_pct:+.2f}%(Min:-0.30%)")
+            (sw_lolos if (higher_low_4h or rs_info["above_ema20"]) else sw_gagal).append("Struktur:HL/RS")
+            (sw_lolos if not (c4[-1] < o4[-1] and vol_ratio_4h >= 1.80) else sw_gagal).append(f"Vol4H:{vol_ratio_4h:.1f}x(AntiDump<1.8x)")
+            (sw_lolos if rs_info["above_ema20"] else sw_gagal).append(f"RS_vs_BTC:{'Kuat' if rs_info['above_ema20'] else 'Lemah'}(Target:>EMA20)")
+            (sw_lolos if (38.0 <= rsi_4h <= 56.0) else sw_gagal).append(f"RSI4H:{rsi_4h:.1f}(Target:38-56)")
+            ref_mid_4h = max(ema20_4h, bb_mid_4h)
+            dist_mid_pct = ((c4[-1] - ref_mid_4h) / ref_mid_4h * 100.0) if ref_mid_4h > 0 else 0.0
+            zona_pb_ok = (low_3bar_4h <= ref_mid_4h * 1.008) and (c4[-1] <= ref_mid_4h * 1.015)
+            (sw_lolos if zona_pb_ok else sw_gagal).append(f"JarakPB:{dist_mid_pct:+.2f}%(Max:+1.50%)")
+        elif rezim == "BULLISH":
+            (sw_lolos if c4[-1] > ema50_4h else sw_gagal).append(f"HargaVsEMA50:{dist_ema50_pct:+.2f}%(Min:>0%)")
+            (sw_lolos if rs_info["above_ema20"] else sw_gagal).append(f"RS_vs_BTC:{'Kuat' if rs_info['above_ema20'] else 'Lemah'}(Target:>EMA20)")
+            (sw_lolos if (38.0 <= rsi_4h <= 58.0) else sw_gagal).append(f"RSI4H:{rsi_4h:.1f}(Target:38-58)")
+            dist_ema20_pct = ((c4[-1] - ema20_4h) / ema20_4h * 100.0) if ema20_4h > 0 else 0.0
+            zona_bull_ok = (low_3bar_4h <= ema20_4h * 1.008) and (c4[-1] <= ema20_4h * 1.015)
+            (sw_lolos if zona_bull_ok else sw_gagal).append(f"JarakEMA20:{dist_ema20_pct:+.2f}%(Max:+1.50%)")
 
         trig_30m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
         trig_15m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
@@ -2833,6 +2888,8 @@ def analisa_teknikal_mini_swing(
             "rezim": rezim,
             "setup_label": setup_label,
             "alasan_wait": alasan_wait,
+            "sw_lolos": sw_lolos,
+            "sw_gagal": sw_gagal,
             "harga_live": harga_live,
             "harga_bid": harga_bid,
             "harga_ask": harga_ask,
@@ -3843,12 +3900,13 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         else:
             alasan_grid_now = info_btc.get("prediksi", "Belum ada data BTC")
             info_grid_md = f"Cash is King | {alasan_grid_now}"
+            g_lolos = " | ".join(info_btc.get("grid_lolos", [])) or "-"
+            g_gagal = " | ".join(info_btc.get("grid_gagal", [])) or "Tidak ada (Siap Entry)"
             detail_diagnosa_koin.append(
                 f"   * [MODE 1: GRID BTC | Cash is King]\n"
-                f"     Status : {alasan_grid_now}\n"
-                f"     Metrik : RSI5M:{info_btc.get('rsi', '-')} (Max:{GRID_MAX_RSI_M5_ENTRY}) | "
-                f"RSI15M:{info_btc.get('rsi_15m', '-')} | DistEMA20_15M:{info_btc.get('jarak_ema20_15m_pct', '-')}% | "
-                f"ATR15M:{info_btc.get('atr_15m_pct', 0)*100:.2f}%"
+                f"     Kesimpulan : {alasan_grid_now}\n"
+                f"     ✅ LOLOS   : {g_lolos}\n"
+                f"     ❌ GAGAL   : {g_gagal}"
             )
     info_swing_md = "OFF"
     if SWING_MODE_ENABLED:
@@ -3870,9 +3928,12 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
                     f"(30m:{vk_s.get('skor_30m', 0)}/15m:{vk_s.get('skor_15m', 0)} | Skor:{vk_s.get('skor_konfirmasi', 0)}/5 | OB:{ob_msg})"
                 )
             else:
-                alasan_w = vk_s.get("alasan_wait", "-")
+                s_ok = " | ".join(vk_s.get("sw_lolos", [])) or "-"
+                s_no = " | ".join(vk_s.get("sw_gagal", [])) or "-"
                 radar_sw.append(
-                    f"{ck_s}: WAIT -> [{alasan_w}] (ATR:{vk_s.get('atr_4h_pct', 0)*100:.1f}% | RSI4H:{vk_s.get('rsi_4h', '-')})"
+                    f"{ck_s}: WAIT\n"
+                    f"         ✅ LOLOS : {s_ok}\n"
+                    f"         ❌ GAGAL : {s_no}"
                 )
         radar_sw_str = "\n       - ".join(radar_sw) if radar_sw else "Belum ada data 4H"
 
