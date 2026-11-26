@@ -2225,7 +2225,18 @@ def analisa_teknikal_lengkap_pasar(harga_idr_map):
         elif not tidak_pucuk:
             prediksi = f"🟡 ANTI-PUCUK (Harga +{jarak_dari_ema20_15m_pct*100:.2f}% di atas EMA20 15M, tunggu pullback)"
         elif not trigger_5m_ok:
-            prediksi = f"🟡 TUNGGU TRIGGER 5M (RSI5M:{m5['rsi']} | 4H:{lampu_4h})"
+            sebab_5m = []
+            batas_rsi_5m = GRID_MAX_RSI_M5_ENTRY if lampu_4h == "HIJAU" else GRID_MAX_RSI_M5_YELLOW
+            if m5["rsi"] > batas_rsi_5m:
+                sebab_5m.append(f"RSI5M:{m5['rsi']}>{batas_rsi_5m}")
+            if lampu_4h == "HIJAU" and m15["rsi"] > 64.0:
+                sebab_5m.append(f"RSI15M:{m15['rsi']}>64.0")
+            if lampu_4h == "KUNING" and not candle_5m_hijau:
+                sebab_5m.append("C5M_Merah")
+            if candle_jatuh_beruntun:
+                sebab_5m.append("JatuhBeruntun")
+            alasan_5m_str = ", ".join(sebab_5m) if sebab_5m else f"RSI5M:{m5['rsi']}"
+            prediksi = f"🟡 TUNGGU TRIGGER 5M ({alasan_5m_str} | 4H:{lampu_4h})"
         elif not volatilitas_cukup:
             prediksi = f"🟡 PASAR SEPI (ATR15M:{m15['atr_pct']*100:.2f}% < {GRID_MIN_ATR_15M_PCT*100:.2f}%)"
         elif not res_grid_ok:
@@ -2687,6 +2698,7 @@ def analisa_teknikal_mini_swing(
 
         setup_4h_ok = False
         setup_label = "WAIT"
+        alasan_wait = "OK"
         low_3bar_4h = min(l4[-3:])
         if boleh_scan_semua and (coin not in koin_watch_set) and atr_ok:
             if rezim == "BULLISH":
@@ -2698,6 +2710,15 @@ def analisa_teknikal_mini_swing(
                 if (c4[-1] > ema50_4h) and rs_info["above_ema20"] and pullback_zona and (38.0 <= rsi_4h <= 58.0):
                     setup_4h_ok = True
                     setup_label = "BULL_PULLBACK"
+                else:
+                    if c4[-1] <= ema50_4h:
+                        alasan_wait = "Alt4H<=EMA50"
+                    elif not rs_info["above_ema20"]:
+                        alasan_wait = "RS_Lemah"
+                    elif not pullback_zona:
+                        alasan_wait = "LuarZonaPB"
+                    else:
+                        alasan_wait = f"RSI4H({rsi_4h})!=38-58"
             elif rezim == "SIDEWAYS":
                 btc_sideways_up_ok = (c4h_b[-1] >= ema50_4h_b * 0.985) and (pdi_4h_b >= mdi_4h_b * 0.85)
                 bias_uptrend_4h = (
@@ -2723,10 +2744,31 @@ def analisa_teknikal_mini_swing(
                 if bias_uptrend_4h and tidak_breakdown_besar and (jalur_support_up or pullback_mid):
                     setup_4h_ok = True
                     setup_label = "SIDEWAYS_UP_PULLBACK" if pullback_mid else "SIDEWAYS_UP_REV"
+                else:
+                    if not btc_sideways_up_ok:
+                        alasan_wait = "BTC4H_Lemah"
+                    elif c4[-1] < ema50_4h * 0.985:
+                        alasan_wait = "Alt4H<EMA50"
+                    elif not ema50_4h_stabil_naik:
+                        alasan_wait = "EMA50_Turun"
+                    elif not (higher_low_4h or rs_info["above_ema20"]):
+                        alasan_wait = "NoHL&RS"
+                    elif not tidak_breakdown_besar:
+                        alasan_wait = "VolDump4H"
+                    elif not rs_info["above_ema20"] and not jalur_support_up:
+                        alasan_wait = "RS_Lemah&NoSup"
+                    elif not (38.0 <= rsi_4h <= 56.0) and not jalur_support_up:
+                        alasan_wait = f"RSI4H({rsi_4h})_Luar"
+                    else:
+                        alasan_wait = "LuarZonaPB/Sup"
         elif coin in koin_watch_set:
             setup_label = "WATCH_HOLD"
+            alasan_wait = "HOLD"
         elif rezim == "BEARISH_DOWN":
             setup_label = "SKIP_BEARISH"
+            alasan_wait = "BEARISH"
+        elif not atr_ok:
+            alasan_wait = f"ATR({atr_4h_pct*100:.1f}%)_Luar"
 
         trig_30m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
         trig_15m = {"ok": False, "skor": 0, "rsi": 50.0, "vol_ratio": 0.0}
@@ -2790,6 +2832,7 @@ def analisa_teknikal_mini_swing(
             "coin": coin,
             "rezim": rezim,
             "setup_label": setup_label,
+            "alasan_wait": alasan_wait,
             "harga_live": harga_live,
             "harga_bid": harga_bid,
             "harga_ask": harga_ask,
@@ -3658,7 +3701,11 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
     info_skor_tertinggi = f"{kandidat_terkuat['coin']} (Skor:{kandidat_terkuat['skor']})" if kandidat_terkuat else "-"
     sumber_grafik = kandidat_terkuat.get("sumber_ohlc", "INDODAX-IDR") if kandidat_terkuat else "INDODAX-IDR"
     info_btc = peta_analisa.get("BTC", {})
-    kompas_btc_str = f"BTCIDR {info_btc.get('tren_detail', '-')} (RSI 5M:{info_btc.get('rsi', '-')})"
+    kompas_btc_str = (
+        f"BTCIDR {info_btc.get('tren_detail', '-')} "
+        f"(RSI5M:{info_btc.get('rsi', '-')} | RSI15M:{info_btc.get('rsi_15m', '-')} | "
+        f"DistEMA20:{info_btc.get('jarak_ema20_15m_pct', '-')}%)"
+    )
     defisit_rec = float(state.get("loss_to_recover_idr", 0.0))
     status_rec_str = f"AKTIF (Target Pulihkan Rp{defisit_rec:,.0f})" if defisit_rec > 0 else "Aman (0 Defisit)"
 
@@ -3794,9 +3841,14 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
                 + "\n".join(baris_tiap_lapis)
             )
         else:
-            info_grid_md = "Cash is King (Menunggu syarat Grid Lapis 1)"
+            alasan_grid_now = info_btc.get("prediksi", "Belum ada data BTC")
+            info_grid_md = f"Cash is King | {alasan_grid_now}"
             detail_diagnosa_koin.append(
-                f"   * Belum ada siklus Grid aktif (100% Cash is King - Menunggu 4H != MERAH, M15/H1/5M valid & Skor >= {GRID_MIN_SCORE_ENTRY})."
+                f"   * [MODE 1: GRID BTC | Cash is King]\n"
+                f"     Status : {alasan_grid_now}\n"
+                f"     Metrik : RSI5M:{info_btc.get('rsi', '-')} (Max:{GRID_MAX_RSI_M5_ENTRY}) | "
+                f"RSI15M:{info_btc.get('rsi_15m', '-')} | DistEMA20_15M:{info_btc.get('jarak_ema20_15m_pct', '-')}% | "
+                f"ATR15M:{info_btc.get('atr_15m_pct', 0)*100:.2f}%"
             )
     info_swing_md = "OFF"
     if SWING_MODE_ENABLED:
@@ -3809,23 +3861,29 @@ def buat_kesimpulan_patroli_dinamis(state, peta_analisa, harga_idr_map=None, ana
         radar_sw = []
         for ck_s, vk_s in sorted(semua_sw.items()):
             if vk_s.get("status") == "SKIP_MAINTENANCE":
-                radar_sw.append(f"{ck_s}:MAINT")
+                radar_sw.append(f"{ck_s}: MAINT")
             elif vk_s.get("setup_4h_ok"):
+                ob_msg = vk_s.get("ob_info", {}).get("alasan", "-")
+                status_entry = "SIAP_ENTRY" if vk_s.get("siap_entry") else "TERTAHAN_TRIGGER/OB"
                 radar_sw.append(
-                    f"{ck_s}:{vk_s.get('setup_label')}(30m:{vk_s.get('skor_30m', 0)}/15m:{vk_s.get('skor_15m', 0)}|Skor:{vk_s.get('skor_konfirmasi', 0)}/5)"
+                    f"{ck_s}: {status_entry} [{vk_s.get('setup_label')}] "
+                    f"(30m:{vk_s.get('skor_30m', 0)}/15m:{vk_s.get('skor_15m', 0)} | Skor:{vk_s.get('skor_konfirmasi', 0)}/5 | OB:{ob_msg})"
                 )
             else:
-                radar_sw.append(f"{ck_s}:WAIT(ATR:{vk_s.get('atr_4h_pct', 0)*100:.1f}%|RSI4H:{vk_s.get('rsi_4h', '-')})")
-        radar_sw_str = " | ".join(radar_sw) if radar_sw else "Belum ada data 4H"
+                alasan_w = vk_s.get("alasan_wait", "-")
+                radar_sw.append(
+                    f"{ck_s}: WAIT -> [{alasan_w}] (ATR:{vk_s.get('atr_4h_pct', 0)*100:.1f}% | RSI4H:{vk_s.get('rsi_4h', '-')})"
+                )
+        radar_sw_str = "\n       - ".join(radar_sw) if radar_sw else "Belum ada data 4H"
 
         info_swing_md = (
             f"Rezim: {rezim_sw} (BTC ADX4H:{btc_sw.get('adx_4h', '-')}, CHOP:{btc_sw.get('chop_4h', '-')}) | "
             f"Aktif: {jml_pos_sw} Pos, Pending MOC: {jml_pend_sw}"
         )
         detail_diagnosa_koin.append(
-            f"   * [MINI SWING NON-BTC 1D-4H-30m/15m | Rezim:{rezim_sw} | BTC 4H ADX:{btc_sw.get('adx_4h', '-')} CHOP:{btc_sw.get('chop_4h', '-')}] "
+            f"   * [MODE 2: MINI SWING NON-BTC | Rezim:{rezim_sw} | BTC 4H ADX:{btc_sw.get('adx_4h', '-')} CHOP:{btc_sw.get('chop_4h', '-')}] "
             f"Aktif:{jml_pos_sw} | Pending MOC:{jml_pend_sw}\n"
-            f"     Radar Altcoin: {radar_sw_str}"
+            f"     Radar Altcoin:\n       - {radar_sw_str}"
         )
         for pos in state.get("swing_positions", []):
             skrg_s = (harga_idr_map or {}).get(pos["coin"], {}).get("last", pos["entry_price_idr"])
